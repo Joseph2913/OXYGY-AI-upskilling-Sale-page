@@ -163,3 +163,22 @@ export interface WorkflowDesignPayload {
   user_workflow?: WorkflowNode[];
   user_rationale?: string;
 }
+
+// Product Architecture types (Level 5)
+export type ToolClassification = 'essential' | 'recommended' | 'optional';
+
+export interface ToolAnalysisResult {
+  classification: ToolClassification;
+  forYourProject: string;
+  howToApproach: string;
+  tips: string[];
+  levelConnection: string;
+  connectedLevels: number[];
+}
+
+export interface ProductArchitectureAnswers {
+  appDescription?: string;
+  problemAndUsers?: string;
+  dataAndContent?: string;
+  technicalLevel?: string;
+}

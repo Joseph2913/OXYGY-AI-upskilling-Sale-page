@@ -7,14 +7,16 @@ import { Footer } from './components/Footer';
 import { PromptPlayground } from './components/PromptPlayground';
 import { AgentBuilder } from './components/AgentBuilder';
 import { WorkflowDesigner } from './components/WorkflowDesigner';
+import { ProductArchitecture } from './components/ProductArchitecture';
 
-type Page = 'home' | 'playground' | 'agent-builder' | 'workflow-designer';
+type Page = 'home' | 'playground' | 'agent-builder' | 'workflow-designer' | 'product-architecture';
 
 function getPageFromHash(): Page {
   const hash = window.location.hash;
   if (hash === '#playground') return 'playground';
   if (hash === '#agent-builder') return 'agent-builder';
   if (hash === '#workflow-designer') return 'workflow-designer';
+  if (hash === '#product-architecture') return 'product-architecture';
   return 'home';
 }
 
@@ -46,6 +48,7 @@ function App() {
       {currentPage === 'playground' && <PromptPlayground />}
       {currentPage === 'agent-builder' && <AgentBuilder />}
       {currentPage === 'workflow-designer' && <WorkflowDesigner />}
+      {currentPage === 'product-architecture' && <ProductArchitecture />}
     </div>
   );
 }
