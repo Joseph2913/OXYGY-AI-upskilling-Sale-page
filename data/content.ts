@@ -40,17 +40,20 @@ export const LEVELS: LevelData[] = [
       {
         emoji: "🎯",
         title: "Prompt Engineering Fundamentals",
-        type: "tool"
+        type: "tool",
+        description: "Learn the 6-block Prompt Blueprint framework and practice transforming vague requests into structured, high-quality AI prompts."
       },
       {
         emoji: "🎨",
         title: "Creative AI Playground",
-        type: "workshop"
+        type: "workshop",
+        description: "Hands-on exploration of image generation, video editing, and audio tools — discover what's possible with creative AI."
       },
       {
         emoji: "🛡️",
         title: "Responsible AI & Governance",
-        type: "workshop"
+        type: "workshop",
+        description: "Identify bias, hallucination risks, and data privacy concerns through real-world case studies and team discussion."
       }
     ],
     artifactLink: "/artifacts/level-1"
@@ -79,17 +82,20 @@ export const LEVELS: LevelData[] = [
       {
         emoji: "🤖",
         title: "Build Your First AI Agent",
-        type: "tool"
+        type: "tool",
+        description: "Design a reusable AI agent from scratch — define its role, structure its output format, and build in accountability checks."
       },
       {
         emoji: "📚",
         title: "Agent Template Library Sprint",
-        type: "workshop"
+        type: "workshop",
+        description: "Teams collaborate to build a shared library of agent templates that standardise quality across common workflows."
       },
       {
         emoji: "🔄",
         title: "Human-in-the-Loop Design",
-        type: "workshop"
+        type: "workshop",
+        description: "Map where human oversight is essential in AI workflows and design review checkpoints that balance speed with accuracy."
       }
     ],
     artifactLink: "/artifacts/level-2"
@@ -118,17 +124,20 @@ export const LEVELS: LevelData[] = [
       {
         emoji: "🗺️",
         title: "Workflow Mapping & Design",
-        type: "tool"
+        type: "tool",
+        description: "Map your end-to-end process as a node-based workflow, then get AI-powered feedback on automation opportunities."
       },
       {
         emoji: "🔗",
         title: "Agent Chaining Lab",
-        type: "workshop"
+        type: "workshop",
+        description: "Connect multiple AI agents into a sequential pipeline where each agent's output feeds the next — building real automation."
       },
       {
         emoji: "📊",
         title: "Performance & Feedback Loops",
-        type: "workshop"
+        type: "workshop",
+        description: "Design metrics dashboards and feedback mechanisms that help your AI workflows improve over time."
       }
     ],
     artifactLink: "/artifacts/level-3"
@@ -157,17 +166,20 @@ export const LEVELS: LevelData[] = [
       {
         emoji: "💡",
         title: "Dashboard Design Thinking",
-        type: "tool"
+        type: "tool",
+        description: "Work backwards from end-user needs to design an AI-powered dashboard prototype tailored to specific roles and decisions."
       },
       {
         emoji: "⚡",
         title: "Rapid Prototyping with AI",
-        type: "workshop"
+        type: "workshop",
+        description: "Use AI-assisted development tools to go from wireframe to working prototype in a single session."
       },
       {
         emoji: "🧪",
         title: "User Testing & Iteration",
-        type: "workshop"
+        type: "workshop",
+        description: "Run structured user tests on your dashboard prototypes and iterate based on real feedback from stakeholders."
       }
     ],
     artifactLink: "/artifacts/level-4"
@@ -196,17 +208,20 @@ export const LEVELS: LevelData[] = [
       {
         emoji: "🏗️",
         title: "Product Architecture Sprint",
-        type: "tool"
+        type: "tool",
+        description: "Architect a full AI application — mapping data flows, user roles, personalisation logic, and deployment infrastructure."
       },
       {
         emoji: "💻",
         title: "Full-Stack Build Workshop",
-        type: "workshop"
+        type: "workshop",
+        description: "Pair-build a working application with AI coding assistants — from database schema to deployed front-end."
       },
       {
         emoji: "🚀",
         title: "User Testing & Go-to-Market",
-        type: "workshop"
+        type: "workshop",
+        description: "Plan your launch strategy, run beta testing sessions, and prepare stakeholder communications for your AI product."
       }
     ],
     artifactLink: "/artifacts/level-5"

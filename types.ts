@@ -4,6 +4,7 @@ export interface SessionType {
   title: string;
   emoji: string;
   type: 'tool' | 'workshop';
+  description: string;
 }
 
 export interface LevelData {

@@ -286,15 +286,16 @@ export const LevelJourney: React.FC = () => {
                             backgroundColor: `${level.accentColor}18`,
                           }}
                         >
-                          <div className="flex items-center gap-3">
-                            <span className="text-2xl">{toolSession.emoji}</span>
-                            <div className="flex-grow">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl mt-0.5">{toolSession.emoji}</span>
+                            <div className="flex-grow min-w-0">
                               <span className="text-[16px] font-bold text-navy-900 leading-tight">{toolSession.title}</span>
-                              <p className="text-[13px] mt-0.5" style={{ color: level.darkAccentColor }}>
+                              <p className="text-[13px] text-[#4A5568] leading-snug mt-1 line-clamp-2">{toolSession.description}</p>
+                              <p className="text-[13px] font-semibold mt-1.5" style={{ color: level.darkAccentColor }}>
                                 Try the interactive tool <span className="inline-block ml-0.5">→</span>
                               </p>
                             </div>
-                            <ArrowRight size={18} style={{ color: level.darkAccentColor }} className="shrink-0" />
+                            <ArrowRight size={18} style={{ color: level.darkAccentColor }} className="shrink-0 mt-1" />
                           </div>
                         </a>
                       );
@@ -307,17 +308,20 @@ export const LevelJourney: React.FC = () => {
                       return (
                         <div className="mb-5">
                           <h4 className="text-[10px] font-[600] uppercase tracking-[1px] text-[#A0AEC0] mb-2">Collaborative Sessions</h4>
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {workshops.map((session, idx) => (
                               <div
                                 key={idx}
-                                className="p-3 flex items-center gap-2.5 rounded-[10px] bg-white"
+                                className="p-3 flex items-start gap-2.5 rounded-[10px] bg-white"
                                 style={{
                                   border: `1px solid ${level.accentColor}4D`,
                                 }}
                               >
-                                <span className="text-lg shrink-0">{session.emoji}</span>
-                                <span className="text-[12px] font-semibold text-navy-900 leading-tight">{session.title}</span>
+                                <span className="text-lg shrink-0 mt-0.5">{session.emoji}</span>
+                                <div className="min-w-0">
+                                  <span className="text-[12px] font-semibold text-navy-900 leading-tight">{session.title}</span>
+                                  <p className="text-[11px] text-[#718096] leading-snug mt-0.5 line-clamp-2">{session.description}</p>
+                                </div>
                               </div>
                             ))}
                           </div>
