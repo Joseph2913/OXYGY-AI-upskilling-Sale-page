@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LEVELS } from '../data/content';
-import { ArrowRight, ChevronDown, CheckCircle2, Layout, Users } from 'lucide-react';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 export const LevelJourney: React.FC = () => {
@@ -181,38 +181,22 @@ export const LevelJourney: React.FC = () => {
                       </p>
 
                       {/* Tags Row */}
-                      <div className="flex flex-wrap items-center justify-between gap-4 mt-1">
-                        <div className="flex flex-wrap gap-2">
-                           {/* Show preview tags in collapsed state */}
-                           {!isExpanded && level.previewTags.map((tag, i) => (
-                              <span 
-                                key={i}
-                                className="inline-flex items-center px-3 py-1 rounded-md text-[12px] font-medium transition-opacity duration-300"
-                                style={{ 
-                                  backgroundColor: `${level.accentColor}20`, 
-                                  color: '#2D3748'
-                                }}
-                              >
-                                {tag}
-                              </span>
-                           ))}
+                      {!isExpanded && (
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {level.previewTags.map((tag, i) => (
+                            <span
+                              key={i}
+                              className="inline-flex items-center px-3 py-1 rounded-md text-[12px] font-medium transition-opacity duration-300"
+                              style={{
+                                backgroundColor: `${level.accentColor}20`,
+                                color: '#2D3748'
+                              }}
+                            >
+                              {tag}
+                            </span>
+                          ))}
                         </div>
-                        
-                        {/* View Artefacts Link (Visible in Collapsed) */}
-                        {!isExpanded && (
-                          <a
-                            href={level.id === 1 ? '#playground' : level.id === 2 ? '#agent-builder' : level.id === 3 ? '#workflow-designer' : undefined}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (level.id !== 1 && level.id !== 2 && level.id !== 3) e.preventDefault();
-                            }}
-                            className="text-[13px] font-semibold flex items-center gap-1 hover:underline"
-                            style={{ color: level.darkAccentColor, cursor: (level.id === 1 || level.id === 2 || level.id === 3) ? 'pointer' : 'default', opacity: (level.id === 1 || level.id === 2 || level.id === 3) ? 1 : 0.6 }}
-                          >
-                            View Artefacts <ArrowRight size={14} />
-                          </a>
-                        )}
-                      </div>
+                      )}
                     </div>
                   </div>
                 </button>
@@ -224,13 +208,13 @@ export const LevelJourney: React.FC = () => {
                     isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
                   )}
                 >
-                  <div className="min-h-0 px-6 md:px-8 pb-8 pt-0 pl-[calc(1.5rem+40px+24px)] md:pl-[calc(2rem+48px+24px)]">
-                    
+                  <div className="min-h-0 px-6 md:px-8 pb-6 pt-0 pl-[calc(1.5rem+40px+24px)] md:pl-[calc(2rem+48px+24px)]">
+
                     {/* Divider */}
-                    <div className="h-px bg-gray-100 mb-6 w-full"></div>
+                    <div className="h-px bg-gray-100 mb-4 w-full"></div>
 
                     {/* Core Topics List */}
-                    <div className="mb-6">
+                    <div className="mb-4">
                       <h4 className="text-[10px] font-[600] uppercase tracking-[1px] text-[#A0AEC0] mb-2">Core Topics</h4>
                       <div className="flex flex-wrap gap-2">
                         {level.topics.map((topic, i) => (
@@ -249,7 +233,7 @@ export const LevelJourney: React.FC = () => {
                     </div>
 
                     {/* Metadata Grid (Audience & Tools) - Side by Side, Compact */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
                       {/* Target Audience */}
                       <div>
                          <h4 className="text-[10px] font-[600] uppercase tracking-[1px] text-[#A0AEC0] mb-2">
@@ -290,42 +274,55 @@ export const LevelJourney: React.FC = () => {
                     </div>
 
                     {/* Session Types - Horizontal Cards */}
-                    <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-                       {level.sessionTypes.map((session, idx) => (
-                          <div 
-                             key={idx} 
-                             className="min-h-[80px] h-auto p-4 flex flex-col items-center justify-center text-center rounded-[10px] border transition-transform hover:-translate-y-1"
-                             style={{ 
-                               backgroundColor: `${level.accentColor}15`, // ~8% opacity
-                               borderColor: `${level.accentColor}33` // ~20% opacity
-                             }}
-                          >
-                             <div className="text-xl mb-1">{session.emoji}</div>
-                             <span className="font-bold text-navy-900 text-[13px] leading-tight">{session.title}</span>
-                          </div>
-                       ))}
+                    <div className="mb-5 grid grid-cols-1 md:grid-cols-3 gap-3">
+                       {level.sessionTypes.map((session, idx) => {
+                          const isFeatured = idx === 0;
+                          return (
+                            <div
+                              key={idx}
+                              className={cn(
+                                "min-h-[72px] h-auto flex flex-col items-center justify-center text-center rounded-[10px] border",
+                                isFeatured ? "p-4 border-2" : "p-3 opacity-70"
+                              )}
+                              style={{
+                                backgroundColor: isFeatured ? `${level.accentColor}25` : `${level.accentColor}10`,
+                                borderColor: isFeatured ? level.darkAccentColor : `${level.accentColor}33`,
+                              }}
+                            >
+                              <div className={isFeatured ? "text-xl mb-1" : "text-lg mb-0.5"}>{session.emoji}</div>
+                              <span className={cn(
+                                "font-bold text-navy-900 leading-tight",
+                                isFeatured ? "text-[14px]" : "text-[12px]"
+                              )}>{session.title}</span>
+                            </div>
+                          );
+                       })}
                     </div>
-                    
-                    {/* CTAs */}
-                    <div className="flex flex-wrap items-center gap-4">
-                      <button
-                        onClick={() => {
-                          if (level.id === 1) window.location.hash = '#playground';
-                          if (level.id === 2) window.location.hash = '#agent-builder';
-                          if (level.id === 3) window.location.hash = '#workflow-designer';
-                        }}
-                        className="text-white text-[14px] font-semibold px-6 py-2.5 rounded-full transition-transform hover:-translate-y-0.5 shadow-sm flex items-center gap-2"
-                        style={{ backgroundColor: level.darkAccentColor, opacity: (level.id === 1 || level.id === 2 || level.id === 3) ? 1 : 0.6, cursor: (level.id === 1 || level.id === 2 || level.id === 3) ? 'pointer' : 'default' }}
-                      >
-                        View Artefacts <ArrowRight size={14} />
-                      </button>
-                      <button 
-                        className="text-[14px] font-medium hover:underline underline-offset-4 transition-colors px-4"
-                        style={{ color: level.darkAccentColor }}
-                      >
-                        Learn More →
-                      </button>
-                    </div>
+
+                    {/* Single Primary CTA */}
+                    {(() => {
+                      const ctaMap: Record<number, { label: string; href: string; primary: boolean }> = {
+                        1: { label: 'Prompt Engineering Fundamentals', href: '#playground', primary: true },
+                        2: { label: 'Build Your First AI Agent', href: '#agent-builder', primary: true },
+                        3: { label: 'Workflow Mapping & Design', href: '#workflow-designer', primary: false },
+                        4: { label: 'Dashboard Design Thinking', href: '#dashboard-design', primary: false },
+                        5: { label: 'Product Architecture Sprint', href: '#product-architecture', primary: false },
+                      };
+                      const cta = ctaMap[level.id];
+                      return (
+                        <a
+                          href={cta.href}
+                          className="inline-flex items-center gap-2 text-[14px] font-semibold px-6 py-2.5 rounded-full transition-transform hover:-translate-y-0.5"
+                          style={
+                            cta.primary
+                              ? { backgroundColor: '#38B2AC', color: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }
+                              : { border: `1.5px solid ${level.darkAccentColor}`, color: level.darkAccentColor, backgroundColor: 'transparent' }
+                          }
+                        >
+                          {cta.label} <ArrowRight size={14} />
+                        </a>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
