@@ -39,17 +39,21 @@ export const LEVELS: LevelData[] = [
     sessionTypes: [
       {
         emoji: "🎯",
-        title: "Prompt Engineering Fundamentals"
+        title: "Prompt Engineering Fundamentals",
+        type: "tool"
       },
       {
         emoji: "🎨",
-        title: "Creative AI Playground"
+        title: "Creative AI Playground",
+        type: "workshop"
       },
       {
         emoji: "🛡️",
-        title: "Responsible AI & Governance"
+        title: "Responsible AI & Governance",
+        type: "workshop"
       }
-    ]
+    ],
+    artifactLink: "/artifacts/level-1"
   },
   {
     id: 2,
@@ -74,17 +78,21 @@ export const LEVELS: LevelData[] = [
     sessionTypes: [
       {
         emoji: "🤖",
-        title: "Build Your First AI Agent"
+        title: "Build Your First AI Agent",
+        type: "tool"
       },
       {
         emoji: "📚",
-        title: "Agent Template Library Sprint"
+        title: "Agent Template Library Sprint",
+        type: "workshop"
       },
       {
         emoji: "🔄",
-        title: "Human-in-the-Loop Design"
+        title: "Human-in-the-Loop Design",
+        type: "workshop"
       }
-    ]
+    ],
+    artifactLink: "/artifacts/level-2"
   },
   {
     id: 3,
@@ -109,17 +117,21 @@ export const LEVELS: LevelData[] = [
     sessionTypes: [
       {
         emoji: "🗺️",
-        title: "Workflow Mapping & Design"
+        title: "Workflow Mapping & Design",
+        type: "tool"
       },
       {
         emoji: "🔗",
-        title: "Agent Chaining Lab"
+        title: "Agent Chaining Lab",
+        type: "workshop"
       },
       {
         emoji: "📊",
-        title: "Performance & Feedback Loops"
+        title: "Performance & Feedback Loops",
+        type: "workshop"
       }
-    ]
+    ],
+    artifactLink: "/artifacts/level-3"
   },
   {
     id: 4,
@@ -144,17 +156,21 @@ export const LEVELS: LevelData[] = [
     sessionTypes: [
       {
         emoji: "💡",
-        title: "Dashboard Design Thinking"
+        title: "Dashboard Design Thinking",
+        type: "tool"
       },
       {
         emoji: "⚡",
-        title: "Rapid Prototyping with AI"
+        title: "Rapid Prototyping with AI",
+        type: "workshop"
       },
       {
         emoji: "🧪",
-        title: "User Testing & Iteration"
+        title: "User Testing & Iteration",
+        type: "workshop"
       }
-    ]
+    ],
+    artifactLink: "/artifacts/level-4"
   },
   {
     id: 5,
@@ -179,17 +195,21 @@ export const LEVELS: LevelData[] = [
     sessionTypes: [
       {
         emoji: "🏗️",
-        title: "Product Architecture Sprint"
+        title: "Product Architecture Sprint",
+        type: "tool"
       },
       {
         emoji: "💻",
-        title: "Full-Stack Build Workshop"
+        title: "Full-Stack Build Workshop",
+        type: "workshop"
       },
       {
         emoji: "🚀",
-        title: "User Testing & Go-to-Market"
+        title: "User Testing & Go-to-Market",
+        type: "workshop"
       }
-    ]
+    ],
+    artifactLink: "/artifacts/level-5"
   }
 ];
 

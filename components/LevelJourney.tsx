@@ -273,54 +273,55 @@ export const LevelJourney: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Session Types - Horizontal Cards */}
-                    <div className="mb-5 grid grid-cols-1 md:grid-cols-3 gap-3">
-                       {level.sessionTypes.map((session, idx) => {
-                          const isFeatured = idx === 0;
-                          return (
-                            <div
-                              key={idx}
-                              className={cn(
-                                "min-h-[72px] h-auto flex flex-col items-center justify-center text-center rounded-[10px] border",
-                                isFeatured ? "p-4 border-2" : "p-3 opacity-70"
-                              )}
-                              style={{
-                                backgroundColor: isFeatured ? `${level.accentColor}25` : `${level.accentColor}10`,
-                                borderColor: isFeatured ? level.darkAccentColor : `${level.accentColor}33`,
-                              }}
-                            >
-                              <div className={isFeatured ? "text-xl mb-1" : "text-lg mb-0.5"}>{session.emoji}</div>
-                              <span className={cn(
-                                "font-bold text-navy-900 leading-tight",
-                                isFeatured ? "text-[14px]" : "text-[12px]"
-                              )}>{session.title}</span>
-                            </div>
-                          );
-                       })}
-                    </div>
-
-                    {/* Single Primary CTA */}
+                    {/* Zone 1 — Featured Tool (primary CTA) */}
                     {(() => {
-                      const ctaMap: Record<number, { label: string; href: string; primary: boolean }> = {
-                        1: { label: 'Prompt Engineering Fundamentals', href: '#playground', primary: true },
-                        2: { label: 'Build Your First AI Agent', href: '#agent-builder', primary: true },
-                        3: { label: 'Workflow Mapping & Design', href: '#workflow-designer', primary: false },
-                        4: { label: 'Dashboard Design Thinking', href: '#dashboard-design', primary: false },
-                        5: { label: 'Product Architecture Sprint', href: '#product-architecture', primary: false },
-                      };
-                      const cta = ctaMap[level.id];
+                      const toolSession = level.sessionTypes.find(s => s.type === 'tool');
+                      if (!toolSession) return null;
                       return (
                         <a
-                          href={cta.href}
-                          className="inline-flex items-center gap-2 text-[14px] font-semibold px-6 py-2.5 rounded-full transition-transform hover:-translate-y-0.5"
-                          style={
-                            cta.primary
-                              ? { backgroundColor: '#38B2AC', color: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }
-                              : { border: `1.5px solid ${level.darkAccentColor}`, color: level.darkAccentColor, backgroundColor: 'transparent' }
-                          }
+                          href={level.artifactLink}
+                          className="block rounded-xl p-5 mb-4 transition-all hover:-translate-y-0.5"
+                          style={{
+                            border: `2px solid ${level.darkAccentColor}`,
+                            backgroundColor: `${level.accentColor}18`,
+                          }}
                         >
-                          {cta.label} <ArrowRight size={14} />
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl">{toolSession.emoji}</span>
+                            <div className="flex-grow">
+                              <span className="text-[16px] font-bold text-navy-900 leading-tight">{toolSession.title}</span>
+                              <p className="text-[13px] mt-0.5" style={{ color: level.darkAccentColor }}>
+                                Try the interactive tool <span className="inline-block ml-0.5">→</span>
+                              </p>
+                            </div>
+                            <ArrowRight size={18} style={{ color: level.darkAccentColor }} className="shrink-0" />
+                          </div>
                         </a>
+                      );
+                    })()}
+
+                    {/* Zone 2 — Workshop Sessions (secondary/informational) */}
+                    {(() => {
+                      const workshops = level.sessionTypes.filter(s => s.type === 'workshop');
+                      if (workshops.length === 0) return null;
+                      return (
+                        <div className="mb-5">
+                          <h4 className="text-[10px] font-[600] uppercase tracking-[1px] text-[#A0AEC0] mb-2">Collaborative Sessions</h4>
+                          <div className="grid grid-cols-2 gap-3">
+                            {workshops.map((session, idx) => (
+                              <div
+                                key={idx}
+                                className="p-3 flex items-center gap-2.5 rounded-[10px] bg-white"
+                                style={{
+                                  border: `1px solid ${level.accentColor}4D`,
+                                }}
+                              >
+                                <span className="text-lg shrink-0">{session.emoji}</span>
+                                <span className="text-[12px] font-semibold text-navy-900 leading-tight">{session.title}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       );
                     })()}
                   </div>

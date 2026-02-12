@@ -3,22 +3,24 @@ import { LucideIcon } from 'lucide-react';
 export interface SessionType {
   title: string;
   emoji: string;
+  type: 'tool' | 'workshop';
 }
 
 export interface LevelData {
   id: number;
   name: string;
   tagline: string;
-  descriptionCollapsed: string; // Short description for the summary view
-  descriptionExpanded: string;  // Full description for the expanded view (Note: Not used in new layout but kept for data integrity if needed later)
-  topics: string[];             // Full list for expanded state
-  previewTags: string[];        // Subset for collapsed state
-  accentColor: string;          // The main pastel/light color
-  darkAccentColor: string;      // The darker version for text/buttons
+  descriptionCollapsed: string;
+  descriptionExpanded: string;
+  topics: string[];
+  previewTags: string[];
+  accentColor: string;
+  darkAccentColor: string;
   icon: LucideIcon;
   targetAudience: string[];
   keyTools: string[];
   sessionTypes: SessionType[];
+  artifactLink: string;
 }
 
 export interface TeamMember {
