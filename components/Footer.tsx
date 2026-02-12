@@ -33,8 +33,12 @@ export const Footer: React.FC = () => {
       <div className="bg-navy-900 text-white py-12 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-teal rounded-sm"></div>
-            <span className="font-bold text-xl tracking-tighter">OXYGY</span>
+            <img
+              src="/logos/oxygy-logo-x.jpeg"
+              alt="Oxygy"
+              style={{ height: '24px', width: 'auto', filter: 'brightness(0) invert(1)' }}
+            />
+            <span className="font-bold text-xl" style={{ letterSpacing: '-0.02em' }}>OXYGY</span>
           </div>
           
           <div className="text-gray-400 text-sm">

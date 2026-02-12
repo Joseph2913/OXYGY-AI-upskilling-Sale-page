@@ -56,7 +56,7 @@ export const LEVELS: LevelData[] = [
         description: "Identify bias, hallucination risks, and data privacy concerns through real-world case studies and team discussion."
       }
     ],
-    artifactLink: "/artifacts/level-1"
+    artifactLink: "#playground"
   },
   {
     id: 2,
@@ -98,7 +98,7 @@ export const LEVELS: LevelData[] = [
         description: "Map where human oversight is essential in AI workflows and design review checkpoints that balance speed with accuracy."
       }
     ],
-    artifactLink: "/artifacts/level-2"
+    artifactLink: "#agent-builder"
   },
   {
     id: 3,
@@ -140,7 +140,7 @@ export const LEVELS: LevelData[] = [
         description: "Design metrics dashboards and feedback mechanisms that help your AI workflows improve over time."
       }
     ],
-    artifactLink: "/artifacts/level-3"
+    artifactLink: "#workflow-designer"
   },
   {
     id: 4,
@@ -182,7 +182,7 @@ export const LEVELS: LevelData[] = [
         description: "Run structured user tests on your dashboard prototypes and iterate based on real feedback from stakeholders."
       }
     ],
-    artifactLink: "/artifacts/level-4"
+    artifactLink: "#dashboard-design"
   },
   {
     id: 5,
@@ -224,7 +224,7 @@ export const LEVELS: LevelData[] = [
         description: "Plan your launch strategy, run beta testing sessions, and prepare stakeholder communications for your AI product."
       }
     ],
-    artifactLink: "/artifacts/level-5"
+    artifactLink: "#product-architecture"
   }
 ];
 
