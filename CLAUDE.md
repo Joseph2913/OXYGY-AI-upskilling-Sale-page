@@ -60,7 +60,7 @@ Interactive multi-section website for Oxygy's AI Center of Excellence. Showcases
 
 ## Git Workflow
 
-**Repository:** https://github.com/Josephkthomas/oxygy-ai-upskilling
+**Repository:** https://github.com/Josephkthomas/oxygy-ai-upskilling_page
 **Branch:** `main`
 
 ### STRICT RULE — NO PUSHING WITHOUT USER APPROVAL
