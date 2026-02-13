@@ -73,11 +73,12 @@ export const Departments: React.FC = () => {
 
                   {/* CTA - Button Style */}
                   <div className="mt-auto pt-2">
-                     <button 
-                       className="w-full py-2.5 rounded-full border border-gray-200 text-sm font-semibold text-navy-900 flex items-center justify-center gap-2 group-hover:border-transparent group-hover:text-navy-900 transition-all duration-300"
-                       style={{ 
-                         // Dynamic hover background using style injection for simplicity or tailwind classes if mapped
-                         backgroundColor: 'transparent'
+                     <a
+                       href="#learning-pathway"
+                       className="w-full py-2.5 rounded-full border border-gray-200 text-sm font-semibold text-navy-900 flex items-center justify-center gap-2 group-hover:border-transparent group-hover:text-navy-900 transition-all duration-300 no-underline"
+                       style={{
+                         backgroundColor: 'transparent',
+                         textDecoration: 'none',
                        }}
                        onMouseEnter={(e) => {
                          e.currentTarget.style.backgroundColor = dept.accentColor;
@@ -89,7 +90,7 @@ export const Departments: React.FC = () => {
                        }}
                      >
                        Learn More <ArrowRight size={14} />
-                     </button>
+                     </a>
                   </div>
                 </div>
               </div>

@@ -157,3 +157,27 @@ body {
 .animate-slide-down-fade {
   animation: slide-down-fade 0.3s ease forwards;
 }
+
+/* Persona Carousel */
+
+.persona-carousel-snap {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.persona-carousel-snap::-webkit-scrollbar {
+  display: none;
+}
+
+.persona-carousel-snap > * {
+  scroll-snap-align: start;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .persona-flip-inner {
+    transition: opacity 0.15s ease !important;
+    transform: none !important;
+  }
+}

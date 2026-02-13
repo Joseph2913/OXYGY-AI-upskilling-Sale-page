@@ -1,16 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown, Menu, X } from 'lucide-react';
+import { ChevronDown, Home, Menu, X } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 const AI_TOOLS = [
-  { level: 1, emoji: '🎯', label: 'Prompt Engineering Fundamentals', href: '#playground' },
-  { level: 2, emoji: '🤖', label: 'Build Your First AI Agent', href: '#agent-builder' },
-  { level: 3, emoji: '🗺️', label: 'Workflow Mapping & Design', href: '#workflow-designer' },
-  { level: 4, emoji: '💡', label: 'Dashboard Design Thinking', href: '#dashboard-design' },
-  { level: 5, emoji: '🏗️', label: 'Product Architecture Sprint', href: '#product-architecture' },
+  { level: 1, emoji: '\uD83C\uDFAF', label: 'Prompt Engineering Fundamentals', href: '#playground' },
+  { level: 2, emoji: '\uD83E\uDD16', label: 'Build Your First AI Agent', href: '#agent-builder' },
+  { level: 3, emoji: '\uD83D\uDDFA\uFE0F', label: 'Workflow Mapping & Design', href: '#workflow-designer' },
+  { level: 4, emoji: '\uD83D\uDCA1', label: 'Dashboard Design Thinking', href: '#dashboard-design' },
+  { level: 5, emoji: '\uD83C\uDFD7\uFE0F', label: 'Product Architecture Sprint', href: '#product-architecture' },
 ];
 
-const ARTIFACT_HASHES = new Set(AI_TOOLS.map((t) => t.href));
+const ARTIFACT_HASHES = new Set([...AI_TOOLS.map((t) => t.href), '#learning-pathway']);
+
+/* Thin vertical divider between nav items */
+const Divider = () => (
+  <div
+    className="flex-shrink-0"
+    style={{ width: '1px', height: '20px', backgroundColor: '#D1D5DB' }}
+  />
+);
 
 export const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -19,10 +27,7 @@ export const Navbar: React.FC = () => {
   const dropdownTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Is the user currently on an artifact page?
-  const [onArtifactPage, setOnArtifactPage] = useState(() =>
-    ARTIFACT_HASHES.has(window.location.hash),
-  );
+  const [currentHash, setCurrentHash] = useState(() => window.location.hash);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -31,26 +36,34 @@ export const Navbar: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const handleHash = () => setOnArtifactPage(ARTIFACT_HASHES.has(window.location.hash));
+    const handleHash = () => setCurrentHash(window.location.hash);
     window.addEventListener('hashchange', handleHash);
     return () => window.removeEventListener('hashchange', handleHash);
   }, []);
 
-  // Close mobile menu on hash change
   useEffect(() => {
     const close = () => setMobileOpen(false);
     window.addEventListener('hashchange', close);
     return () => window.removeEventListener('hashchange', close);
   }, []);
 
-  const navigate = (hash: string) => {
-    window.location.hash = hash;
+  const isHome = !currentHash || currentHash === '#';
+  const isOnAiTool = AI_TOOLS.some((t) => t.href === currentHash);
+  const isOnLearningPlan = currentHash === '#learning-pathway';
+
+  const goHome = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (window.location.hash && window.location.hash !== '#') {
+      window.location.hash = '';
+      setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     setMobileOpen(false);
     setDropdownOpen(false);
   };
 
   const scrollToSection = (id: string) => {
-    // If on an artifact page, go home first
     if (window.location.hash && window.location.hash !== '#') {
       window.location.hash = '';
       setTimeout(() => {
@@ -65,7 +78,6 @@ export const Navbar: React.FC = () => {
     setDropdownOpen(false);
   };
 
-  // Desktop dropdown hover handlers
   const openDropdown = () => {
     if (dropdownTimeout.current) clearTimeout(dropdownTimeout.current);
     setDropdownOpen(true);
@@ -74,18 +86,17 @@ export const Navbar: React.FC = () => {
     dropdownTimeout.current = setTimeout(() => setDropdownOpen(false), 150);
   };
 
-  const navLinkClass =
-    'text-[14px] font-medium text-[#2D3748] hover:text-[#38B2AC] transition-colors duration-150 cursor-pointer whitespace-nowrap';
+  /* Active = dark teal pill, inactive = transparent */
+  const pillActive = 'bg-[#2C9A94] text-white';
+  const pillInactive = 'text-[#4A5568] hover:text-[#2D3748]';
 
   return (
     <nav
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        scrolled
-          ? 'bg-white/95 backdrop-blur-sm shadow-sm'
-          : 'bg-transparent',
+        scrolled ? 'bg-white/95 backdrop-blur-sm shadow-sm' : 'bg-white',
       )}
-      style={{ height: scrolled ? '64px' : '72px' }}
+      style={{ height: '68px' }}
     >
       <div
         className="mx-auto flex items-center justify-between h-full"
@@ -94,21 +105,41 @@ export const Navbar: React.FC = () => {
         {/* Left — Logo */}
         <a
           href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            scrollToSection('hero');
-          }}
+          onClick={goHome}
           className="flex items-center gap-2 shrink-0"
         >
           <img
-            src="/logos/oxygy-logo-full.jpeg"
-            alt="Oxygy"
-            style={{ height: '28px', width: 'auto' }}
+            src="/logos/oxygy-logo-darkgray-teal.png"
+            alt="OXYGY"
+            style={{ height: '36px', width: 'auto' }}
           />
         </a>
 
-        {/* Center — Desktop Nav */}
-        <div className="hidden lg:flex items-center" style={{ gap: '32px' }}>
+        {/* Center — Desktop Nav Bar (rounded container) */}
+        <div
+          className="hidden lg:flex items-center gap-1.5"
+          style={{
+            backgroundColor: '#F0F2F5',
+            borderRadius: '28px',
+            padding: '5px 6px',
+          }}
+        >
+          {/* Home icon button — nested darker pill */}
+          <a
+            href="#"
+            onClick={goHome}
+            className={cn(
+              'flex items-center justify-center rounded-full transition-all duration-150 flex-shrink-0',
+              isHome ? pillActive : 'bg-[#E2E6EB] text-[#4A5568] hover:bg-[#D1D5DB]',
+            )}
+            style={{ width: '36px', height: '36px' }}
+            title="Home"
+          >
+            <Home size={17} />
+          </a>
+
+          <Divider />
+
           {/* AI Tools Dropdown */}
           <div
             ref={dropdownRef}
@@ -118,9 +149,8 @@ export const Navbar: React.FC = () => {
           >
             <button
               className={cn(
-                navLinkClass,
-                'flex items-center gap-1',
-                onArtifactPage && 'text-[#38B2AC]',
+                'flex items-center gap-1.5 px-4 h-[36px] rounded-full text-[14px] font-medium transition-all duration-150 cursor-pointer whitespace-nowrap',
+                isOnAiTool ? pillActive : pillInactive,
               )}
               onClick={() => setDropdownOpen(!dropdownOpen)}
             >
@@ -132,18 +162,6 @@ export const Navbar: React.FC = () => {
                   dropdownOpen && 'rotate-180',
                 )}
               />
-              {/* Active indicator */}
-              {onArtifactPage && (
-                <span
-                  className="absolute left-0 right-0"
-                  style={{
-                    bottom: '-8px',
-                    height: '2px',
-                    background: '#38B2AC',
-                    borderRadius: '1px',
-                  }}
-                />
-              )}
             </button>
 
             {/* Dropdown panel */}
@@ -154,19 +172,22 @@ export const Navbar: React.FC = () => {
                   ? 'opacity-100 translate-y-0 pointer-events-auto'
                   : 'opacity-0 -translate-y-1 pointer-events-none',
               )}
-              style={{ transform: dropdownOpen ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(-4px)' }}
+              style={{
+                transform: dropdownOpen
+                  ? 'translateX(-50%) translateY(0)'
+                  : 'translateX(-50%) translateY(-4px)',
+              }}
             >
               <div
                 style={{
                   background: '#FFFFFF',
                   border: '1px solid #E2E8F0',
                   borderRadius: '12px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
                   minWidth: '300px',
                   overflow: 'hidden',
                 }}
               >
-                {/* Header */}
                 <div
                   style={{
                     padding: '10px 16px 8px',
@@ -186,7 +207,6 @@ export const Navbar: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Items */}
                 {AI_TOOLS.map((tool) => (
                   <a
                     key={tool.level}
@@ -203,11 +223,7 @@ export const Navbar: React.FC = () => {
                   >
                     <span
                       className="shrink-0 flex items-center justify-center"
-                      style={{
-                        width: '24px',
-                        height: '24px',
-                        fontSize: '15px',
-                      }}
+                      style={{ width: '24px', height: '24px', fontSize: '15px' }}
                     >
                       {tool.emoji}
                     </span>
@@ -224,35 +240,31 @@ export const Navbar: React.FC = () => {
             </div>
           </div>
 
-          <button
-            className={navLinkClass}
-            onClick={() => scrollToSection('journey')}
+          <Divider />
+
+          {/* Learning Plan Generator */}
+          <a
+            href="#learning-pathway"
+            className={cn(
+              'flex items-center px-4 h-[36px] rounded-full text-[14px] font-medium transition-all duration-150 whitespace-nowrap',
+              isOnLearningPlan ? pillActive : pillInactive,
+            )}
+            style={{ textDecoration: 'none' }}
           >
-            Methodology
-          </button>
+            Learning Plan Generator
+          </a>
+
+          <Divider />
+
+          {/* Case Studies */}
           <button
-            className={navLinkClass}
+            className={cn(
+              'flex items-center px-4 h-[36px] rounded-full text-[14px] font-medium transition-all duration-150 whitespace-nowrap cursor-pointer',
+              pillInactive,
+            )}
             onClick={() => scrollToSection('case-studies')}
           >
             Case Studies
-          </button>
-          <button
-            className={navLinkClass}
-            onClick={() => scrollToSection('testimonials')}
-          >
-            Testimonials
-          </button>
-          <button
-            className={navLinkClass}
-            onClick={() => scrollToSection('team')}
-          >
-            Team
-          </button>
-          <button
-            className={navLinkClass}
-            onClick={() => scrollToSection('thought-leadership')}
-          >
-            Thought Leadership
           </button>
         </div>
 
@@ -264,10 +276,18 @@ export const Navbar: React.FC = () => {
               e.preventDefault();
               scrollToSection('footer');
             }}
-            className="hidden sm:inline-flex bg-[#38B2AC] hover:bg-[#2C9A94] text-white px-6 py-2 rounded-full font-medium text-[14px] transition-colors duration-150"
-            style={{ textDecoration: 'none' }}
+            className="hidden sm:inline-flex items-center px-6 py-2.5 rounded-full font-medium text-[14px] text-white transition-all duration-200"
+            style={{ backgroundColor: '#1A202C', textDecoration: 'none' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#38B2AC';
+              e.currentTarget.style.color = '#1A202C';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#1A202C';
+              e.currentTarget.style.color = '#FFFFFF';
+            }}
           >
-            Get in Touch
+            Contact Us
           </a>
 
           {/* Mobile hamburger */}
@@ -289,10 +309,25 @@ export const Navbar: React.FC = () => {
       {mobileOpen && (
         <div
           className="lg:hidden absolute top-full left-0 right-0 bg-white border-t border-gray-100 shadow-lg"
-          style={{ maxHeight: 'calc(100vh - 72px)', overflowY: 'auto' }}
+          style={{ maxHeight: 'calc(100vh - 68px)', overflowY: 'auto' }}
         >
           <div className="px-6 py-4 flex flex-col gap-1">
-            {/* AI Tools — expanded inline */}
+            {/* Home */}
+            <a
+              href="#"
+              onClick={goHome}
+              className={cn(
+                'flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors',
+                isHome ? 'bg-[#E6FFFA] text-[#2C9A94]' : 'hover:bg-[#F7FAFC] text-[#2D3748]',
+              )}
+              style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
+            >
+              <Home size={16} />
+              <span>Home</span>
+            </a>
+
+            <div className="h-px bg-gray-100 my-2" />
+
             <div className="py-2">
               <span
                 style={{
@@ -303,20 +338,20 @@ export const Navbar: React.FC = () => {
                   color: '#A0AEC0',
                 }}
               >
-                Interactive Tools
+                AI Tools
               </span>
             </div>
             {AI_TOOLS.map((tool) => (
               <a
                 key={tool.level}
                 href={tool.href}
-                className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-[#F7FAFC] transition-colors"
-                style={{
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  color: '#2D3748',
-                  textDecoration: 'none',
-                }}
+                className={cn(
+                  'flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors',
+                  currentHash === tool.href
+                    ? 'bg-[#E6FFFA] text-[#2C9A94]'
+                    : 'hover:bg-[#F7FAFC] text-[#2D3748]',
+                )}
+                style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
                 onClick={() => setMobileOpen(false)}
               >
                 <span style={{ fontSize: '15px' }}>{tool.emoji}</span>
@@ -326,36 +361,25 @@ export const Navbar: React.FC = () => {
 
             <div className="h-px bg-gray-100 my-2" />
 
-            {/* Other nav links */}
-            <button
-              className="text-left py-2.5 px-3 rounded-lg text-[14px] font-medium text-[#2D3748] hover:bg-[#F7FAFC] transition-colors"
-              onClick={() => scrollToSection('journey')}
+            <a
+              href="#learning-pathway"
+              className={cn(
+                'flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors',
+                isOnLearningPlan
+                  ? 'bg-[#E6FFFA] text-[#2C9A94]'
+                  : 'hover:bg-[#F7FAFC] text-[#2D3748]',
+              )}
+              style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
+              onClick={() => setMobileOpen(false)}
             >
-              Methodology
-            </button>
+              Learning Plan Generator
+            </a>
+
             <button
               className="text-left py-2.5 px-3 rounded-lg text-[14px] font-medium text-[#2D3748] hover:bg-[#F7FAFC] transition-colors"
               onClick={() => scrollToSection('case-studies')}
             >
               Case Studies
-            </button>
-            <button
-              className="text-left py-2.5 px-3 rounded-lg text-[14px] font-medium text-[#2D3748] hover:bg-[#F7FAFC] transition-colors"
-              onClick={() => scrollToSection('testimonials')}
-            >
-              Testimonials
-            </button>
-            <button
-              className="text-left py-2.5 px-3 rounded-lg text-[14px] font-medium text-[#2D3748] hover:bg-[#F7FAFC] transition-colors"
-              onClick={() => scrollToSection('team')}
-            >
-              Team
-            </button>
-            <button
-              className="text-left py-2.5 px-3 rounded-lg text-[14px] font-medium text-[#2D3748] hover:bg-[#F7FAFC] transition-colors"
-              onClick={() => scrollToSection('thought-leadership')}
-            >
-              Thought Leadership
             </button>
 
             <div className="h-px bg-gray-100 my-2" />
@@ -366,10 +390,10 @@ export const Navbar: React.FC = () => {
                 e.preventDefault();
                 scrollToSection('footer');
               }}
-              className="flex items-center justify-center bg-[#38B2AC] hover:bg-[#2C9A94] text-white py-3 rounded-full font-medium text-[14px] transition-colors mt-1"
-              style={{ textDecoration: 'none' }}
+              className="flex items-center justify-center text-white py-3 rounded-full font-medium text-[14px] transition-colors mt-1"
+              style={{ backgroundColor: '#1A202C', textDecoration: 'none' }}
             >
-              Get in Touch
+              Contact Us
             </a>
           </div>
         </div>

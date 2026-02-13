@@ -2,15 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { LevelJourney } from './components/LevelJourney';
-import { Departments, LearningModel } from './components/Extras';
+import { LearningModel } from './components/Extras';
+import { PersonaCarousel } from './components/PersonaCarousel';
 import { Footer } from './components/Footer';
 import { PromptPlayground } from './components/PromptPlayground';
 import { AgentBuilder } from './components/AgentBuilder';
 import { WorkflowDesigner } from './components/WorkflowDesigner';
 import { ProductArchitecture } from './components/ProductArchitecture';
 import { DashboardDesigner } from './components/DashboardDesigner';
+import { LearningPathway } from './components/LearningPathway';
 
-type Page = 'home' | 'playground' | 'agent-builder' | 'workflow-designer' | 'product-architecture' | 'dashboard-design';
+type Page = 'home' | 'playground' | 'agent-builder' | 'workflow-designer' | 'product-architecture' | 'dashboard-design' | 'learning-pathway';
 
 function getPageFromHash(): Page {
   const hash = window.location.hash;
@@ -19,6 +21,7 @@ function getPageFromHash(): Page {
   if (hash === '#workflow-designer') return 'workflow-designer';
   if (hash === '#product-architecture') return 'product-architecture';
   if (hash === '#dashboard-design') return 'dashboard-design';
+  if (hash === '#learning-pathway') return 'learning-pathway';
   return 'home';
 }
 
@@ -42,7 +45,7 @@ function App() {
         <>
           <Hero />
           <LevelJourney />
-          <Departments />
+          <PersonaCarousel />
           <LearningModel />
           <Footer />
         </>
@@ -52,6 +55,7 @@ function App() {
       {currentPage === 'workflow-designer' && <WorkflowDesigner />}
       {currentPage === 'product-architecture' && <ProductArchitecture />}
       {currentPage === 'dashboard-design' && <DashboardDesigner />}
+      {currentPage === 'learning-pathway' && <LearningPathway />}
     </div>
   );
 }

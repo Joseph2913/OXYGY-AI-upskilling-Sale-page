@@ -182,3 +182,58 @@ export interface ProductArchitectureAnswers {
   dataAndContent?: string;
   technicalLevel?: string;
 }
+
+// Learning Pathway Generator types
+export type LevelDepth = 'full' | 'fast-track' | 'awareness' | 'skip';
+
+export interface PathwayFormData {
+  role: string;
+  function: string;
+  functionOther: string;
+  seniority: string;
+  aiExperience: string;
+  ambition: string;
+  challenge: string;
+  availability: string;
+  experienceDescription: string;
+  goalDescription: string;
+}
+
+export interface PathwayLevelResult {
+  depth: 'full' | 'fast-track';
+  projectTitle: string;
+  projectDescription: string;
+  deliverable: string;
+  challengeConnection: string;
+  sessionFormat: string;
+  resources: { name: string; note: string }[];
+}
+
+export interface PathwayApiResponse {
+  pathwaySummary: string;
+  totalEstimatedWeeks: number;
+  levels: Partial<Record<string, PathwayLevelResult>>;
+}
+
+// Persona Carousel types
+export interface PersonaPathwayLevel {
+  level: string;
+  depth: 'full' | 'fast-track' | 'awareness' | 'skip';
+  color: string;
+}
+
+export interface PersonaCardData {
+  id: number;
+  title: string;
+  accentColor: string;
+  front: {
+    whereIAm: string;
+    whereImGoing: string;
+  };
+  back: {
+    pathway: PersonaPathwayLevel[];
+    projectTitle: string;
+    projectDescription: string;
+    estimatedJourney: string;
+  };
+}

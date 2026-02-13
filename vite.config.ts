@@ -724,6 +724,206 @@ Respond with ONLY this JSON structure — no markdown, no extra text:
   };
 }
 
+function pathwayProxyPlugin(apiKey: string, model: string): Plugin {
+  const systemPrompt = `You are a learning pathway designer for Oxygy's AI Center of Excellence. You generate personalized, project-based learning pathways for professionals who want to develop AI skills.
+
+Your outputs must be:
+- Practical and actionable — every project should be something the learner can start within a week
+- Role-specific — projects should directly relate to the learner's stated function and challenge
+- Empathetic — acknowledge where the learner is starting from and build confidence
+- Connected — explicitly reference how each project relates to the learner's specific challenge from their questionnaire input
+
+You generate content in strict JSON format. Never include markdown, backticks, or preamble outside the JSON object.
+
+CRITICAL: In the "challengeConnection" field for EVERY level, you MUST directly reference and quote specific details from the user's stated challenge. This is the most important personalization element — the learner should feel that this pathway was built specifically for their situation.`;
+
+  return {
+    name: 'pathway-proxy',
+    configureServer(server) {
+      server.middlewares.use('/api/generate-pathway', (req: Connect.IncomingMessage, res: ServerResponse) => {
+        if (req.method !== 'POST') {
+          res.statusCode = 405;
+          res.end(JSON.stringify({ error: 'Method not allowed' }));
+          return;
+        }
+
+        if (!apiKey || apiKey === 'PLACEHOLDER_API_KEY') {
+          res.statusCode = 503;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'API key not configured' }));
+          return;
+        }
+
+        let body = '';
+        req.on('data', (chunk: Buffer) => { body += chunk.toString(); });
+        req.on('end', async () => {
+          try {
+            const { formData, levelDepths } = JSON.parse(body);
+
+            const ambitionLabels: Record<string, string> = {
+              'confident-daily-use': 'Confident daily AI use',
+              'build-reusable-tools': 'Build reusable AI tools',
+              'own-ai-processes': 'Design and own AI-powered processes',
+              'build-full-apps': 'Build full AI-powered applications',
+            };
+
+            const experienceLabels: Record<string, string> = {
+              'beginner': 'Beginner — rarely uses AI tools',
+              'comfortable-user': 'Comfortable User — uses ChatGPT or similar regularly for basic tasks',
+              'builder': 'Builder — has created custom GPTs, agents, or prompt templates',
+              'integrator': 'Integrator — has designed AI-powered workflows or multi-step pipelines',
+            };
+
+            const userMessage = `Generate a personalized learning pathway for the following professional.
+
+## LEARNER PROFILE
+- Role: ${formData.role || 'Not specified'}
+- Function: ${formData.function === 'Other' ? formData.functionOther : formData.function || 'Not specified'}
+- Seniority: ${formData.seniority || 'Not specified'}
+- AI Experience: ${experienceLabels[formData.aiExperience] || formData.aiExperience || 'Not specified'}
+- Ambition: ${ambitionLabels[formData.ambition] || formData.ambition || 'Not specified'}
+- Specific Challenge: "${(formData.challenge || 'Not specified').slice(0, 500)}"
+- Weekly Availability: ${formData.availability || 'Not specified'}${formData.experienceDescription ? `\n- AI Experience Details: "${formData.experienceDescription.slice(0, 500)}"` : ''}${formData.goalDescription ? `\n- Specific Goal: "${formData.goalDescription.slice(0, 500)}"` : ''}
+
+## LEVEL CLASSIFICATIONS (pre-determined, do not change)
+- Level 1 (Fundamentals): ${levelDepths.L1}
+- Level 2 (Applied Capability): ${levelDepths.L2}
+- Level 3 (Systemic Integration): ${levelDepths.L3}
+- Level 4 (Dashboards & Front-Ends): ${levelDepths.L4}
+- Level 5 (Full AI Applications): ${levelDepths.L5}
+
+## FRAMEWORK CONTEXT
+
+### Level 1: Fundamentals of AI for Everyday Use
+Topics: What is an LLM, Prompting Basics, Everyday Use Cases, Intro to Creative AI, Responsible Use, Prompt Library Creation
+Tools: ChatGPT, DALL-E, Opus Clip, Snipd, Descript
+Objective: Build comfort, curiosity, and foundational confidence
+
+### Level 2: Applied Capability
+Topics: What Are AI Agents?, Custom GPTs, Instruction Design, Human-in-the-Loop, Ethical Framing, Agent Templates
+Tools: ChatGPT Custom GPT Builder, Claude Projects & Skills, Microsoft Copilot Agents, Google Gems
+Objective: Empower individuals to design AI assistants tailored to their work
+
+### Level 3: Systemic Integration
+Topics: AI Workflow Mapping, Agent Chaining, Input Logic & Role Mapping, Automated Output Generation, Process Use Cases, Performance & Feedback Loops
+Tools: Make, Zapier, n8n, API integrations, Airtable
+Objective: Scale AI usage through integrated, automated pipelines
+
+### Level 4: Interactive Dashboards & Tailored Front-Ends
+Topics: Application Architecture, User-Centred Dashboard Design, Data Visualization, Role-Based Views, Prototype Testing, Stakeholder Feedback
+Tools: Figma, V0, Google AI Studio, Cursor, dashboard prototyping tools
+Objective: Shift from data-in-a-sheet to tailored experiences built for specific end users
+
+### Level 5: Full AI-Powered Applications
+Topics: Application Architecture, Personalisation Engines, Knowledge Base Applications, Custom Learning Platforms, Full-Stack AI Integration, User Testing & Scaling
+Tools: Google AI Studio, GitHub, Claude Code, Supabase, Vercel
+Objective: Full-stack AI applications where different users get different experiences
+
+### Cross-Functional Use Cases
+- Consulting & Delivery: Create tailored client insights from notes and transcripts
+- Proposal & BD: Generate draft proposals from templates and client inputs
+- Project Management: Summarize risks, status updates, and meeting notes
+- L&D / Training: Match individual skill gaps to existing learning modules
+- Analytics & Insights: Process survey results and tag responses by role & sentiment
+- Ops & SOP Management: Convert conversations into visual SOPs or step-by-step guides
+- Comms & Change: Draft announcements or FAQs adapted to persona groups
+- IT & Knowledge Management: Set up internal AI chatbots to retrieve documents or SOPs
+
+## INSTRUCTIONS
+
+Generate content ONLY for levels classified as "full" or "fast-track". Do NOT generate content for "awareness" or "skip" levels.
+
+For each applicable level, generate:
+1. A project title — action-oriented, specific to the learner's role and function
+2. A project description — 2-3 sentences explaining what they'll build
+3. A deliverable — one concrete, tangible output
+4. A challengeConnection — 2-3 sentences that DIRECTLY reference the learner's stated challenge. Quote their exact words. This is the most important personalization element.
+5. A recommended session format — based on their seniority level
+6. 2-4 suggested resources — real tools, platforms, guides relevant to the project
+
+For "fast-track" levels, frame as "validate and sharpen" rather than "learn from scratch."
+
+## OUTPUT FORMAT
+
+Respond ONLY with valid JSON:
+
+{
+  "pathwaySummary": "1-2 sentence personalized overview",
+  "totalEstimatedWeeks": number,
+  "levels": {
+    "L1": {
+      "depth": "full|fast-track",
+      "projectTitle": "string",
+      "projectDescription": "string",
+      "deliverable": "string",
+      "challengeConnection": "string",
+      "sessionFormat": "string",
+      "resources": [{ "name": "string", "note": "string" }]
+    }
+  }
+}
+
+Only include levels that are "full" or "fast-track". Omit "awareness" and "skip" levels entirely.`;
+
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            const geminiResponse = await fetch(geminiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                system_instruction: {
+                  parts: [{ text: systemPrompt }],
+                },
+                contents: [
+                  {
+                    role: 'user',
+                    parts: [{ text: userMessage }],
+                  },
+                ],
+                generationConfig: {
+                  temperature: 0.7,
+                  responseMimeType: 'application/json',
+                },
+              }),
+            });
+
+            if (!geminiResponse.ok) {
+              const errText = await geminiResponse.text();
+              console.error('Gemini API error (pathway):', errText);
+              res.statusCode = 502;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ error: 'AI service error' }));
+              return;
+            }
+
+            const data = await geminiResponse.json();
+            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+            let parsed;
+            try {
+              const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+              parsed = JSON.parse(cleaned);
+            } catch {
+              console.error('Failed to parse Gemini response (pathway):', text);
+              res.statusCode = 502;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ error: 'Failed to parse AI response' }));
+              return;
+            }
+
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify(parsed));
+          } catch (err) {
+            console.error('Proxy error (pathway):', err);
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: 'Internal server error' }));
+          }
+        });
+      });
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   const geminiModel = env.GEMINI_MODEL || 'gemini-2.0-flash';
@@ -739,6 +939,7 @@ export default defineConfig(({ mode }) => {
       agentDesignProxyPlugin(env.GEMINI_API_KEY, geminiModel),
       workflowDesignProxyPlugin(env.GEMINI_API_KEY, geminiModel),
       architectureProxyPlugin(env.GEMINI_API_KEY, geminiModel),
+      pathwayProxyPlugin(env.GEMINI_API_KEY, geminiModel),
     ],
     resolve: {
       alias: {
