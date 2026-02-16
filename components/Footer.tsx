@@ -23,9 +23,13 @@ export const Footer: React.FC = () => {
             Whether you are starting your journey or looking to scale your AI capabilities, 
             OXYGY's Center of Excellence is here to guide you.
           </p>
-          <button className="bg-white text-teal hover:bg-teal-light font-bold py-4 px-10 rounded-full shadow-lg transition-transform hover:scale-105">
+          <a
+            href="mailto:uk@oxygyconsulting.com"
+            className="inline-block bg-white text-teal hover:bg-teal-light font-bold py-4 px-10 rounded-full shadow-lg transition-transform hover:scale-105"
+            style={{ textDecoration: 'none' }}
+          >
             Get in Touch
-          </button>
+          </a>
         </div>
       </div>
 

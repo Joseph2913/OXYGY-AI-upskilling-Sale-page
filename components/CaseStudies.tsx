@@ -433,6 +433,20 @@ export const CaseStudiesPage: React.FC = () => {
             />
           ))}
         </div>
+
+        {/* Contact CTA */}
+        <div className="text-center mt-16 pt-10 border-t border-slate-100">
+          <p className="text-[16px] text-[#4A5568] leading-[1.7]">
+            Interested in how OXYGY can help your organisation build AI capability?{' '}
+            <a
+              href="mailto:uk@oxygyconsulting.com"
+              className="font-semibold transition-colors"
+              style={{ color: '#38B2AC', textDecoration: 'none' }}
+            >
+              Get in touch
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );

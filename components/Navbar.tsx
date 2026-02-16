@@ -272,11 +272,7 @@ export const Navbar: React.FC = () => {
         {/* Right — CTA + Mobile Toggle */}
         <div className="flex items-center gap-3">
           <a
-            href="#footer"
-            onClick={(e) => {
-              e.preventDefault();
-              scrollToSection('footer');
-            }}
+            href="mailto:uk@oxygyconsulting.com"
             className="hidden sm:inline-flex items-center px-6 py-2.5 rounded-full font-medium text-[14px] text-white transition-all duration-200"
             style={{ backgroundColor: '#1A202C', textDecoration: 'none' }}
             onMouseEnter={(e) => {
@@ -393,13 +389,10 @@ export const Navbar: React.FC = () => {
             <div className="h-px bg-gray-100 my-2" />
 
             <a
-              href="#footer"
-              onClick={(e) => {
-                e.preventDefault();
-                scrollToSection('footer');
-              }}
+              href="mailto:uk@oxygyconsulting.com"
               className="flex items-center justify-center text-white py-3 rounded-full font-medium text-[14px] transition-colors mt-1"
               style={{ backgroundColor: '#1A202C', textDecoration: 'none' }}
+              onClick={() => setMobileOpen(false)}
             >
               Contact Us
             </a>
