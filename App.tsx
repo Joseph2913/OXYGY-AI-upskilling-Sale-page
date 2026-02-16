@@ -11,8 +11,9 @@ import { WorkflowDesigner } from './components/WorkflowDesigner';
 import { ProductArchitecture } from './components/ProductArchitecture';
 import { DashboardDesigner } from './components/DashboardDesigner';
 import { LearningPathway } from './components/LearningPathway';
+import { CaseStudiesSection, CaseStudiesPage } from './components/CaseStudies';
 
-type Page = 'home' | 'playground' | 'agent-builder' | 'workflow-designer' | 'product-architecture' | 'dashboard-design' | 'learning-pathway';
+type Page = 'home' | 'playground' | 'agent-builder' | 'workflow-designer' | 'product-architecture' | 'dashboard-design' | 'learning-pathway' | 'case-studies';
 
 function getPageFromHash(): Page {
   const hash = window.location.hash;
@@ -22,6 +23,7 @@ function getPageFromHash(): Page {
   if (hash === '#product-architecture') return 'product-architecture';
   if (hash === '#dashboard-design') return 'dashboard-design';
   if (hash === '#learning-pathway') return 'learning-pathway';
+  if (hash === '#case-studies') return 'case-studies';
   return 'home';
 }
 
@@ -46,6 +48,7 @@ function App() {
           <Hero />
           <LevelJourney />
           <PersonaCarousel />
+          <CaseStudiesSection />
           <LearningModel />
           <Footer />
         </>
@@ -56,6 +59,7 @@ function App() {
       {currentPage === 'product-architecture' && <ProductArchitecture />}
       {currentPage === 'dashboard-design' && <DashboardDesigner />}
       {currentPage === 'learning-pathway' && <LearningPathway />}
+      {currentPage === 'case-studies' && <CaseStudiesPage />}
     </div>
   );
 }

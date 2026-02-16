@@ -10,7 +10,7 @@ const AI_TOOLS = [
   { level: 5, emoji: '\uD83C\uDFD7\uFE0F', label: 'Product Architecture Sprint', href: '#product-architecture' },
 ];
 
-const ARTIFACT_HASHES = new Set([...AI_TOOLS.map((t) => t.href), '#learning-pathway']);
+const ARTIFACT_HASHES = new Set([...AI_TOOLS.map((t) => t.href), '#learning-pathway', '#case-studies']);
 
 /* Thin vertical divider between nav items */
 const Divider = () => (
@@ -257,15 +257,16 @@ export const Navbar: React.FC = () => {
           <Divider />
 
           {/* Case Studies */}
-          <button
+          <a
+            href="#case-studies"
             className={cn(
-              'flex items-center px-4 h-[36px] rounded-full text-[14px] font-medium transition-all duration-150 whitespace-nowrap cursor-pointer',
-              pillInactive,
+              'flex items-center px-4 h-[36px] rounded-full text-[14px] font-medium transition-all duration-150 whitespace-nowrap',
+              currentHash === '#case-studies' ? pillActive : pillInactive,
             )}
-            onClick={() => scrollToSection('case-studies')}
+            style={{ textDecoration: 'none' }}
           >
             Case Studies
-          </button>
+          </a>
         </div>
 
         {/* Right — CTA + Mobile Toggle */}
@@ -375,12 +376,19 @@ export const Navbar: React.FC = () => {
               Learning Plan Generator
             </a>
 
-            <button
-              className="text-left py-2.5 px-3 rounded-lg text-[14px] font-medium text-[#2D3748] hover:bg-[#F7FAFC] transition-colors"
-              onClick={() => scrollToSection('case-studies')}
+            <a
+              href="#case-studies"
+              className={cn(
+                'flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors',
+                currentHash === '#case-studies'
+                  ? 'bg-[#E6FFFA] text-[#2C9A94]'
+                  : 'hover:bg-[#F7FAFC] text-[#2D3748]',
+              )}
+              style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
+              onClick={() => setMobileOpen(false)}
             >
               Case Studies
-            </button>
+            </a>
 
             <div className="h-px bg-gray-100 my-2" />
 
