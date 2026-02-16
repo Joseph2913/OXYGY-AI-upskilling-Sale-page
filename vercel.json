@@ -1,5 +1,28 @@
 {
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
-  ]
+  ],
+  "functions": {
+    "api/design-dashboard.ts": {
+      "maxDuration": 90
+    },
+    "api/generate-prd.ts": {
+      "maxDuration": 60
+    },
+    "api/design-agent.ts": {
+      "maxDuration": 60
+    },
+    "api/design-workflow.ts": {
+      "maxDuration": 60
+    },
+    "api/analyze-architecture.ts": {
+      "maxDuration": 60
+    },
+    "api/generate-pathway.ts": {
+      "maxDuration": 60
+    },
+    "api/enhance-prompt.ts": {
+      "maxDuration": 60
+    }
+  }
 }
