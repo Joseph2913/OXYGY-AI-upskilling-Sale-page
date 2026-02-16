@@ -1,1177 +1,1494 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
-  ArrowLeft, Monitor, Sparkles, FileText, Loader2, Check, RotateCcw,
-  Edit2, Copy, ChevronDown, BarChart3, TrendingUp, Users, DollarSign,
+  ArrowLeft, Monitor, Sparkles, FileText, Loader2, Check,
+  RotateCcw, Copy, ChevronDown, X, Plus, Info,
+  Download, Maximize2, Minimize2, ExternalLink, ClipboardList,
+  ThumbsUp, MessageSquare, Upload,
+  LayoutDashboard, Users, Layers, BarChart3, Palette, Code2,
+  Database, SlidersHorizontal, Smartphone, ShieldCheck, CheckSquare,
 } from 'lucide-react';
-import { useDashboardDesignApi, type DashboardImageResult, type PRDResult } from '../hooks/useDashboardDesignApi';
+import {
+  useDashboardDesignApi,
+  MAX_REGENERATIONS,
+  MAX_PRD_GENERATIONS,
+  type DashboardImageResult,
+} from '../hooks/useDashboardDesignApi';
 import { ArtifactClosing } from './ArtifactClosing';
 import { cn } from '../utils/cn';
+import type { DashboardBrief, NewPRDResult } from '../types';
+import {
+  DASHBOARD_STEPS,
+  EXAMPLE_BRIEFS,
+  DASHBOARD_TYPE_OPTIONS,
+  VISUAL_STYLE_OPTIONS,
+  PRD_SECTIONS,
+  WHY_MOCKUP_TOOLTIP,
+  INSPIRATION_SITES,
+  INSPIRATION_TOOLTIP_CONTENT,
+} from '../data/dashboard-designer-content';
 
-// Level 4 colors
-const ACCENT_COLOR = '#F5B8A0'; // Soft Peach
-const DARK_ACCENT_COLOR = '#D47B5A'; // Dark Peach
+// ─── Constants ───
+const ACCENT = '#F5B8A0';
+const DARK_ACCENT = '#D47B5A';
 
-interface MetricData {
-  name: string;
-  value: number;
-  change: number;
-}
+const INITIAL_BRIEF: DashboardBrief = {
+  q1_purpose: '', q2_audience: '', q3_type: '',
+  q4_metrics: '', q5_dataSources: [], q5_otherSource: '',
+  q6_frequency: '', q7_visualStyle: '', q8_colorScheme: '', q8_customColor: '',
+  q9_inspirationUrls: [], q9_uploadedImages: [],
+};
 
-// Generate a simple SVG dashboard visualization
-function generateDashboardSVG(metrics: MetricData[], title: string = 'Dashboard', subtitle: string = 'Overview & Analytics'): string {
-  const colors = ['#38B2AC', '#D47B5A', '#5B6DC2', '#C4A934', '#2BA89C', '#D4A017', '#F5B8A0'];
-  
-  const displayMetrics = metrics.slice(0, 6);
-  const svgMetrics = displayMetrics.length > 0 ? displayMetrics : [
-    { name: 'Revenue', value: 12500, change: 12.5 },
-    { name: 'Users', value: 8450, change: 8.2 },
-    { name: 'Growth', value: 3200, change: -2.1 },
-    { name: 'Engagement', value: 9200, change: 15.3 },
-  ];
-  
-  // Scale SVG to fit viewport better
-  const svgWidth = 1200;
-  const svgHeight = 800;
-  const viewBoxWidth = svgWidth;
-  const viewBoxHeight = svgHeight;
-  
-  return `<svg width="100%" height="100%" viewBox="0 0 ${viewBoxWidth} ${viewBoxHeight}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#F7FAFC;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:1" />
-    </linearGradient>
-  </defs>
-  
-  <!-- Background -->
-  <rect width="1200" height="800" fill="#FFFFFF"/>
-  
-  <!-- Header -->
-  <rect width="1200" height="80" fill="url(#headerGrad)"/>
-  <rect width="1200" height="2" y="80" fill="#E2E8F0"/>
-  <text x="40" y="50" font-family="DM Sans, sans-serif" font-size="28" font-weight="800" fill="#1A202C" letter-spacing="-0.5px">${title}</text>
-  <text x="40" y="75" font-family="DM Sans, sans-serif" font-size="15" fill="#718096" letter-spacing="0.2px">${subtitle}</text>
-  
-  <!-- Sidebar -->
-  <rect x="0" y="82" width="200" height="718" fill="#F7FAFC"/>
-  <rect x="200" width="2" height="800" fill="#E2E8F0"/>
-  
-  <!-- Navigation items -->
-  <text x="30" y="130" font-family="DM Sans, sans-serif" font-size="14" font-weight="600" fill="#38B2AC">Dashboard</text>
-  <text x="30" y="160" font-family="DM Sans, sans-serif" font-size="14" fill="#4A5568">Analytics</text>
-  <text x="30" y="190" font-family="DM Sans, sans-serif" font-size="14" fill="#4A5568">Reports</text>
-  <text x="30" y="220" font-family="DM Sans, sans-serif" font-size="14" fill="#4A5568">Settings</text>
-  
-  <!-- KPI Cards -->
-  ${svgMetrics.map((metric, idx) => {
-    const x = 240 + (idx % 4) * 230;
-    const y = 120 + Math.floor(idx / 4) * 180;
-    const color = colors[idx % colors.length];
-    const value = metric.value;
-    const change = metric.change;
-    const changeColor = change >= 0 ? color : '#E53E3E';
-    
+// ─── PRD Section Icon Map ───
+const PRD_SECTION_ICONS: Record<string, React.ElementType> = {
+  dashboard_overview: LayoutDashboard,
+  target_users: Users,
+  information_architecture: Layers,
+  widget_specifications: BarChart3,
+  visual_design: Palette,
+  tech_stack: Code2,
+  data_integration: Database,
+  interactions_filtering: SlidersHorizontal,
+  responsive_behavior: Smartphone,
+  human_checkpoints: ShieldCheck,
+  acceptance_criteria: CheckSquare,
+};
+
+// ─── SVG Fallback ───
+function generateDashboardSVG(metricsText: string, title: string): string {
+  const colors = ['#38B2AC', '#D47B5A', '#5B6DC2', '#C4A934', '#2BA89C', '#D4A017'];
+  const metrics = metricsText ? metricsText.split(',').map(m => m.trim()).filter(Boolean).slice(0, 6) : ['Revenue', 'Users', 'Growth', 'Engagement'];
+  return `<svg width="100%" height="100%" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="800" fill="#F8FAFC"/>
+  <rect width="1200" height="70" fill="#FFFFFF"/>
+  <rect width="1200" height="1" y="70" fill="#E2E8F0"/>
+  <text x="40" y="45" font-family="DM Sans, sans-serif" font-size="24" font-weight="800" fill="#1A202C">${title || 'Dashboard'}</text>
+  ${metrics.map((m, i) => {
+    const x = 40 + (i % 4) * 285;
+    const y = 100 + Math.floor(i / 4) * 170;
+    const c = colors[i % colors.length];
+    const val = Math.floor(Math.random() * 9000 + 1000);
+    const chg = (Math.random() * 20 - 5).toFixed(1);
     return `<g>
-      <defs>
-        <linearGradient id="cardGrad${idx}" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#F7FAFC;stop-opacity:1" />
-        </linearGradient>
-      </defs>
-      <rect x="${x}" y="${y}" width="210" height="140" rx="16" fill="url(#cardGrad${idx})" stroke="#E2E8F0" stroke-width="1.5"/>
-      <rect x="${x + 1}" y="${y + 1}" width="208" height="138" rx="15" fill="none" stroke="${color}20" stroke-width="1"/>
-      <text x="${x + 20}" y="${y + 32}" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#718096" letter-spacing="0.5px" opacity="0.8">${metric.name.toUpperCase()}</text>
-      <text x="${x + 20}" y="${y + 68}" font-family="DM Sans, sans-serif" font-size="38" font-weight="800" fill="#1A202C" letter-spacing="-1.5px">${value.toLocaleString()}</text>
-      <rect x="${x + 20}" y="${y + 85}" width="75" height="30" rx="7" fill="${changeColor}18"/>
-      <text x="${x + 28}" y="${y + 105}" font-family="DM Sans, sans-serif" font-size="13" font-weight="700" fill="${changeColor}">${change > 0 ? '+' : ''}${change.toFixed(1)}%</text>
-      <circle cx="${x + 185}" cy="${y + 20}" r="5" fill="${color}30"/>
-      <circle cx="${x + 185}" cy="${y + 20}" r="3" fill="${color}"/>
+      <rect x="${x}" y="${y}" width="260" height="140" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+      <text x="${x + 20}" y="${y + 30}" font-family="DM Sans, sans-serif" font-size="11" font-weight="700" fill="#718096" letter-spacing="0.5px">${m.toUpperCase()}</text>
+      <text x="${x + 20}" y="${y + 70}" font-family="DM Sans, sans-serif" font-size="36" font-weight="800" fill="#1A202C">${val.toLocaleString()}</text>
+      <rect x="${x + 20}" y="${y + 90}" width="70" height="26" rx="6" fill="${c}18"/>
+      <text x="${x + 28}" y="${y + 108}" font-family="DM Sans, sans-serif" font-size="12" font-weight="700" fill="${c}">${Number(chg) > 0 ? '+' : ''}${chg}%</text>
     </g>`;
   }).join('')}
-  
-  <!-- Chart Area -->
-  <rect x="240" y="420" width="720" height="320" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.04));"/>
-  <text x="260" y="452" font-family="DM Sans, sans-serif" font-size="20" font-weight="700" fill="#1A202C" letter-spacing="-0.3px">Performance Trends</text>
-  
-  <!-- Chart background grid -->
-  <line x1="260" y1="500" x2="940" y2="500" stroke="#F7FAFC" stroke-width="2"/>
-  <line x1="260" y1="550" x2="940" y2="550" stroke="#F7FAFC" stroke-width="2"/>
-  <line x1="260" y1="600" x2="940" y2="600" stroke="#F7FAFC" stroke-width="2"/>
-  <line x1="260" y1="650" x2="940" y2="650" stroke="#F7FAFC" stroke-width="2"/>
-  
-  <!-- Simple line chart representation with gradient fill -->
-  <defs>
-    <linearGradient id="chartGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#38B2AC;stop-opacity:0.3" />
-      <stop offset="100%" style="stop-color:#38B2AC;stop-opacity:0" />
-    </linearGradient>
-  </defs>
-  <polyline points="260,550 320,520 380,480 440,500 500,460 560,440 620,420 680,400 740,380 800,360 860,340 920,320 920,680 260,680"
-    fill="url(#chartGrad)" stroke="none"/>
-  <polyline points="260,550 320,520 380,480 440,500 500,460 560,440 620,420 680,400 740,380 800,360 860,340 920,320"
-    fill="none" stroke="#38B2AC" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="260" cy="550" r="6" fill="#38B2AC" stroke="#FFFFFF" stroke-width="2"/>
-  <circle cx="320" cy="520" r="6" fill="#38B2AC" stroke="#FFFFFF" stroke-width="2"/>
-  <circle cx="380" cy="480" r="6" fill="#38B2AC" stroke="#FFFFFF" stroke-width="2"/>
-  <circle cx="440" cy="500" r="6" fill="#38B2AC" stroke="#FFFFFF" stroke-width="2"/>
-  <circle cx="500" cy="460" r="6" fill="#38B2AC" stroke="#FFFFFF" stroke-width="2"/>
-  <circle cx="560" cy="440" r="6" fill="#38B2AC" stroke="#FFFFFF" stroke-width="2"/>
-  <circle cx="620" cy="420" r="6" fill="#38B2AC" stroke="#FFFFFF" stroke-width="2"/>
-  <circle cx="680" cy="400" r="6" fill="#38B2AC" stroke="#FFFFFF" stroke-width="2"/>
-  <circle cx="740" cy="380" r="6" fill="#38B2AC" stroke="#FFFFFF" stroke-width="2"/>
-  <circle cx="800" cy="360" r="6" fill="#38B2AC" stroke="#FFFFFF" stroke-width="2"/>
-  <circle cx="860" cy="340" r="6" fill="#38B2AC" stroke="#FFFFFF" stroke-width="2"/>
-  <circle cx="920" cy="320" r="6" fill="#38B2AC" stroke="#FFFFFF" stroke-width="2"/>
-  
-  <!-- X-axis labels -->
-  <text x="260" y="750" font-family="DM Sans, sans-serif" font-size="11" fill="#A0AEC0">Jan</text>
-  <text x="380" y="750" font-family="DM Sans, sans-serif" font-size="11" fill="#A0AEC0">Feb</text>
-  <text x="500" y="750" font-family="DM Sans, sans-serif" font-size="11" fill="#A0AEC0">Mar</text>
-  <text x="620" y="750" font-family="DM Sans, sans-serif" font-size="11" fill="#A0AEC0">Apr</text>
-  <text x="740" y="750" font-family="DM Sans, sans-serif" font-size="11" fill="#A0AEC0">May</text>
-  <text x="860" y="750" font-family="DM Sans, sans-serif" font-size="11" fill="#A0AEC0">Jun</text>
-  
-  <!-- Table -->
-  <rect x="980" y="420" width="200" height="320" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.04));"/>
-  <text x="1000" y="452" font-family="DM Sans, sans-serif" font-size="20" font-weight="700" fill="#1A202C" letter-spacing="-0.3px">Recent Activity</text>
-  ${[1, 2, 3, 4, 5].map((i, idx) => `<rect x="990" y="${470 + idx * 50}" width="180" height="40" rx="8" fill="${idx % 2 === 0 ? '#F7FAFC' : '#FFFFFF'}" stroke="${idx % 2 === 0 ? 'none' : '#F7FAFC'}" stroke-width="1"/>
-    <text x="1000" y="${490 + idx * 50}" font-family="DM Sans, sans-serif" font-size="13" font-weight="600" fill="#1A202C">Item ${i}</text>
-    <text x="1000" y="${505 + idx * 50}" font-family="DM Sans, sans-serif" font-size="11" fill="#718096">${['Updated', 'Created', 'Modified'][idx % 3]}</text>`).join('')}
+  <rect x="40" y="440" width="740" height="320" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="60" y="475" font-family="DM Sans, sans-serif" font-size="18" font-weight="700" fill="#1A202C">Performance Trends</text>
+  <polyline points="60,560 120,530 200,500 280,510 360,470 440,450 520,430 600,410 680,400 740,380" fill="none" stroke="#38B2AC" stroke-width="3" stroke-linecap="round"/>
+  <rect x="810" y="440" width="350" height="320" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="830" y="475" font-family="DM Sans, sans-serif" font-size="18" font-weight="700" fill="#1A202C">Recent Activity</text>
+  ${[0, 1, 2, 3, 4].map(i => `<rect x="820" y="${500 + i * 50}" width="330" height="40" rx="8" fill="${i % 2 === 0 ? '#F7FAFC' : '#FFFFFF'}"/>
+  <text x="835" y="${525 + i * 50}" font-family="DM Sans, sans-serif" font-size="13" fill="#4A5568">Activity item ${i + 1}</text>`).join('')}
 </svg>`;
 }
 
-const EXAMPLE_NEEDS = [
-  {
-    user_needs: 'I need a dashboard for our HR team to track employee learning progress, completion rates, and identify skill gaps across different departments.',
-    target_audience: 'HR and L&D teams',
-    key_metrics: 'Completion rates, skill gaps, department comparisons',
-    data_sources: 'LMS data, employee records, assessment scores',
-  },
-  {
-    user_needs: 'Our sales team needs to see real-time pipeline health, conversion rates by stage, and forecast accuracy. They need to drill down by rep, region, and product.',
-    target_audience: 'Sales managers and reps',
-    key_metrics: 'Pipeline value, conversion rates, forecast accuracy',
-    data_sources: 'CRM data, sales activity logs, historical deals',
-  },
-  {
-    user_needs: 'I want a customer success dashboard that shows NPS trends, support ticket volume by category, feature adoption rates, and churn risk indicators.',
-    target_audience: 'Customer success managers',
-    key_metrics: 'NPS, ticket volume, feature adoption, churn risk',
-    data_sources: 'Support tickets, product analytics, survey responses',
-  },
-];
+// ─── JSON Prompt Builder ───
+function buildJsonPrompt(brief: DashboardBrief): object {
+  return {
+    image_generation_prompt: {
+      subject: 'Professional dashboard UI mockup',
+      dashboard_metadata: {
+        title: brief.q1_purpose.slice(0, 80),
+        type: brief.q3_type || 'General Dashboard',
+        target_user: brief.q2_audience || 'Business users',
+        primary_purpose: brief.q1_purpose,
+      },
+      layout: {
+        style: VISUAL_STYLE_OPTIONS.find(v => v.id === brief.q7_visualStyle)?.label || 'Clean & Minimal',
+      },
+      metrics: brief.q4_metrics || 'Key business metrics',
+      data_sources: brief.q5_dataSources.join(', ') || 'To be determined',
+      rendering_instructions: 'Render as a high-fidelity UI mockup screenshot of a web dashboard application. Show realistic placeholder data in all charts and metrics.',
+    },
+  };
+}
 
-export const DashboardDesigner: React.FC = () => {
-  // Input state
-  const [userNeeds, setUserNeeds] = useState('');
-  const [targetAudience, setTargetAudience] = useState('');
-  const [keyMetrics, setKeyMetrics] = useState('');
-  const [dataSources, setDataSources] = useState('');
-  const [inspirationUrl, setInspirationUrl] = useState('');
+// ─── Simple PRD Fallback ───
+function generateFallbackPRD(brief: DashboardBrief): NewPRDResult {
+  const metrics = brief.q4_metrics || 'key metrics';
+  const dataSources = brief.q5_dataSources.join(', ') || 'To be determined';
+  return {
+    prd_content: `PRD: ${brief.q1_purpose.slice(0, 60)} Dashboard`,
+    sections: {
+      dashboard_overview: `This dashboard provides ${brief.q2_audience || 'business users'} with real-time visibility into ${metrics}. Its primary purpose is: ${brief.q1_purpose}`,
+      target_users: `Primary users: ${brief.q2_audience || 'Business stakeholders'}. As a user, I want to see ${metrics} so that I can make data-driven decisions.`,
+      information_architecture: `The dashboard uses a ${VISUAL_STYLE_OPTIONS.find(v => v.id === brief.q7_visualStyle)?.label || 'clean'} layout with KPI cards at the top, trend charts in the middle, and detailed data tables below.`,
+      widget_specifications: `Metrics to display: ${metrics}. Each metric should have a KPI card with current value, trend arrow, and sparkline.`,
+      visual_design: `Style: ${VISUAL_STYLE_OPTIONS.find(v => v.id === brief.q7_visualStyle)?.label || 'Clean & Minimal'}. Typography: DM Sans. Cards use 1px solid borders with 16px border radius.`,
+      tech_stack: 'React + TypeScript for frontend. Recharts or Tremor for charts. Supabase or similar for backend. Vercel for hosting.',
+      data_integration: `Data sources: ${dataSources}.`,
+      interactions_filtering: 'Date range picker, metric filtering dropdown, and drill-down capability on each widget.',
+      responsive_behavior: 'Desktop: 3-column grid. Tablet: 2-column grid. Mobile: single column stack with collapsible sections.',
+      human_checkpoints: 'Data accuracy review before publishing. Stakeholder sign-off on metric definitions. QA review of responsive behavior.',
+      acceptance_criteria: '1. All listed metrics display with current values. 2. Charts render with realistic placeholder data. 3. Page loads in under 2 seconds. 4. Responsive on mobile, tablet, desktop.',
+    },
+  };
+}
 
-  // Results state
-  const [dashboardImage, setDashboardImage] = useState<DashboardImageResult | null>(null);
-  const [dashboardSvg, setDashboardSvg] = useState<string>('');
-  const [imagePrompt, setImagePrompt] = useState('');
-  const [prdResult, setPrdResult] = useState<PRDResult | null>(null);
-  const [showPRD, setShowPRD] = useState(false);
-  const [showPrdDropdown, setShowPrdDropdown] = useState(false);
-  const [isPrdLoading, setIsPrdLoading] = useState(false);
+// ─── Inline Sub-Components ───
+
+// Info Tooltip (hover-based)
+function InfoTooltip({ content }: { content: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  return (
+    <div className="relative inline-block" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        className="text-[#A0AEC0] hover:text-[#718096] transition-colors ml-1.5"
+        aria-label="More information"
+      >
+        <Info size={15} />
+      </button>
+      {open && (
+        <div
+          className="absolute z-50 left-0 top-full mt-2 bg-white border border-[#E2E8F0] rounded-lg p-4 shadow-sm"
+          style={{ maxWidth: '340px', minWidth: '260px' }}
+          onMouseEnter={() => setOpen(true)}
+          onMouseLeave={() => setOpen(false)}
+        >
+          <div className="text-[13px] text-[#4A5568] leading-[1.6]">{content}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// JSON Syntax Highlighted Code Block
+function JsonCodeBlock({ data, onCopy }: { data: object; onCopy: () => void }) {
   const [copied, setCopied] = useState(false);
+  const json = JSON.stringify(data, null, 2);
+
+  const handleCopy = () => {
+    onCopy();
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const highlighted = json.replace(
+    /(".*?")\s*:/g,
+    '<span style="color:#4FD1C5">$1</span>:'
+  ).replace(
+    /:\s*(".*?")/g,
+    ': <span style="color:#F5B8A0">$1</span>'
+  ).replace(
+    /([[\]{}])/g,
+    '<span style="color:#A0AEC0">$1</span>'
+  );
+
+  return (
+    <div className="relative rounded-xl overflow-hidden" style={{ backgroundColor: '#1A202C' }}>
+      <button
+        onClick={handleCopy}
+        className="absolute top-3 right-3 px-2.5 py-1.5 rounded-md text-[12px] flex items-center gap-1.5 transition-colors z-10"
+        style={{ backgroundColor: '#2D3748', color: '#A0AEC0' }}
+      >
+        {copied ? <><Check size={12} /> Copied!</> : <><Copy size={12} /> Copy</>}
+      </button>
+      <pre
+        className="p-5 text-[12px] leading-[1.7] overflow-x-auto max-h-[360px] overflow-y-auto"
+        style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace", color: '#E2E8F0' }}
+        dangerouslySetInnerHTML={{ __html: highlighted }}
+        role="code"
+        aria-label="Generated JSON prompt"
+      />
+    </div>
+  );
+}
+
+// ─── Main Component ───
+export const DashboardDesigner: React.FC = () => {
+  // Brief state
+  const [brief, setBrief] = useState<DashboardBrief>({ ...INITIAL_BRIEF });
+  const [dataSourcesText, setDataSourcesText] = useState('');
+
+  // Mockup state
+  const [imageUrl, setImageUrl] = useState('');
+  const [dashboardHtml, setDashboardHtml] = useState('');
+  const [dashboardSvg, setDashboardSvg] = useState('');
+  const [imagePrompt, setImagePrompt] = useState('');
+  const [jsonPrompt, setJsonPrompt] = useState<object | null>(null);
+  const [generationMethod, setGenerationMethod] = useState<'gemini-image' | 'imagen' | 'html' | 'svg' | null>(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  // Refinement tracking
+  const [isRefinement, setIsRefinement] = useState(false);
+
+  // Approve / Feedback state
+  const [mockupApproved, setMockupApproved] = useState(false);
+  const [showFeedbackInput, setShowFeedbackInput] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
+
+  // PRD state
+  const [prdResult, setPrdResult] = useState<NewPRDResult | null>(null);
+  const [showFullPrd, setShowFullPrd] = useState(false);
+  const [showPrdSectionsOverview, setShowPrdSectionsOverview] = useState(false);
+  const [prdProgressStep, setPrdProgressStep] = useState(0);
+
+  // Inspiration analysis state
+  const [isAnalyzingInspiration, setIsAnalyzingInspiration] = useState(false);
+
+  // Image upload state
+  const [uploadedImages, setUploadedImages] = useState<{ file: File; preview: string }[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  // UI
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-  // UI state
-  const [isEditingPrompt, setIsEditingPrompt] = useState(false);
-  const [editedPrompt, setEditedPrompt] = useState('');
-  
-  // Editable dashboard state
-  const [editableMetrics, setEditableMetrics] = useState<Array<{name: string; value: number; change: number}>>([]);
-  const [isEditingDashboard, setIsEditingDashboard] = useState(false);
-  const [dashboardTitle, setDashboardTitle] = useState('Dashboard');
-  const [dashboardSubtitle, setDashboardSubtitle] = useState('Overview & Analytics');
-
   // Refs
-  const inputSectionRef = useRef<HTMLDivElement>(null);
-  const imageSectionRef = useRef<HTMLDivElement>(null);
-  const prdSectionRef = useRef<HTMLDivElement>(null);
+  const mockupRef = useRef<HTMLDivElement>(null);
+  const prdRef = useRef<HTMLDivElement>(null);
 
   // API
-  const { generateDashboardImage, generatePRD, isLoading, error, clearError } = useDashboardDesignApi();
+  const {
+    generateDashboardImage, generatePRD,
+    isLoading, isPrdLoading, error, clearError,
+    regenerationCount, prdGenerationCount, resetCounts,
+  } = useDashboardDesignApi();
 
-  // ─── Handlers ───
-  const handleExampleClick = (example: typeof EXAMPLE_NEEDS[0]) => {
-    setUserNeeds(example.user_needs);
-    setTargetAudience(example.target_audience);
-    setKeyMetrics(example.key_metrics);
-    setDataSources(example.data_sources);
-    // Flash effect
-    if (inputSectionRef.current) {
-      inputSectionRef.current.style.backgroundColor = '#FFF5F0';
-      setTimeout(() => {
-        if (inputSectionRef.current) inputSectionRef.current.style.backgroundColor = '';
-      }, 300);
-    }
-  };
+  // ─── Helpers ───
+  const hasMockup = imageUrl !== '' || dashboardHtml !== '' || dashboardSvg !== '';
 
-  // Generate dashboard using Gemini API
-  const generateDashboardWithGemini = async (): Promise<DashboardImageResult | null> => {
-    const metrics = editableMetrics.length > 0 
-      ? editableMetrics 
-      : (keyMetrics.split(',').map(m => m.trim()).filter(Boolean) || ['Revenue', 'Users', 'Growth', 'Engagement']).map((name, idx) => ({
-          name,
-          value: Math.floor(Math.random() * 9000 + 1000),
-          change: parseFloat((Math.random() * 20 - 5).toFixed(1)),
-        }));
-    
-    // Initialize editable metrics if empty
-    if (editableMetrics.length === 0) {
-      setEditableMetrics(metrics);
-    }
-    
-    // Try Gemini API - if it fails, return null to trigger fallback
+  const filledFieldsCount = [
+    brief.q1_purpose.trim().length > 0,
+    brief.q2_audience.trim().length > 0,
+    brief.q3_type.length > 0,
+    brief.q4_metrics.trim().length > 0,
+    dataSourcesText.trim().length > 0,
+    brief.q7_visualStyle.length > 0,
+  ].filter(Boolean).length;
+
+  const canGenerate = brief.q1_purpose.trim().length > 0;
+
+  const toast = useCallback((msg: string) => {
+    setToastMessage(msg);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 2500);
+  }, []);
+
+  const copyToClipboard = useCallback(async (text: string) => {
     try {
-      const result = await generateDashboardImage({
-        user_needs: userNeeds.trim(),
-        target_audience: targetAudience.trim() || undefined,
-        key_metrics: keyMetrics.trim() || undefined,
-        data_sources: dataSources.trim() || undefined,
-        dashboard_title: dashboardTitle,
-        dashboard_subtitle: dashboardSubtitle,
-        editable_metrics: editableMetrics.length > 0 ? editableMetrics : undefined,
-        inspiration_url: inspirationUrl.trim() || undefined,
-      });
-      
-      // Log result for debugging
-      if (result) {
-        console.log('Gemini API success:', result.html_content ? 'HTML generated' : 'Image URL generated');
-      } else {
-        console.log('Gemini API returned null, using fallback');
-      }
-      
-      return result;
-    } catch (err) {
-      console.error('Error calling Gemini API:', err);
-      return null;
+      await navigator.clipboard.writeText(text);
+      toast('Copied to clipboard');
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      toast('Copied to clipboard');
     }
-  };
+  }, [toast]);
 
-  // Generate a simple dashboard SVG as fallback
-  const generateSimpleDashboard = (): DashboardImageResult => {
-    const metrics = editableMetrics.length > 0 
-      ? editableMetrics 
-      : (keyMetrics.split(',').map(m => m.trim()).filter(Boolean) || ['Revenue', 'Users', 'Growth', 'Engagement']).map((name, idx) => ({
-          name,
-          value: Math.floor(Math.random() * 9000 + 1000),
-          change: parseFloat((Math.random() * 20 - 5).toFixed(1)),
-        }));
-    
-    // Initialize editable metrics if empty
-    if (editableMetrics.length === 0) {
-      setEditableMetrics(metrics);
+  const updateBrief = useCallback(<K extends keyof DashboardBrief>(key: K, val: DashboardBrief[K]) => {
+    setBrief(prev => ({ ...prev, [key]: val }));
+  }, []);
+
+  const convertImagesToBase64 = useCallback(async (images: { file: File; preview: string }[]): Promise<string[]> => {
+    const promises = images.map(img => new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(img.file);
+    }));
+    return Promise.all(promises);
+  }, []);
+
+  // ─── Image Upload Handlers ───
+  const handleImageFiles = useCallback((files: FileList | File[]) => {
+    const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+    if (validFiles.length === 0) return;
+
+    const newImages = validFiles.map(file => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+    setUploadedImages(prev => [...prev, ...newImages]);
+
+    // Also store filenames in the brief
+    const newNames = validFiles.map(f => f.name);
+    updateBrief('q9_uploadedImages', [...brief.q9_uploadedImages, ...newNames]);
+  }, [brief.q9_uploadedImages, updateBrief]);
+
+  const handleRemoveImage = useCallback((index: number) => {
+    setUploadedImages(prev => {
+      const removed = prev[index];
+      if (removed) URL.revokeObjectURL(removed.preview);
+      return prev.filter((_, i) => i !== index);
+    });
+    updateBrief('q9_uploadedImages', brief.q9_uploadedImages.filter((_, i) => i !== index));
+  }, [brief.q9_uploadedImages, updateBrief]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    if (e.dataTransfer.files.length > 0) {
+      handleImageFiles(e.dataTransfer.files);
     }
-    
-    const prompt = `A professional business dashboard showing ${metrics.map(m => m.name).join(', ')} metrics for ${targetAudience || 'users'}. Includes charts, KPI cards, and data visualizations.`;
-    
-    const svgContent = generateDashboardSVG(metrics, dashboardTitle, dashboardSubtitle);
-    
-    // Store SVG content directly and create data URI
-    setDashboardSvg(svgContent);
-    const encodedSvg = encodeURIComponent(svgContent);
-    const dataUri = `data:image/svg+xml;charset=utf-8,${encodedSvg}`;
-    
-    return {
-      image_url: dataUri,
-      image_prompt: prompt,
+  }, [handleImageFiles]);
+
+  // Clean up object URLs on unmount
+  useEffect(() => {
+    return () => {
+      uploadedImages.forEach(img => URL.revokeObjectURL(img.preview));
     };
-  };
-  
-  const updateDashboard = async () => {
-    if (dashboardImage) {
-      // Try to regenerate with Gemini using updated values
-      const geminiResult = await generateDashboardWithGemini();
-      if (geminiResult && geminiResult.html_content) {
-        setDashboardSvg(geminiResult.html_content);
-        setDashboardImage(geminiResult);
-        setImagePrompt(geminiResult.image_prompt);
-        setEditedPrompt(geminiResult.image_prompt);
-      } else {
-        // Fallback to simple SVG
-        const result = generateSimpleDashboard();
-        setDashboardImage(result);
-      }
+  }, []);
+
+  // PRD loading progress simulation
+  useEffect(() => {
+    if (!isPrdLoading) {
+      setPrdProgressStep(0);
+      return;
     }
-  };
+    setPrdProgressStep(0);
+    const interval = setInterval(() => {
+      setPrdProgressStep(prev => {
+        if (prev >= PRD_SECTIONS.length - 1) {
+          clearInterval(interval);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, 2200);
+    return () => clearInterval(interval);
+  }, [isPrdLoading]);
 
-  const handleGenerateImage = async () => {
-    if (!userNeeds.trim()) return;
+  // ─── Scroll to mockup helper ───
+  const scrollToMockup = useCallback(() => {
+    setTimeout(() => {
+      mockupRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }, []);
+
+  // ─── Generation Handlers ───
+  const handleGenerateMockup = async () => {
+    if (!canGenerate) return;
     clearError();
-    setDashboardImage(null);
+    setIsRefinement(false);
+
+    // Sync data sources text into brief
+    const updatedBrief = { ...brief, q5_dataSources: dataSourcesText.trim() ? [dataSourcesText.trim()] : [] };
+    setBrief(updatedBrief);
+
+    const prompt = buildJsonPrompt(updatedBrief);
+    setJsonPrompt(prompt);
+
+    // Reset previous results
+    setImageUrl('');
+    setDashboardHtml('');
     setDashboardSvg('');
+    setMockupApproved(false);
+    setShowFeedbackInput(false);
+    setFeedbackText('');
     setPrdResult(null);
-    setShowPRD(false);
-    setShowPrdDropdown(false);
-    setIsEditingPrompt(false);
-    setIsEditingDashboard(false);
+    setShowFullPrd(false);
 
-    // Try Gemini API first, fallback to simple SVG
-    console.log('Attempting to generate dashboard with Gemini API...');
-    const geminiResult = await generateDashboardWithGemini();
+    // Scroll to mockup section immediately to show loading
+    scrollToMockup();
 
-    let finalPrompt = '';
-    if (geminiResult && geminiResult.html_content) {
-      console.log('✅ Using Gemini-generated HTML dashboard');
-      setDashboardSvg(geminiResult.html_content);
-      setDashboardImage(geminiResult);
-      setImagePrompt(geminiResult.image_prompt);
-      setEditedPrompt(geminiResult.image_prompt);
-      finalPrompt = geminiResult.image_prompt;
-    } else if (geminiResult && geminiResult.image_url && !geminiResult.use_fallback) {
-      console.log('✅ Using Gemini-generated image URL');
-      setDashboardImage(geminiResult);
-      setImagePrompt(geminiResult.image_prompt);
-      setEditedPrompt(geminiResult.image_prompt);
-      finalPrompt = geminiResult.image_prompt;
-    } else {
-      if (geminiResult?.use_fallback) {
-        console.log('⚠️ Gemini quota exceeded, using SVG fallback');
+    const hasInspirationImages = uploadedImages.length > 0;
+    setIsAnalyzingInspiration(hasInspirationImages);
+
+    // Convert uploaded inspiration images to base64 for AI analysis
+    const inspirationBase64 = uploadedImages.length > 0 ? await convertImagesToBase64(uploadedImages) : undefined;
+    const result = await generateDashboardImage(updatedBrief, undefined, undefined, inspirationBase64);
+
+    setIsAnalyzingInspiration(false);
+
+    if (result) {
+      setImagePrompt(result.image_prompt || '');
+
+      if ((result.generation_method === 'gemini-image' || result.generation_method === 'imagen') && result.image_url) {
+        setImageUrl(result.image_url);
+        setGenerationMethod(result.generation_method);
+      } else if (result.html_content) {
+        setDashboardHtml(result.html_content);
+        setGenerationMethod('html');
+      } else if (result.image_url) {
+        setImageUrl(result.image_url);
+        setGenerationMethod('gemini-image');
       } else {
-        console.log('⚠️ Gemini API unavailable, using SVG fallback');
+        console.warn('API returned result without usable content:', result);
+        const svg = generateDashboardSVG(updatedBrief.q4_metrics, updatedBrief.q1_purpose.slice(0, 40));
+        setDashboardSvg(svg);
+        setImagePrompt(`Dashboard mockup for ${updatedBrief.q2_audience || 'users'}: ${updatedBrief.q4_metrics || updatedBrief.q1_purpose.slice(0, 60)}`);
+        setGenerationMethod('svg');
       }
-      const result = generateSimpleDashboard();
-      setDashboardImage(result);
-      setImagePrompt(result.image_prompt);
-      setEditedPrompt(result.image_prompt);
-      finalPrompt = result.image_prompt;
+    } else {
+      console.warn('Dashboard API returned null — using SVG fallback.');
+      const svg = generateDashboardSVG(updatedBrief.q4_metrics, updatedBrief.q1_purpose.slice(0, 40));
+      setDashboardSvg(svg);
+      setImagePrompt(`Dashboard mockup for ${updatedBrief.q2_audience || 'users'}: ${updatedBrief.q4_metrics || updatedBrief.q1_purpose.slice(0, 60)}`);
+      setGenerationMethod('svg');
     }
 
     setTimeout(() => {
-      imageSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 500);
+      mockupRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
+  };
 
-    // Auto-generate PRD in background
-    setIsPrdLoading(true);
-    setShowPRD(true);
-    try {
-      const prd = await generatePRD({
-        user_needs: userNeeds.trim(),
-        image_prompt: finalPrompt,
-        target_audience: targetAudience.trim() || undefined,
-        key_metrics: keyMetrics.trim() || undefined,
-        data_sources: dataSources.trim() || undefined,
-      });
-      if (prd) {
-        setPrdResult(prd);
-      } else {
-        // Fallback to simple PRD
-        setPrdResult(generateSimplePRD());
-      }
-    } catch {
-      setPrdResult(generateSimplePRD());
-    } finally {
-      setIsPrdLoading(false);
+  const handleApproveMockup = async () => {
+    setMockupApproved(true);
+    setShowFeedbackInput(false);
+    toast('Design approved! Generating your PRD...');
+
+    // Scroll to PRD section immediately to show loading
+    setTimeout(() => {
+      prdRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+
+    // Auto-generate PRD
+    clearError();
+    const result = await generatePRD(brief, imagePrompt);
+    if (result) {
+      setPrdResult(result as NewPRDResult);
+    } else {
+      setPrdResult(generateFallbackPRD(brief));
     }
+
+    setTimeout(() => {
+      prdRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
   };
 
-  const handleEditPrompt = () => {
-    setIsEditingPrompt(true);
+  const handleSubmitFeedback = async () => {
+    if (!feedbackText.trim()) return;
+    const feedback = feedbackText.trim();
+    const previousPrompt = imagePrompt;
+
+    setShowFeedbackInput(false);
+    setIsRefinement(true);
+    clearError();
+
+    // Sync data sources text into brief
+    const updatedBrief = { ...brief, q5_dataSources: dataSourcesText.trim() ? [dataSourcesText.trim()] : [] };
+    setBrief(updatedBrief);
+
+    const prompt = buildJsonPrompt(updatedBrief);
+    setJsonPrompt(prompt);
+
+    // Reset previous results
+    setImageUrl('');
+    setDashboardHtml('');
+    setDashboardSvg('');
+    setMockupApproved(false);
+    setPrdResult(null);
+    setShowFullPrd(false);
+
+    // Scroll to mockup section immediately to show loading
+    scrollToMockup();
+
+    // Convert uploaded inspiration images so they're also analyzed during feedback regeneration
+    const inspirationBase64 = uploadedImages.length > 0 ? await convertImagesToBase64(uploadedImages) : undefined;
+    if (inspirationBase64) {
+      setIsAnalyzingInspiration(true);
+    }
+
+    const result = await generateDashboardImage(updatedBrief, feedback, previousPrompt, inspirationBase64);
+
+    setIsAnalyzingInspiration(false);
+
+    if (result) {
+      setImagePrompt(result.image_prompt || '');
+
+      if ((result.generation_method === 'gemini-image' || result.generation_method === 'imagen') && result.image_url) {
+        setImageUrl(result.image_url);
+        setGenerationMethod(result.generation_method);
+      } else if (result.html_content) {
+        setDashboardHtml(result.html_content);
+        setGenerationMethod('html');
+      } else if (result.image_url) {
+        setImageUrl(result.image_url);
+        setGenerationMethod('gemini-image');
+      } else {
+        console.warn('API returned result without usable content:', result);
+        const svg = generateDashboardSVG(updatedBrief.q4_metrics, updatedBrief.q1_purpose.slice(0, 40));
+        setDashboardSvg(svg);
+        setImagePrompt(`Dashboard mockup for ${updatedBrief.q2_audience || 'users'}: ${updatedBrief.q4_metrics || updatedBrief.q1_purpose.slice(0, 60)}`);
+        setGenerationMethod('svg');
+      }
+    } else {
+      console.warn('Dashboard API returned null — using SVG fallback.');
+      const svg = generateDashboardSVG(updatedBrief.q4_metrics, updatedBrief.q1_purpose.slice(0, 40));
+      setDashboardSvg(svg);
+      setImagePrompt(`Dashboard mockup for ${updatedBrief.q2_audience || 'users'}: ${updatedBrief.q4_metrics || updatedBrief.q1_purpose.slice(0, 60)}`);
+      setGenerationMethod('svg');
+    }
+
+    setFeedbackText('');
+    setIsRefinement(false);
+
+    setTimeout(() => {
+      mockupRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
   };
 
-  const handleSavePrompt = () => {
-    if (!editedPrompt.trim()) return;
-    setImagePrompt(editedPrompt);
-    setIsEditingPrompt(false);
-    
-    // Regenerate simple dashboard with updated metrics from prompt
-    const metrics = keyMetrics.split(',').map(m => m.trim()).filter(Boolean) || ['Revenue', 'Users', 'Growth', 'Engagement'];
-    const result = generateSimpleDashboard();
-    setDashboardImage(result);
-    setImagePrompt(editedPrompt);
-    setEditedPrompt(editedPrompt);
+  const handleGeneratePRD = async () => {
+    if (prdGenerationCount >= MAX_PRD_GENERATIONS) {
+      toast(`Maximum ${MAX_PRD_GENERATIONS} PRD generations reached for this session.`);
+      return;
+    }
+    clearError();
+
+    // Scroll to PRD section immediately to show loading
+    setTimeout(() => {
+      prdRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+
+    const result = await generatePRD(brief, imagePrompt);
+    if (result) {
+      setPrdResult(result as NewPRDResult);
+    } else {
+      setPrdResult(generateFallbackPRD(brief));
+    }
+
+    setTimeout(() => {
+      prdRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
   };
 
-  const handleCancelEdit = () => {
-    setEditedPrompt(imagePrompt);
-    setIsEditingPrompt(false);
-  };
-
-  const generateSimplePRD = (): PRDResult => {
-    const metrics = editableMetrics.length > 0 
-      ? editableMetrics.map(m => m.name).join(', ')
-      : keyMetrics || 'key metrics';
-    
-    const metricsList = metrics.split(',').map(m => m.trim()).filter(Boolean);
-    const primaryMetrics = metricsList.slice(0, 4).join(', ');
-    
-    return {
-      prd_content: `Product Requirements Document for ${dashboardTitle || 'Dashboard'} - ${targetAudience || 'Business Users'}`,
-      sections: {
-        title_and_author: `Title: ${dashboardTitle || 'Business Dashboard'}\nAuthor: Product Team\nDate: ${new Date().toLocaleDateString()}\nVersion: 1.0`,
-        purpose_and_scope: `Business Purpose: ${userNeeds || 'Provide real-time visibility into key business metrics and performance indicators.'}\n\nTechnical Scope: Build an interactive web-based dashboard that displays ${primaryMetrics} through visual components including KPI cards, charts, and data tables. The dashboard will integrate with ${dataSources || 'existing data sources'} and provide filtering, drill-down, and export capabilities.`,
-        stakeholders: `Primary Stakeholders: ${targetAudience || 'Business managers, analysts, and decision-makers'}\nSecondary Stakeholders: IT/Data teams responsible for data integration, end users who will interact with the dashboard daily`,
-        market_assessment: `Target Demographics: ${targetAudience || 'Mid-to-senior level business professionals'} who need quick access to performance data. Users range from technical to non-technical backgrounds, requiring an intuitive interface.`,
-        product_overview: `The ${dashboardTitle || 'Dashboard'} provides a centralized view of ${primaryMetrics}. Key use cases include: (1) Real-time monitoring of business performance, (2) Identifying trends and anomalies through visualizations, (3) Supporting data-driven decision making, (4) Sharing insights across teams.`,
-        functional_requirements: `1. Display ${primaryMetrics} in KPI cards with current values and percentage changes\n2. Show performance trends over time via line charts\n3. Present recent activity in tabular format\n4. Enable filtering by date range, category, or metric type\n5. Support drill-down from summary to detailed views\n6. Provide export functionality (CSV, PDF)\n7. Responsive design for desktop and tablet devices`,
-        usability_requirements: `1. Intuitive navigation with clear sidebar menu\n2. Consistent visual design following brand guidelines\n3. Accessible color contrast (WCAG AA compliance)\n4. Mobile-responsive layout\n5. Loading states and error messages\n6. Tooltips and help text for complex metrics\n7. Keyboard navigation support`,
-        technical_requirements: `Platform: Web-based application (React/Next.js recommended)\nSecurity: Authentication required, role-based access control, data encryption in transit\nNetwork: RESTful API integration, support for real-time data updates via WebSocket\nIntegration: Connect to ${dataSources || 'CRM, analytics platforms, databases'}\nClient: Modern browsers (Chrome, Firefox, Safari, Edge), responsive design for tablets`,
-        environmental_requirements: `Development: Node.js 18+, modern build tools (Vite/Webpack)\nProduction: Cloud hosting (Vercel/AWS recommended), CDN for static assets\nData: Secure API endpoints, rate limiting, caching strategy\nBrowser: Support for ES2020+ features, Canvas API for charts`,
-        support_requirements: `Documentation: User guide, API documentation, deployment guide\nMonitoring: Error tracking (Sentry), analytics (Google Analytics), performance monitoring\nMaintenance: Regular updates for security patches, data source changes\nTraining: Onboarding materials for end users, admin training for configuration`,
-        interaction_requirements: `1. Dashboard integrates with ${dataSources || 'external data sources'} via REST APIs\n2. Real-time updates through WebSocket or polling (configurable)\n3. Export functionality connects to file generation services\n4. Authentication integrates with SSO/identity provider\n5. Analytics events sent to tracking platform\n6. Error logging integrated with monitoring service`,
-        assumptions: `1. Data sources are available via API or database connections\n2. Users have appropriate authentication credentials\n3. Network connectivity is stable for real-time updates\n4. Data formats are consistent and well-structured\n5. Browser support for modern web standards`,
-        constraints: `1. Must work within existing security and compliance frameworks\n2. Limited to available data sources and API rate limits\n3. Performance targets: < 2s initial load, < 500ms for data updates\n4. Browser compatibility: Last 2 versions of major browsers\n5. Budget constraints may limit third-party service integrations`,
-        dependencies: `1. Data source APIs must be available and documented\n2. Authentication/SSO system must be configured\n3. Design system and component library (if using)\n4. Third-party charting library (e.g., Recharts, Chart.js)\n5. Hosting infrastructure and domain configuration`,
-        workflow_timeline: `Phase 1 (Weeks 1-2): Design and prototyping - Dashboard layout, component design, user flows\nPhase 2 (Weeks 3-4): Development - Core dashboard components, API integration, data visualization\nPhase 3 (Week 5): Testing - User acceptance testing, performance testing, accessibility audit\nPhase 4 (Week 6): Deployment - Staging deployment, production rollout, user training\nMilestones: Design approval (Week 2), MVP completion (Week 4), Production launch (Week 6)`,
-        evaluation_metrics: `Performance: Page load time < 2s, API response time < 500ms, 99% uptime\nUsability: User satisfaction score > 4/5, task completion rate > 90%, support tickets < 5/month\nAdoption: Daily active users, feature usage rates, export/download frequency\nBusiness: Time saved vs manual reporting, decision-making speed improvement, user engagement metrics`,
-      },
-    };
+  const handleExampleClick = (example: typeof EXAMPLE_BRIEFS[0]) => {
+    setBrief({
+      ...INITIAL_BRIEF,
+      q1_purpose: example.q1_purpose,
+      q2_audience: example.q2_audience,
+      q3_type: example.q3_type,
+      q4_metrics: example.q4_metrics,
+      q5_dataSources: [example.q5_dataSources],
+      q7_visualStyle: example.q7_visualStyle,
+    });
+    setDataSourcesText(example.q5_dataSources);
   };
 
   const handleStartOver = () => {
-    setUserNeeds('');
-    setTargetAudience('');
-    setKeyMetrics('');
-    setDataSources('');
-    setInspirationUrl('');
-    setDashboardImage(null);
+    setBrief({ ...INITIAL_BRIEF });
+    setDataSourcesText('');
+    setImageUrl('');
+    setDashboardHtml('');
     setDashboardSvg('');
     setImagePrompt('');
+    setJsonPrompt(null);
+    setGenerationMethod(null);
+    setIsRefinement(false);
+    setMockupApproved(false);
+    setShowFeedbackInput(false);
+    setFeedbackText('');
     setPrdResult(null);
-    setShowPRD(false);
-    setShowPrdDropdown(false);
-    setIsEditingPrompt(false);
-    setIsEditingDashboard(false);
-    setEditedPrompt('');
-    setEditableMetrics([]);
-    setDashboardTitle('Dashboard');
-    setDashboardSubtitle('Overview & Analytics');
-    setCopied(false);
+    setShowFullPrd(false);
+    setShowPrdSectionsOverview(false);
+    setUploadedImages(prev => {
+      prev.forEach(img => URL.revokeObjectURL(img.preview));
+      return [];
+    });
+    resetCounts();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const showToastNotification = (message: string) => {
-    setToastMessage(message);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 2500);
-  };
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      showToastNotification('Copied to clipboard');
-    } catch {
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-      showToastNotification('Copied to clipboard');
-    }
-  };
-
-  const handleCopyPRD = () => {
+  const handleExportMarkdown = () => {
     if (!prdResult) return;
-    const sectionTitles: Record<string, string> = {
-      title_and_author: 'Title & Author Information',
-      purpose_and_scope: 'Purpose and Scope',
-      stakeholders: 'Stakeholder Identification',
-      market_assessment: 'Market Assessment and Target Demographics',
-      product_overview: 'Product Overview and Use Cases',
-      functional_requirements: 'Functional Requirements',
-      usability_requirements: 'Usability Requirements',
-      technical_requirements: 'Technical Requirements',
-      environmental_requirements: 'Environmental Requirements',
-      support_requirements: 'Support Requirements',
-      interaction_requirements: 'Interaction Requirements',
-      assumptions: 'Assumptions',
-      constraints: 'Constraints',
-      dependencies: 'Dependencies',
-      workflow_timeline: 'High-Level Workflow Plans, Timelines and Milestones',
-      evaluation_metrics: 'Evaluation Plan and Performance Metrics',
-    };
-    
-    const fullPRD = Object.entries(prdResult.sections)
-      .map(([key, value]) => `## ${sectionTitles[key] || key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}\n\n${value}`)
-      .join('\n\n');
-    copyToClipboard(fullPRD);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    const md = Object.entries(prdResult.sections)
+      .map(([key, val]) => {
+        const def = PRD_SECTIONS.find(s => s.key === key);
+        return `## ${def?.title || key}\n\n${val}`;
+      })
+      .join('\n\n---\n\n');
+    const fullMd = `# ${prdResult.prd_content}\n\n${md}`;
+    const blob = new Blob([fullMd], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'dashboard-prd.md';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('Markdown exported');
   };
 
+  // ─── Render ───
   return (
     <div className="min-h-screen bg-white pt-24 pb-16">
       <div className="max-w-7xl mx-auto px-6">
 
-        {/* ─── BREADCRUMB ─── */}
+        {/* ═══════════════════════════════════════════
+            SECTION A — Breadcrumb + Centered Title
+        ═══════════════════════════════════════════ */}
         <a href="#home" className="inline-flex items-center gap-1.5 text-[14px] text-[#718096] hover:text-[#D47B5A] transition-colors mb-8">
           <ArrowLeft size={16} /> Back to Level 4
         </a>
 
-        {/* ─── HERO: Title (centered, matching L2/L3 style) ─── */}
         <div className="mb-8 text-center">
           <h1 className="text-[36px] md:text-[48px] font-bold text-[#1A202C] leading-[1.15] mb-6">
-            Dashboard Design
-            <br />
+            Dashboard<br />
             <span className="relative inline-block">
-              Thinking
-              <span className="absolute left-0 -bottom-1 w-full h-[4px] bg-[#D47B5A] opacity-80 rounded-full" />
+              Designer
+              <span className="absolute left-0 -bottom-1 w-full h-[4px] rounded-full opacity-80" style={{ backgroundColor: DARK_ACCENT }} />
             </span>
           </h1>
+        </div>
 
-          {/* ─── FUN FACT CARD ─── */}
-          <div className="mb-4">
-            <div
-              className="relative rounded-2xl px-8 md:px-12 py-8 text-center overflow-hidden"
-              style={{
-                background: 'linear-gradient(135deg, rgba(245, 184, 160, 0.15) 0%, rgba(212, 123, 90, 0.08) 50%, rgba(245, 184, 160, 0.12) 100%)',
-                border: '1.5px solid #F5B8A0',
-              }}
-            >
-              <div className="absolute top-3 left-4 flex gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#D47B5A] opacity-40" />
-                <span className="w-2 h-2 rounded-full bg-[#F5B8A0] opacity-60" />
-                <span className="w-2 h-2 rounded-full bg-[#D47B5A] opacity-30" />
-              </div>
-
-              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#D47B5A] mb-2">
-                Did you know?
-              </p>
-              <p className="text-[17px] md:text-[19px] text-[#2D3748] leading-[1.6] font-medium mb-2">
-                Organizations that design dashboards around user decisions see <span className="text-[#D47B5A] font-bold">4x higher adoption rates</span> compared
-                to those built around available data alone.
-              </p>
-              <p className="text-[15px] text-[#718096] leading-[1.6] max-w-3xl mx-auto">
-                Effective dashboards don't start with data — they start with understanding what decisions users need to make and what insights will drive action.
-              </p>
+        {/* ═══════════════════════════════════════════
+            SECTION B — Fun Fact Card
+        ═══════════════════════════════════════════ */}
+        <div className="mb-4">
+          <div
+            className="relative rounded-2xl px-8 md:px-12 py-8 text-center overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, rgba(245,184,160,0.15) 0%, rgba(212,123,90,0.08) 50%, rgba(245,184,160,0.12) 100%)',
+              border: '1.5px solid #F5B8A0',
+            }}
+          >
+            <div className="absolute top-3 left-4 flex gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#D47B5A] opacity-40" />
+              <span className="w-2 h-2 rounded-full bg-[#F5B8A0] opacity-60" />
+              <span className="w-2 h-2 rounded-full bg-[#D47B5A] opacity-30" />
             </div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#D47B5A] mb-3">Did you know?</p>
+            <p className="text-[18px] md:text-[20px] text-[#2D3748] font-bold leading-tight">
+              <span className="text-[#D47B5A]">73%</span> of AI projects fail to deliver value because outputs never reach decision-makers.
+            </p>
+            <p className="text-[15px] text-[#718096] leading-tight mt-2">
+              Design your dashboard below &mdash; from audience brief to AI-generated mockup to a handoff-ready PRD.
+            </p>
           </div>
         </div>
 
-        {/* ─── END-TO-END JOURNEY ─── */}
+        {/* ═══════════════════════════════════════════
+            SECTION C — 3-Card Step Overview
+        ═══════════════════════════════════════════ */}
         <div className="mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[
-              {
-                num: 1,
-                title: 'Define User Needs',
-                icon: '🎯',
-                desc: 'Start with who will use the dashboard and what decisions they need to make.',
-              },
-              {
-                num: 2,
-                title: 'Generate Dashboard',
-                icon: '✨',
-                desc: 'AI creates a sleek, modern dashboard mockup tailored to your requirements.',
-              },
-              {
-                num: 3,
-                title: 'Review & Refine',
-                icon: '🔍',
-                desc: 'Edit metrics, titles, and layout. Regenerate until the design feels right.',
-              },
-              {
-                num: 4,
-                title: 'Export PRD',
-                icon: '📄',
-                desc: 'Get a structured PRD you can hand to AI coding tools like Lovable or Bolt.',
-              },
-            ].map((step) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {DASHBOARD_STEPS.map(step => (
               <div key={step.num} className="bg-white border border-[#E2E8F0] rounded-xl p-5">
                 <div className="flex items-center gap-3 mb-3">
                   <div
                     className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold shrink-0"
-                    style={{ backgroundColor: 'rgba(245, 184, 160, 0.3)', color: DARK_ACCENT_COLOR }}
+                    style={{ backgroundColor: 'rgba(245,184,160,0.25)', color: DARK_ACCENT }}
                   >
                     {step.num}
                   </div>
-                  <span className="text-[15px] font-bold text-[#1A202C]">{step.icon} {step.title}</span>
+                  <span className="text-[16px] font-bold text-[#1A202C]">{step.label}</span>
                 </div>
-                <p className="text-[13px] text-[#718096] leading-[1.5]">{step.desc}</p>
+                <p className="text-[14px] font-medium text-[#2D3748] mb-2">{step.question}</p>
+                <p className="text-[13px] text-[#718096] leading-[1.5] mb-3">{step.desc}</p>
+                <p className="text-[12px] leading-snug" style={{ color: '#A0AEC0' }}>
+                  <span className="font-semibold" style={{ color: '#718096' }}>Examples:</span> {step.examples}
+                </p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ─── INPUT SECTION (peach-themed card) ─── */}
+        {/* ═══════════════════════════════════════════
+            SECTION D — Step 1: Single Condensed Input Card
+        ═══════════════════════════════════════════ */}
         <div
           className="rounded-2xl p-6 sm:p-8 mb-8"
           style={{
-            background: 'linear-gradient(135deg, rgba(245, 184, 160, 0.12) 0%, rgba(251, 206, 177, 0.08) 50%, rgba(245, 184, 160, 0.10) 100%)',
+            background: 'linear-gradient(135deg, rgba(245,184,160,0.12) 0%, rgba(245,184,160,0.06) 100%)',
             border: '1.5px solid #F5B8A0',
           }}
         >
+          <h2 className="text-[20px] md:text-[24px] font-bold text-[#1A202C] mb-4">Define Your Dashboard Brief</h2>
+
           {/* Example pills */}
-          <div className="mb-6">
-            <p className="text-[13px] font-semibold text-[#A0AEC0] uppercase tracking-wider mb-3">
-              Example Use Cases
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {EXAMPLE_NEEDS.map((example, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleExampleClick(example)}
-                  className="px-4 py-2 text-[13px] text-[#2D3748] rounded-full transition-all duration-150"
-                  style={{
-                    backgroundColor: 'rgba(245, 184, 160, 0.2)',
-                    border: '1px solid #F5B8A0',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = '#D47B5A';
-                    e.currentTarget.style.backgroundColor = 'rgba(245, 184, 160, 0.35)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = '#F5B8A0';
-                    e.currentTarget.style.backgroundColor = 'rgba(245, 184, 160, 0.2)';
-                  }}
-                >
-                  {example.user_needs.length > 60 ? example.user_needs.slice(0, 60) + '...' : example.user_needs}
-                </button>
-              ))}
-            </div>
+          <div className="flex flex-wrap items-center gap-2 mb-6">
+            <span className="text-[12px] font-bold text-[#A0AEC0] uppercase tracking-wider mr-1">Try an Example</span>
+            {EXAMPLE_BRIEFS.map((ex, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleExampleClick(ex)}
+                className="px-3 py-1 rounded-full text-[13px] transition-colors"
+                style={{ border: '1px solid #F5B8A0', backgroundColor: 'rgba(245,184,160,0.08)', color: '#92530A' }}
+                onMouseEnter={e => { (e.target as HTMLElement).style.borderColor = DARK_ACCENT; (e.target as HTMLElement).style.backgroundColor = 'rgba(245,184,160,0.2)'; }}
+                onMouseLeave={e => { (e.target as HTMLElement).style.borderColor = '#F5B8A0'; (e.target as HTMLElement).style.backgroundColor = 'rgba(245,184,160,0.08)'; }}
+              >
+                {ex.label}
+              </button>
+            ))}
           </div>
 
-          <div ref={inputSectionRef} className="space-y-6">
-            <div>
-              <label className="block text-[14px] font-semibold text-[#1A202C] mb-2">
-                What does your dashboard need to accomplish? *
+          {/* Two-column grid for questions */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+
+            {/* Q1: Dashboard Purpose (full width) — REQUIRED */}
+            <div className="md:col-span-2">
+              <label className="block text-[13px] font-semibold text-[#1A202C] mb-1.5">
+                What is the primary purpose of this dashboard? <span className="text-[#D47B5A]">*</span>
+                <span className="text-[11px] font-normal text-[#A0AEC0] ml-2">Required</span>
               </label>
               <textarea
-                value={userNeeds}
-                onChange={(e) => setUserNeeds(e.target.value)}
-                placeholder="Describe the primary purpose of your dashboard. What decisions does it need to support? What insights should users gain?"
-                className="w-full border-2 rounded-lg px-4 py-3 text-[15px] text-[#1A202C] placeholder:text-[#A0AEC0] focus:outline-none focus:ring-[3px] transition-colors resize-none bg-white"
-                style={{ borderColor: '#F5B8A0' }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = '#D47B5A'; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = '#F5B8A0'; }}
-                rows={4}
+                value={brief.q1_purpose}
+                onChange={e => updateBrief('q1_purpose', e.target.value)}
+                placeholder="e.g., Track real-time sales performance across regions and flag underperforming territories for the VP of Sales"
+                className="w-full rounded-xl text-[15px] resize-none focus:outline-none transition-all"
+                style={{ minHeight: 80, padding: 16, border: `2px solid #F5B8A0`, color: '#1A202C', backgroundColor: '#FFFFFF' }}
+                onFocus={e => { e.target.style.borderColor = DARK_ACCENT; e.target.style.boxShadow = '0 0 0 3px rgba(212,123,90,0.12)'; }}
+                onBlur={e => { e.target.style.borderColor = '#F5B8A0'; e.target.style.boxShadow = 'none'; }}
               />
             </div>
 
+            {/* Q2: Target Audience — OPTIONAL */}
             <div>
-              <label className="block text-[14px] font-semibold text-[#1A202C] mb-2">
-                Target Audience (optional)
+              <label className="block text-[13px] font-semibold text-[#1A202C] mb-1.5">
+                Who will use this dashboard?
+                <span className="text-[11px] font-normal text-[#A0AEC0] ml-2">Optional</span>
               </label>
-              <input
-                type="text"
-                value={targetAudience}
-                onChange={(e) => setTargetAudience(e.target.value)}
-                placeholder="e.g., Sales managers, HR teams, Executives"
-                className="w-full border-2 rounded-lg px-4 py-3 text-[15px] text-[#1A202C] placeholder:text-[#A0AEC0] focus:outline-none focus:ring-[3px] transition-colors bg-white"
-                style={{ borderColor: '#F5B8A0' }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = '#D47B5A'; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = '#F5B8A0'; }}
+              <textarea
+                value={brief.q2_audience}
+                onChange={e => updateBrief('q2_audience', e.target.value)}
+                placeholder="e.g., Regional sales managers, VP of Sales"
+                className="w-full rounded-xl text-[15px] resize-none focus:outline-none transition-all"
+                style={{ minHeight: 64, padding: 16, border: `2px solid #F5B8A0`, color: '#1A202C', backgroundColor: '#FFFFFF' }}
+                onFocus={e => { e.target.style.borderColor = DARK_ACCENT; e.target.style.boxShadow = '0 0 0 3px rgba(212,123,90,0.12)'; }}
+                onBlur={e => { e.target.style.borderColor = '#F5B8A0'; e.target.style.boxShadow = 'none'; }}
               />
             </div>
 
+            {/* Q3: Dashboard Type (dropdown) — OPTIONAL */}
             <div>
-              <label className="block text-[14px] font-semibold text-[#1A202C] mb-2">
-                Key Metrics to Display (optional)
+              <label className="block text-[13px] font-semibold text-[#1A202C] mb-1.5">
+                Dashboard type
+                <span className="text-[11px] font-normal text-[#A0AEC0] ml-2">Optional</span>
               </label>
-              <input
-                type="text"
-                value={keyMetrics}
-                onChange={(e) => setKeyMetrics(e.target.value)}
-                placeholder="e.g., Revenue, Conversion rates, User engagement"
-                className="w-full border-2 rounded-lg px-4 py-3 text-[15px] text-[#1A202C] placeholder:text-[#A0AEC0] focus:outline-none focus:ring-[3px] transition-colors bg-white"
-                style={{ borderColor: '#F5B8A0' }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = '#D47B5A'; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = '#F5B8A0'; }}
+              <select
+                value={brief.q3_type}
+                onChange={e => updateBrief('q3_type', e.target.value)}
+                className="w-full rounded-xl text-[15px] focus:outline-none transition-all bg-white appearance-none cursor-pointer"
+                style={{ padding: '12px 16px', border: `2px solid #F5B8A0`, color: '#1A202C' }}
+                onFocus={e => { e.target.style.borderColor = DARK_ACCENT; }}
+                onBlur={e => { e.target.style.borderColor = '#F5B8A0'; }}
+              >
+                <option value="">Select a type...</option>
+                {DASHBOARD_TYPE_OPTIONS.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Q4: Key Metrics (free-form text field, full width) — OPTIONAL */}
+            <div className="md:col-span-2">
+              <label className="block text-[13px] font-semibold text-[#1A202C] mb-1.5">
+                Key metrics to display
+                <span className="text-[11px] font-normal text-[#A0AEC0] ml-2">Optional</span>
+              </label>
+              <textarea
+                value={brief.q4_metrics}
+                onChange={e => updateBrief('q4_metrics', e.target.value)}
+                placeholder="Describe the metrics you want on the dashboard (e.g., Revenue, Conversion Rate, Pipeline Value, Win Rate, Average Deal Size, monthly trends by region)"
+                className="w-full rounded-xl text-[15px] resize-none focus:outline-none transition-all"
+                style={{ minHeight: 72, padding: 16, border: `2px solid #F5B8A0`, color: '#1A202C', backgroundColor: '#FFFFFF' }}
+                onFocus={e => { e.target.style.borderColor = DARK_ACCENT; e.target.style.boxShadow = '0 0 0 3px rgba(212,123,90,0.12)'; }}
+                onBlur={e => { e.target.style.borderColor = '#F5B8A0'; e.target.style.boxShadow = 'none'; }}
+              />
+              <p className="text-[11px] text-[#A0AEC0] mt-1">The AI will interpret your description and create relevant visualizations.</p>
+            </div>
+
+            {/* Q5: Data Sources (single textarea) — OPTIONAL */}
+            <div>
+              <label className="block text-[13px] font-semibold text-[#1A202C] mb-1.5">
+                Data sources &amp; systems
+                <span className="text-[11px] font-normal text-[#A0AEC0] ml-2">Optional</span>
+              </label>
+              <textarea
+                value={dataSourcesText}
+                onChange={e => {
+                  setDataSourcesText(e.target.value);
+                  updateBrief('q5_dataSources', e.target.value.trim() ? [e.target.value.trim()] : []);
+                }}
+                placeholder="e.g., CRM (Salesforce), SQL database, Google Sheets"
+                className="w-full rounded-xl text-[15px] resize-none focus:outline-none transition-all"
+                style={{ minHeight: 64, padding: 16, border: `2px solid #F5B8A0`, color: '#1A202C', backgroundColor: '#FFFFFF' }}
+                onFocus={e => { e.target.style.borderColor = DARK_ACCENT; e.target.style.boxShadow = '0 0 0 3px rgba(212,123,90,0.12)'; }}
+                onBlur={e => { e.target.style.borderColor = '#F5B8A0'; e.target.style.boxShadow = 'none'; }}
               />
             </div>
 
+            {/* Q7: Visual Style (dropdown) — OPTIONAL */}
             <div>
-              <label className="block text-[14px] font-semibold text-[#1A202C] mb-2">
-                Data Sources (optional)
+              <label className="block text-[13px] font-semibold text-[#1A202C] mb-1.5">
+                Visual style
+                <span className="text-[11px] font-normal text-[#A0AEC0] ml-2">Optional</span>
               </label>
-              <input
-                type="text"
-                value={dataSources}
-                onChange={(e) => setDataSources(e.target.value)}
-                placeholder="e.g., CRM, Analytics platform, Database"
-                className="w-full border-2 rounded-lg px-4 py-3 text-[15px] text-[#1A202C] placeholder:text-[#A0AEC0] focus:outline-none focus:ring-[3px] transition-colors bg-white"
-                style={{ borderColor: '#F5B8A0' }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = '#D47B5A'; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = '#F5B8A0'; }}
-              />
+              <select
+                value={brief.q7_visualStyle}
+                onChange={e => updateBrief('q7_visualStyle', e.target.value)}
+                className="w-full rounded-xl text-[15px] focus:outline-none transition-all bg-white appearance-none cursor-pointer"
+                style={{ padding: '12px 16px', border: `2px solid #F5B8A0`, color: '#1A202C' }}
+                onFocus={e => { e.target.style.borderColor = DARK_ACCENT; }}
+                onBlur={e => { e.target.style.borderColor = '#F5B8A0'; }}
+              >
+                <option value="">Select a style...</option>
+                {VISUAL_STYLE_OPTIONS.map(opt => (
+                  <option key={opt.id} value={opt.id}>{opt.label}</option>
+                ))}
+              </select>
             </div>
 
-            <div>
-              <label className="block text-[14px] font-semibold text-[#1A202C] mb-2">
-                Inspiration Link (optional)
-              </label>
-              <input
-                type="url"
-                value={inspirationUrl}
-                onChange={(e) => setInspirationUrl(e.target.value)}
-                placeholder="e.g., https://dribbble.com/shots/... or any website URL for design inspiration"
-                className="w-full border-2 rounded-lg px-4 py-3 text-[15px] text-[#1A202C] placeholder:text-[#A0AEC0] focus:outline-none focus:ring-[3px] transition-colors bg-white"
-                style={{ borderColor: '#F5B8A0' }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = '#D47B5A'; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = '#F5B8A0'; }}
-              />
-              <p className="text-[12px] text-[#A0AEC0] mt-1">Paste a link to a dashboard or website you like — the AI will use it as design inspiration.</p>
+            {/* Q9: Inspiration — with clickable site links (full width) — OPTIONAL */}
+            <div className="md:col-span-2">
+              <div className="flex items-center mb-1.5">
+                <label className="text-[13px] font-semibold text-[#1A202C]">Inspiration examples</label>
+                <span className="text-[11px] font-normal text-[#A0AEC0] ml-2">Optional</span>
+                <InfoTooltip content={INSPIRATION_TOOLTIP_CONTENT} />
+              </div>
+
+              {/* Clickable inspiration site links */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                {INSPIRATION_SITES.map(site => (
+                  <a
+                    key={site.name}
+                    href={site.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium transition-colors hover:bg-[rgba(245,184,160,0.2)]"
+                    style={{ border: '1px solid #E2E8F0', color: '#4A5568' }}
+                  >
+                    <ExternalLink size={11} /> {site.name}
+                  </a>
+                ))}
+              </div>
+
+              {/* Image Upload Drop Zone */}
+              <div
+                className={cn(
+                  'relative rounded-xl border-2 border-dashed transition-colors cursor-pointer',
+                  isDragOver ? 'border-[#D47B5A] bg-[rgba(245,184,160,0.12)]' : 'border-[#E2E8F0] bg-[rgba(245,184,160,0.04)] hover:border-[#F5B8A0] hover:bg-[rgba(245,184,160,0.08)]'
+                )}
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={e => {
+                    if (e.target.files) handleImageFiles(e.target.files);
+                    e.target.value = '';
+                  }}
+                />
+                <div className="flex flex-col items-center justify-center py-6 px-4">
+                  <Upload size={24} className="mb-2" style={{ color: isDragOver ? DARK_ACCENT : '#A0AEC0' }} />
+                  <p className="text-[13px] text-[#718096] text-center">
+                    Drop dashboard examples here or click to browse
+                  </p>
+                  <p className="text-[11px] text-[#A0AEC0] mt-1">PNG, JPG, or WebP</p>
+                </div>
+              </div>
+
+              {/* Uploaded image thumbnails */}
+              {uploadedImages.length > 0 && (
+                <div className="flex flex-wrap gap-3 mt-3">
+                  {uploadedImages.map((img, i) => (
+                    <div key={i} className="relative group">
+                      <img
+                        src={img.preview}
+                        alt={`Uploaded inspiration ${i + 1}`}
+                        className="w-20 h-20 object-cover rounded-lg border border-[#E2E8F0]"
+                      />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveImage(i);
+                        }}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#1A202C] bg-opacity-70 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X size={10} />
+                      </button>
+                      <p className="text-[10px] text-[#A0AEC0] mt-1 max-w-[80px] truncate">{img.file.name}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
-          <button
-            onClick={handleGenerateImage}
-            disabled={!userNeeds.trim() || isLoading}
-            className="mt-6 w-full md:w-auto px-8 py-3 text-white font-semibold rounded-full transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            style={{
-              backgroundColor: DARK_ACCENT_COLOR,
-            }}
-            onMouseEnter={(e) => {
-              if (!e.currentTarget.disabled) {
-                e.currentTarget.style.backgroundColor = '#C06A4A';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!e.currentTarget.disabled) {
-                e.currentTarget.style.backgroundColor = DARK_ACCENT_COLOR;
-              }
-            }}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 size={18} className="animate-spin" />
-                Generating Dashboard...
-              </>
-            ) : (
-              <>
-                <Sparkles size={18} />
-                Generate Dashboard Design
-              </>
-            )}
-          </button>
-
+          {/* Error */}
           {error && (
-            <div className="bg-[#FFF5F5] border border-[#FC8181] rounded-lg p-4 text-[14px] text-[#C53030] mt-4">
+            <div className="mt-4 p-3 rounded-lg text-[13px]" style={{ backgroundColor: '#FFF5F5', border: '1px solid #FEB2B2', color: '#C53030' }}>
               {error}
             </div>
           )}
+
+          {/* Generate CTA */}
+          <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <button
+              onClick={() => handleGenerateMockup()}
+              disabled={!canGenerate || isLoading}
+              className="px-8 py-3 text-white font-semibold rounded-full transition-all duration-150 disabled:cursor-not-allowed flex items-center gap-2 text-[15px]"
+              style={{
+                backgroundColor: canGenerate && !isLoading ? DARK_ACCENT : '#E2E8F0',
+                color: canGenerate && !isLoading ? '#FFFFFF' : '#A0AEC0',
+              }}
+            >
+              {isLoading ? (
+                <><Loader2 size={18} className="animate-spin" /> Generating Mockup...</>
+              ) : hasMockup ? (
+                <><Sparkles size={18} /> Regenerate Mockup</>
+              ) : (
+                <><Sparkles size={18} /> Generate Dashboard Mockup &rarr;</>
+              )}
+            </button>
+            <span className="text-[12px] text-[#A0AEC0]">
+              {filledFieldsCount} of 6 fields completed &middot; Only the purpose is required to start
+              {regenerationCount > 0 && ` \u00b7 Generation ${regenerationCount} of ${MAX_REGENERATIONS}`}
+            </span>
+          </div>
         </div>
 
-        {/* Blank Canvas - shown before dashboard is generated */}
-        {!dashboardImage && (
-          <div ref={imageSectionRef} className="mb-16">
-            <div className="flex items-center gap-2 mb-6">
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
-                style={{ backgroundColor: DARK_ACCENT_COLOR }}
-              >
-                2
+        {/* ═══════════════════════════════════════════
+            SECTION E — Step 2: Dashboard Mockup
+        ═══════════════════════════════════════════ */}
+        <div
+          ref={mockupRef}
+          className="mb-8 -mx-6 px-6 py-12 md:py-16 scroll-mt-24"
+          style={{ backgroundColor: '#F7FAFC' }}
+        >
+          <div className="max-w-[1200px] mx-auto">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-[14px] font-bold" style={{ backgroundColor: DARK_ACCENT }}>
+                02
               </div>
-              <h2 className="text-[24px] font-bold text-[#1A202C]">Dashboard Preview</h2>
+              <h2 className="text-[24px] font-bold text-[#1A202C]">Your Dashboard Mockup</h2>
+              {hasMockup && (
+                <span className="flex items-center gap-1 ml-2 text-[13px] text-[#718096]">
+                  Why mockup first?
+                  <InfoTooltip content={WHY_MOCKUP_TOOLTIP} />
+                </span>
+              )}
             </div>
-            <div className="bg-[#FAFBFC] border-2 border-dashed border-[#E2E8F0] rounded-xl overflow-hidden" style={{ position: 'relative', paddingBottom: '66.67%' }}>
-              <div className="text-center px-8" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
-                <Monitor size={56} className="mx-auto mb-4" style={{ color: '#CBD5E0' }} />
-                <h3 className="text-[18px] font-semibold text-[#A0AEC0] mb-2">Your dashboard will appear here</h3>
-                <p className="text-[14px] text-[#CBD5E0] max-w-md">
-                  Fill in your requirements above and click "Generate Dashboard Design" to create a sleek, AI-powered dashboard mockup.
+
+            {/* Empty State */}
+            {!hasMockup && !isLoading && (
+              <div className="bg-white rounded-2xl p-16 text-center" style={{ border: '2px dashed #E2E8F0' }}>
+                <Monitor size={48} className="mx-auto mb-4" style={{ color: '#E2E8F0' }} />
+                <p className="text-[15px] text-[#A0AEC0]">
+                  Your dashboard mockup will appear here once you complete your brief above.
                 </p>
               </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {/* Step 2: Dashboard Image */}
-        {dashboardImage && (
-          <div ref={imageSectionRef} className="mb-16">
-            <div className="flex items-center gap-2 mb-6">
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
-                style={{ backgroundColor: DARK_ACCENT_COLOR }}
-              >
-                2
-              </div>
-              <h2 className="text-[24px] font-bold text-[#1A202C]">Dashboard Design</h2>
-            </div>
-
-            <div className="bg-white border border-[#E2E8F0] rounded-xl p-6 md:p-8 mb-6">
-              {/* Edit Mode Toggle */}
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-[18px] font-bold text-[#1A202C] mb-1">Dashboard Preview</h3>
-                  <p className="text-[13px] text-[#718096]">Click "Edit Dashboard" to customize metrics and values</p>
+            {/* Loading State */}
+            {isLoading && !hasMockup && (
+              <div className="bg-white rounded-2xl p-16 text-center" style={{ border: '1px solid #E2E8F0' }}>
+                <div className="space-y-3 max-w-lg mx-auto mb-6">
+                  <div className="h-8 bg-gray-100 rounded-lg animate-skeleton-pulse" />
+                  <div className="grid grid-cols-4 gap-3">
+                    {[0, 1, 2, 3].map(i => <div key={i} className="h-20 bg-gray-100 rounded-lg animate-skeleton-pulse" style={{ animationDelay: `${i * 0.15}s` }} />)}
+                  </div>
+                  <div className="h-32 bg-gray-100 rounded-lg animate-skeleton-pulse" style={{ animationDelay: '0.3s' }} />
                 </div>
-                <button
-                  onClick={() => {
-                    setIsEditingDashboard(!isEditingDashboard);
-                    if (!isEditingDashboard && editableMetrics.length === 0) {
-                      const metrics = keyMetrics.split(',').map(m => m.trim()).filter(Boolean) || ['Revenue', 'Users', 'Growth', 'Engagement'];
-                      setEditableMetrics(metrics.map((name, idx) => ({
-                        name,
-                        value: Math.floor(Math.random() * 9000 + 1000),
-                        change: parseFloat((Math.random() * 20 - 5).toFixed(1)),
-                      })));
-                    }
-                  }}
-                  className="px-5 py-2.5 border border-[#D47B5A] text-[#D47B5A] text-[14px] font-semibold rounded-lg hover:bg-[#FFF5F0] transition-colors flex items-center gap-2"
-                >
-                  <Edit2 size={16} />
-                  {isEditingDashboard ? 'Done Editing' : 'Edit Dashboard'}
-                </button>
+                <Loader2 size={24} className="mx-auto animate-spin mb-2" style={{ color: DARK_ACCENT }} />
+                {isRefinement ? (
+                  <>
+                    <p className="text-[14px] text-[#718096]">Refining your dashboard based on feedback...</p>
+                    <p className="text-[12px] text-[#A0AEC0] mt-1 max-w-md mx-auto">The AI is interpreting your changes and generating a new mockup. This usually takes 20&ndash;30 seconds</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-[14px] text-[#718096]">
+                      {isAnalyzingInspiration ? 'Analyzing your inspiration and generating mockup...' : 'Generating your dashboard mockup...'}
+                    </p>
+                    <p className="text-[12px] text-[#A0AEC0] mt-1">
+                      {isAnalyzingInspiration ? 'The AI is studying your reference images to match the style. This usually takes 25\u201340 seconds' : 'This usually takes 15\u201325 seconds'}
+                    </p>
+                  </>
+                )}
               </div>
+            )}
 
-              {/* Editable Dashboard Panel */}
-              {isEditingDashboard && (
-                <div className="mb-6 bg-[#F7FAFC] border border-[#E2E8F0] rounded-xl p-6">
-                  <h4 className="text-[16px] font-bold text-[#1A202C] mb-4">Dashboard Settings</h4>
-                  
-                  <div className="grid md:grid-cols-2 gap-4 mb-6">
-                    <div>
-                      <label className="block text-[13px] font-semibold text-[#1A202C] mb-2">Dashboard Title</label>
-                      <input
-                        type="text"
-                        value={dashboardTitle}
-                        onChange={(e) => {
-                          setDashboardTitle(e.target.value);
-                          updateDashboard();
-                        }}
-                        className="w-full border border-[#E2E8F0] rounded-lg px-3 py-2 text-[14px] text-[#1A202C] focus:outline-none focus:border-[#D47B5A] focus:ring-[2px] focus:ring-[#D47B5A1a] bg-white"
-                        placeholder="Dashboard"
+            {/* Loaded State — Two Columns: Image Left, Prompt Right */}
+            {hasMockup && (
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mt-6">
+
+                {/* Left: Dashboard Image (60%) */}
+                <div className="lg:col-span-3">
+                  <div className="bg-white rounded-xl overflow-hidden" style={{ border: '1px solid #E2E8F0' }}>
+                    {imageUrl && (
+                      <img
+                        src={imageUrl}
+                        alt="AI-generated dashboard mockup"
+                        className="w-full h-auto"
+                        style={{ minHeight: '300px', objectFit: 'contain', backgroundColor: '#F8FAFC' }}
                       />
-                    </div>
-                    <div>
-                      <label className="block text-[13px] font-semibold text-[#1A202C] mb-2">Subtitle</label>
-                      <input
-                        type="text"
-                        value={dashboardSubtitle}
-                        onChange={(e) => {
-                          setDashboardSubtitle(e.target.value);
-                          updateDashboard();
-                        }}
-                        className="w-full border border-[#E2E8F0] rounded-lg px-3 py-2 text-[14px] text-[#1A202C] focus:outline-none focus:border-[#D47B5A] focus:ring-[2px] focus:ring-[#D47B5A1a] bg-white"
-                        placeholder="Overview & Analytics"
-                      />
-                    </div>
+                    )}
+                    {!imageUrl && dashboardHtml && (
+                      <div style={{ position: 'relative', width: '100%', paddingBottom: '66.67%', overflow: 'hidden' }}>
+                        <iframe
+                          srcDoc={dashboardHtml}
+                          className="border-0"
+                          style={{ position: 'absolute', top: 0, left: 0, width: '1200px', height: '800px', transformOrigin: 'top left' }}
+                          title="Generated Dashboard"
+                          ref={(el) => {
+                            if (el) {
+                              const updateScale = () => {
+                                const w = el.parentElement?.clientWidth || 1200;
+                                el.style.transform = `scale(${w / 1200})`;
+                              };
+                              updateScale();
+                              window.addEventListener('resize', updateScale);
+                            }
+                          }}
+                        />
+                      </div>
+                    )}
+                    {!imageUrl && !dashboardHtml && dashboardSvg && (
+                      <div className="w-full p-4">
+                        <div dangerouslySetInnerHTML={{ __html: dashboardSvg }} />
+                      </div>
+                    )}
                   </div>
 
-                  <div>
-                    <label className="block text-[13px] font-semibold text-[#1A202C] mb-3">Metrics</label>
-                    <div className="space-y-3">
-                      {editableMetrics.map((metric, idx) => (
-                        <div key={idx} className="bg-white border border-[#E2E8F0] rounded-lg p-4">
-                          <div className="grid grid-cols-3 gap-3">
-                            <div>
-                              <label className="block text-[12px] font-medium text-[#718096] mb-1">Metric Name</label>
-                              <input
-                                type="text"
-                                value={metric.name}
-                                onChange={(e) => {
-                                  const updated = [...editableMetrics];
-                                  updated[idx].name = e.target.value;
-                                  setEditableMetrics(updated);
-                                  updateDashboard();
-                                }}
-                                className="w-full border border-[#E2E8F0] rounded-lg px-3 py-1.5 text-[13px] text-[#1A202C] focus:outline-none focus:border-[#D47B5A] focus:ring-[2px] focus:ring-[#D47B5A1a] bg-white"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[12px] font-medium text-[#718096] mb-1">Value</label>
-                              <input
-                                type="number"
-                                value={metric.value}
-                                onChange={(e) => {
-                                  const updated = [...editableMetrics];
-                                  updated[idx].value = parseInt(e.target.value) || 0;
-                                  setEditableMetrics(updated);
-                                  updateDashboard();
-                                }}
-                                className="w-full border border-[#E2E8F0] rounded-lg px-3 py-1.5 text-[13px] text-[#1A202C] focus:outline-none focus:border-[#D47B5A] focus:ring-[2px] focus:ring-[#D47B5A1a] bg-white"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[12px] font-medium text-[#718096] mb-1">Change %</label>
-                              <input
-                                type="number"
-                                step="0.1"
-                                value={metric.change}
-                                onChange={(e) => {
-                                  const updated = [...editableMetrics];
-                                  updated[idx].change = parseFloat(e.target.value) || 0;
-                                  setEditableMetrics(updated);
-                                  updateDashboard();
-                                }}
-                                className="w-full border border-[#E2E8F0] rounded-lg px-3 py-1.5 text-[13px] text-[#1A202C] focus:outline-none focus:border-[#D47B5A] focus:ring-[2px] focus:ring-[#D47B5A1a] bg-white"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                  {/* Image toolbar */}
+                  <div className="flex items-center justify-between mt-3">
+                    <div className="flex items-center gap-2">
+                      {generationMethod && (
+                        <span className="text-[11px] text-[#A0AEC0] px-2 py-0.5 rounded bg-[#F7FAFC] border border-[#E2E8F0]">
+                          {generationMethod === 'gemini-image' ? 'Generated with Gemini' : generationMethod === 'imagen' ? 'Generated with Imagen' : generationMethod === 'html' ? 'Interactive HTML Preview' : 'SVG Placeholder'}
+                        </span>
+                      )}
                     </div>
                     <button
-                      onClick={() => {
-                        setEditableMetrics([...editableMetrics, { name: 'New Metric', value: 0, change: 0 }]);
-                      }}
-                      className="mt-3 px-4 py-2 border border-[#E2E8F0] text-[#4A5568] text-[13px] font-semibold rounded-lg hover:bg-[#F7FAFC] transition-colors"
+                      onClick={() => setIsFullScreen(true)}
+                      className="px-3 py-1.5 border border-[#E2E8F0] rounded-full text-[13px] text-[#4A5568] flex items-center gap-1.5 hover:bg-white transition-colors"
                     >
-                      + Add Metric
+                      <Maximize2 size={14} /> Full Screen
                     </button>
                   </div>
                 </div>
-              )}
 
-              {/* Dashboard Display - scaled to fit without clipping */}
-              <div className="mb-6">
-                <div className="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden">
-                  {dashboardSvg ? (
-                    <>
-                      {dashboardImage?.html_content ? (
-                        <div style={{ position: 'relative', width: '100%', paddingBottom: '66.67%', overflow: 'hidden' }}>
-                          <iframe
-                            srcDoc={dashboardImage.html_content}
-                            className="border-0"
-                            style={{
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              width: '1200px',
-                              height: '800px',
-                              transformOrigin: 'top left',
-                            }}
-                            title="Generated Dashboard"
-                            ref={(el) => {
-                              if (el) {
-                                const updateScale = () => {
-                                  const containerWidth = el.parentElement?.clientWidth || 1200;
-                                  const scale = containerWidth / 1200;
-                                  el.style.transform = `scale(${scale})`;
-                                };
-                                updateScale();
-                                window.addEventListener('resize', updateScale);
-                              }
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-full p-4">
-                          <div dangerouslySetInnerHTML={{ __html: dashboardSvg }} />
-                        </div>
-                      )}
-                    </>
-                  ) : dashboardImage && dashboardImage.image_url ? (
-                    <>
-                      {dashboardImage.image_url.startsWith('data:text/html') ? (
-                        <div style={{ position: 'relative', width: '100%', paddingBottom: '66.67%', overflow: 'hidden' }}>
-                          <iframe
-                            srcDoc={decodeURIComponent(dashboardImage.image_url.replace('data:text/html;charset=utf-8,', ''))}
-                            className="border-0"
-                            style={{
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              width: '1200px',
-                              height: '800px',
-                              transformOrigin: 'top left',
-                            }}
-                            title="Generated Dashboard"
-                            ref={(el) => {
-                              if (el) {
-                                const updateScale = () => {
-                                  const containerWidth = el.parentElement?.clientWidth || 1200;
-                                  const scale = containerWidth / 1200;
-                                  el.style.transform = `scale(${scale})`;
-                                };
-                                updateScale();
-                                window.addEventListener('resize', updateScale);
-                              }
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center bg-[#F8FAFC] p-4">
-                          <img
-                            src={dashboardImage.image_url}
-                            alt="Generated dashboard design"
-                            style={{ maxWidth: '100%', height: 'auto', objectFit: 'contain' }}
-                          />
-                        </div>
-                      )}
-                    </>
-                  ) : null}
-                </div>
-              </div>
-
-              {/* Image Prompt */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-3">
-                  <label className="text-[14px] font-semibold text-[#1A202C]">
-                    Image Generation Prompt
-                  </label>
-                  {!isEditingPrompt && (
-                    <button
-                      onClick={handleEditPrompt}
-                      className="text-[13px] font-medium text-[#D47B5A] hover:text-[#C06A4A] transition-colors flex items-center gap-1"
-                    >
-                      <Edit2 size={14} />
-                      Edit
-                    </button>
+                {/* Right: Prompt Architecture (40%) */}
+                <div className="lg:col-span-2">
+                  <h3 className="text-[16px] font-bold text-[#1A202C] mb-3">Prompt Architecture</h3>
+                  <p className="text-[13px] text-[#718096] leading-[1.5] mb-4">
+                    This is the structured JSON prompt that generated your mockup. Copy it to use with other AI tools.
+                  </p>
+                  {jsonPrompt && (
+                    <JsonCodeBlock data={jsonPrompt} onCopy={() => copyToClipboard(JSON.stringify(jsonPrompt, null, 2))} />
                   )}
                 </div>
 
-                {isEditingPrompt ? (
-                  <div className="space-y-3">
-                    <textarea
-                      value={editedPrompt}
-                      onChange={(e) => setEditedPrompt(e.target.value)}
-                      className="w-full border border-[#D47B5A] rounded-lg px-4 py-3 text-[14px] text-[#1A202C] focus:outline-none focus:ring-[3px] focus:ring-[#D47B5A1a] transition-colors resize-none bg-white font-mono"
-                      rows={6}
-                    />
-                    <div className="flex gap-3">
-                      <button
-                        onClick={handleSavePrompt}
-                        disabled={isLoading}
-                        className="px-4 py-2 bg-[#D47B5A] text-white text-[14px] font-semibold rounded-lg hover:bg-[#C06A4A] transition-colors disabled:opacity-50 flex items-center gap-2"
-                      >
-                        <Check size={16} />
-                        Save & Regenerate
-                      </button>
-                      <button
-                        onClick={handleCancelEdit}
-                        className="px-4 py-2 border border-[#E2E8F0] text-[#4A5568] text-[14px] font-semibold rounded-lg hover:bg-[#F7FAFC] transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="bg-[#F7FAFC] border border-[#E2E8F0] rounded-lg px-4 py-3">
-                    <p className="text-[14px] text-[#4A5568] leading-relaxed font-mono whitespace-pre-wrap">
-                      {imagePrompt}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={handleStartOver}
-                  className="px-6 py-3 border border-[#E2E8F0] text-[#4A5568] font-semibold rounded-full hover:bg-[#F7FAFC] transition-colors flex items-center gap-2"
-                >
-                  <RotateCcw size={18} />
-                  Start Over
-                </button>
-              </div>
-            </div>
-
-          </div>
-        )}
-
-        {/* PRD Card - Always visible */}
-        <div ref={prdSectionRef} className="bg-white border border-[#E2E8F0] rounded-xl p-6 md:p-8 mb-16">
-          <div className="flex items-start gap-4 mb-4">
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: 'rgba(245, 184, 160, 0.25)' }}
-            >
-              <FileText size={20} style={{ color: DARK_ACCENT_COLOR }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-[18px] font-bold text-[#1A202C] mb-1">Product Requirements Document (PRD)</h3>
-              <p className="text-[14px] text-[#718096] leading-relaxed">
-                A PRD converts your dashboard design into structured specifications that AI coding agents (like <strong>Lovable</strong>, <strong>Bolt.new</strong>, or <strong>V0</strong>) can use to build a fully functional version. It bridges the gap between what you want and what gets built.
-              </p>
-            </div>
-          </div>
-
-          {isPrdLoading ? (
-            <div className="flex items-center gap-3 py-4 px-4 bg-[#F7FAFC] rounded-lg">
-              <Loader2 size={18} className="animate-spin" style={{ color: DARK_ACCENT_COLOR }} />
-              <p className="text-[14px] text-[#718096]">Generating your PRD...</p>
-            </div>
-          ) : prdResult ? (
-            <>
-              <div className="flex items-center gap-3 mb-4">
-                <button
-                  onClick={() => setShowPrdDropdown(!showPrdDropdown)}
-                  className="flex items-center gap-2 px-4 py-2.5 border border-[#E2E8F0] text-[#1A202C] text-[14px] font-semibold rounded-lg hover:bg-[#F7FAFC] transition-colors"
-                >
-                  <ChevronDown
-                    size={16}
-                    className="transition-transform duration-200"
-                    style={{ transform: showPrdDropdown ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                  />
-                  {showPrdDropdown ? 'Hide PRD' : 'View PRD'}
-                </button>
-                <button
-                  onClick={handleCopyPRD}
-                  className="flex items-center gap-2 px-4 py-2.5 text-white text-[14px] font-semibold rounded-lg transition-colors"
-                  style={{ backgroundColor: DARK_ACCENT_COLOR }}
-                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#C06A4A'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = DARK_ACCENT_COLOR; }}
-                >
-                  {copied ? <Check size={16} /> : <Copy size={16} />}
-                  {copied ? 'Copied!' : 'Copy PRD to Clipboard'}
-                </button>
-              </div>
-
-              {showPrdDropdown && (
-                <div className="border border-[#E2E8F0] rounded-xl overflow-hidden">
-                  <div className="max-h-[600px] overflow-y-auto p-6 space-y-6">
-                    {Object.entries(prdResult.sections).map(([key, value]) => {
-                      const sectionTitles: Record<string, string> = {
-                        title_and_author: 'Title & Author Information',
-                        purpose_and_scope: 'Purpose and Scope',
-                        stakeholders: 'Stakeholder Identification',
-                        market_assessment: 'Market Assessment and Target Demographics',
-                        product_overview: 'Product Overview and Use Cases',
-                        functional_requirements: 'Functional Requirements',
-                        usability_requirements: 'Usability Requirements',
-                        technical_requirements: 'Technical Requirements',
-                        environmental_requirements: 'Environmental Requirements',
-                        support_requirements: 'Support Requirements',
-                        interaction_requirements: 'Interaction Requirements',
-                        assumptions: 'Assumptions',
-                        constraints: 'Constraints',
-                        dependencies: 'Dependencies',
-                        workflow_timeline: 'High-Level Workflow Plans, Timelines and Milestones',
-                        evaluation_metrics: 'Evaluation Plan and Performance Metrics',
-                      };
-
-                      return (
-                        <div key={key}>
-                          <h4 className="text-[16px] font-bold text-[#1A202C] mb-2">
-                            {sectionTitles[key] || key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}
-                          </h4>
-                          <div className="bg-[#F7FAFC] border-l-4 rounded-r-lg px-5 py-3" style={{ borderColor: DARK_ACCENT_COLOR }}>
-                            <p className="text-[14px] text-[#4A5568] leading-relaxed whitespace-pre-wrap">
-                              {value}
-                            </p>
+                {/* ═══ Full-width Feedback Card ═══ */}
+                <div className="lg:col-span-5">
+                  {/* Approve / Give Feedback Buttons */}
+                  {!mockupApproved && !isLoading && (
+                    <div>
+                      {!showFeedbackInput ? (
+                        <div className="flex gap-3">
+                          <button
+                            onClick={handleApproveMockup}
+                            className="flex-1 px-6 py-3 rounded-full font-semibold text-[14px] text-white flex items-center justify-center gap-2 transition-colors"
+                            style={{ backgroundColor: '#38B2AC' }}
+                          >
+                            <ThumbsUp size={16} /> Approve Design
+                          </button>
+                          <button
+                            onClick={() => setShowFeedbackInput(true)}
+                            className="flex-1 px-6 py-3 rounded-full font-semibold text-[14px] flex items-center justify-center gap-2 transition-colors"
+                            style={{ border: `1.5px solid ${DARK_ACCENT}`, color: DARK_ACCENT, backgroundColor: 'rgba(245,184,160,0.08)' }}
+                          >
+                            <MessageSquare size={16} /> Give Feedback
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="bg-white rounded-xl p-6 sm:p-8" style={{ border: `1.5px solid ${ACCENT}` }}>
+                          <p className="text-[15px] font-semibold text-[#1A202C] mb-3">What would you like to change?</p>
+                          <textarea
+                            value={feedbackText}
+                            onChange={e => setFeedbackText(e.target.value)}
+                            placeholder="e.g., Make the KPI cards larger, add a donut chart for category breakdown, use a darker color scheme..."
+                            className="w-full rounded-lg text-[14px] resize-none focus:outline-none transition-all mb-4"
+                            style={{ minHeight: 100, padding: 16, border: `2px solid #F5B8A0`, color: '#1A202C', backgroundColor: '#FFFFFF' }}
+                            onFocus={e => { e.target.style.borderColor = DARK_ACCENT; }}
+                            onBlur={e => { e.target.style.borderColor = '#F5B8A0'; }}
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={handleSubmitFeedback}
+                              disabled={!feedbackText.trim() || isLoading}
+                              className="px-5 py-2.5 rounded-full font-semibold text-[13px] text-white disabled:opacity-50 flex items-center gap-1.5"
+                              style={{ backgroundColor: DARK_ACCENT }}
+                            >
+                              {isLoading ? <><Loader2 size={14} className="animate-spin" /> Regenerating...</> : <><Sparkles size={14} /> Regenerate with Feedback</>}
+                            </button>
+                            <button
+                              onClick={() => { setShowFeedbackInput(false); setFeedbackText(''); }}
+                              className="px-4 py-2.5 rounded-full text-[13px] text-[#718096] border border-[#E2E8F0] hover:bg-[#F7FAFC]"
+                            >
+                              Cancel
+                            </button>
                           </div>
                         </div>
-                      );
-                    })}
+                      )}
+                      <p className="text-[11px] text-[#A0AEC0] mt-2 text-center">
+                        Approving will automatically generate your PRD. Feedback will refine the mockup.
+                      </p>
+                    </div>
+                  )}
+
+                  {mockupApproved && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: 'rgba(56,178,172,0.08)', border: '1px solid rgba(56,178,172,0.3)' }}>
+                      <Check size={14} className="text-[#38B2AC]" />
+                      <span className="text-[13px] text-[#38B2AC] font-medium">Design approved</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ═══════════════════════════════════════════
+            SECTION F — Step 3: Generate Your PRD
+        ═══════════════════════════════════════════ */}
+        <div ref={prdRef} className="mb-16 scroll-mt-24">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-[14px] font-bold" style={{ backgroundColor: DARK_ACCENT }}>
+              03
+            </div>
+            <h2 className="text-[24px] font-bold text-[#1A202C]">Your Dashboard PRD</h2>
+          </div>
+          <p className="text-[15px] text-[#4A5568] mb-6 ml-[48px]">
+            A comprehensive Product Requirements Document &mdash; ready to hand off to developers or AI coding tools.
+          </p>
+
+          {/* State 1: Before Generation — Educational Overview + Sections Dropdown */}
+          {!prdResult && !isPrdLoading && (
+            <div>
+              {/* Full-width overview card */}
+              <div
+                className="rounded-2xl p-6 sm:p-8 mb-6"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(245,184,160,0.10) 0%, rgba(212,123,90,0.05) 100%)',
+                  border: '1.5px solid #F5B8A0',
+                }}
+              >
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* What is a PRD? */}
+                  <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E2E8F0' }}>
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(245,184,160,0.25)' }}>
+                        <FileText size={16} style={{ color: DARK_ACCENT }} />
+                      </div>
+                      <h4 className="text-[15px] font-bold text-[#1A202C]">What is a PRD?</h4>
+                    </div>
+                    <p className="text-[13px] text-[#4A5568] leading-[1.6]">
+                      A Product Requirements Document defines exactly what your dashboard should do, who it serves, and how it should behave. It bridges the gap between your design vision and the development reality.
+                    </p>
+                  </div>
+
+                  {/* Why does your dashboard need one? */}
+                  <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E2E8F0' }}>
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(245,184,160,0.25)' }}>
+                        <ClipboardList size={16} style={{ color: DARK_ACCENT }} />
+                      </div>
+                      <h4 className="text-[15px] font-bold text-[#1A202C]">Why your dashboard needs one</h4>
+                    </div>
+                    <p className="text-[13px] text-[#4A5568] leading-[1.6]">
+                      Without a PRD, dashboards get built on assumptions. A PRD specifies the exact widgets, data sources, user interactions, and visual design &mdash; so the final product matches the vision.
+                    </p>
+                  </div>
+
+                  {/* What's included? */}
+                  <div className="bg-white rounded-xl p-5" style={{ border: '1px solid #E2E8F0' }}>
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(245,184,160,0.25)' }}>
+                        <Sparkles size={16} style={{ color: DARK_ACCENT }} />
+                      </div>
+                      <h4 className="text-[15px] font-bold text-[#1A202C]">What you'll get</h4>
+                    </div>
+                    <p className="text-[13px] text-[#4A5568] leading-[1.6]">
+                      An {PRD_SECTIONS.length}-section document covering everything from user stories and widget specs to tech stack recommendations, data integration, and acceptance criteria.
+                    </p>
                   </div>
                 </div>
+
+                {/* PRD Sections Dropdown */}
+                <div className="mt-5 pt-5" style={{ borderTop: '1px solid rgba(245,184,160,0.3)' }}>
+                  <button
+                    onClick={() => setShowPrdSectionsOverview(!showPrdSectionsOverview)}
+                    className="flex items-center gap-2 text-[14px] font-semibold transition-colors"
+                    style={{ color: DARK_ACCENT }}
+                  >
+                    <ChevronDown size={16} className={cn('transition-transform', showPrdSectionsOverview && 'rotate-180')} />
+                    {showPrdSectionsOverview ? 'Hide PRD Sections Overview' : `View all ${PRD_SECTIONS.length} PRD sections`}
+                  </button>
+
+                  {showPrdSectionsOverview && (
+                    <div className="mt-4 flex flex-col gap-3">
+                      {PRD_SECTIONS.map((section) => {
+                        const IconComponent = PRD_SECTION_ICONS[section.key] || FileText;
+                        return (
+                          <div key={section.key} className="bg-white rounded-lg p-4" style={{ border: '1px solid #E2E8F0' }}>
+                            <div className="flex items-center gap-3 mb-2">
+                              <div
+                                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                                style={{ backgroundColor: 'rgba(245,184,160,0.25)' }}
+                              >
+                                <IconComponent size={16} style={{ color: DARK_ACCENT }} />
+                              </div>
+                              <h5 className="text-[14px] font-bold text-[#1A202C]">{section.title}</h5>
+                            </div>
+                            <p className="text-[13px] text-[#4A5568] leading-[1.6] mb-2 ml-11">{section.description}</p>
+                            <p className="text-[11px] text-[#A0AEC0] leading-[1.5] ml-11">
+                              <span className="font-semibold text-[#718096]">Example:</span> {section.example}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Generate CTA */}
+                <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <button
+                    onClick={handleGeneratePRD}
+                    disabled={!hasMockup || isPrdLoading || prdGenerationCount >= MAX_PRD_GENERATIONS}
+                    className="px-8 py-3 font-semibold rounded-full transition-all duration-150 disabled:cursor-not-allowed flex items-center gap-2 text-[15px]"
+                    style={{
+                      backgroundColor: hasMockup ? DARK_ACCENT : '#E2E8F0',
+                      color: hasMockup ? '#FFFFFF' : '#A0AEC0',
+                    }}
+                  >
+                    <FileText size={18} /> Generate PRD
+                  </button>
+                  {!hasMockup && (
+                    <p className="text-[13px] text-[#A0AEC0]">Complete and approve your dashboard mockup above to generate a PRD.</p>
+                  )}
+                  {hasMockup && (
+                    <p className="text-[13px] text-[#A0AEC0]">Your brief and mockup details will be used to generate a personalized PRD.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Loading State */}
+          {isPrdLoading && (
+            <div className="flex flex-col items-center py-12 scroll-mt-24">
+              <Loader2 size={28} className="animate-spin mb-4" style={{ color: '#D47B5A' }} />
+              <p className="text-[16px] font-semibold text-[#1A202C] mb-1">Generating your PRD...</p>
+              <p className="text-[13px] text-[#A0AEC0] mb-8">This usually takes 20&ndash;30 seconds</p>
+
+              <div className="w-full max-w-xl space-y-2">
+                {PRD_SECTIONS.map((section, idx) => {
+                  const IconComponent = PRD_SECTION_ICONS[section.key] || FileText;
+                  const isActive = idx === prdProgressStep;
+                  const isComplete = idx < prdProgressStep;
+                  return (
+                    <div
+                      key={section.key}
+                      className={cn(
+                        'flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-300',
+                        isActive && 'bg-[rgba(245,184,160,0.12)] border border-[#F5B8A0]',
+                        isComplete && 'opacity-60',
+                        !isActive && !isComplete && 'opacity-30',
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'w-7 h-7 rounded-md flex items-center justify-center shrink-0 transition-colors duration-300',
+                          isComplete ? 'bg-[rgba(56,178,172,0.15)]' : isActive ? 'bg-[rgba(245,184,160,0.3)]' : 'bg-[#F7FAFC]',
+                        )}
+                      >
+                        {isComplete ? (
+                          <Check size={14} className="text-[#38B2AC]" />
+                        ) : isActive ? (
+                          <Loader2 size={14} className="animate-spin text-[#D47B5A]" />
+                        ) : (
+                          <IconComponent size={14} className="text-[#A0AEC0]" />
+                        )}
+                      </div>
+                      <span className={cn(
+                        'text-[13px] transition-colors duration-300',
+                        isActive ? 'font-semibold text-[#1A202C]' : isComplete ? 'text-[#718096]' : 'text-[#A0AEC0]',
+                      )}>
+                        {section.title}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* State 2: After Generation — Full PRD */}
+          {prdResult && !isPrdLoading && (
+            <div>
+              {/* PRD Toolbar */}
+              <div className="bg-white rounded-t-xl px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3" style={{ border: '1px solid #E2E8F0', borderRadius: '12px 12px 0 0' }}>
+                <span className="text-[16px] font-bold text-[#1A202C]">{prdResult.prd_content}</span>
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={() => {
+                    const fullText = Object.entries(prdResult.sections).map(([key, val]) => {
+                      const def = PRD_SECTIONS.find(s => s.key === key);
+                      return `## ${def?.title || key}\n\n${val}`;
+                    }).join('\n\n');
+                    copyToClipboard(`# ${prdResult.prd_content}\n\n${fullText}`);
+                  }} className="px-4 py-1.5 border border-[#E2E8F0] rounded-full text-[13px] text-[#2D3748] flex items-center gap-1.5 hover:bg-[#F7FAFC] transition-colors">
+                    <Copy size={13} /> Copy PRD
+                  </button>
+                  <button onClick={handleExportMarkdown}
+                    className="px-4 py-1.5 border border-[#E2E8F0] rounded-full text-[13px] text-[#2D3748] flex items-center gap-1.5 hover:bg-[#F7FAFC] transition-colors">
+                    <Download size={13} /> Export Markdown
+                  </button>
+                  {jsonPrompt && (
+                    <button onClick={() => copyToClipboard(JSON.stringify(jsonPrompt, null, 2))}
+                      className="px-4 py-1.5 border border-[#E2E8F0] rounded-full text-[13px] text-[#2D3748] flex items-center gap-1.5 hover:bg-[#F7FAFC] transition-colors">
+                      <Copy size={13} /> Copy JSON
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Summary Card */}
+              <div className="bg-white p-6" style={{ border: '1px solid #E2E8F0', borderTop: 'none' }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-[1px] text-[#A0AEC0]">Purpose</span>
+                    <p className="text-[14px] font-medium text-[#1A202C] mt-1">{brief.q1_purpose.slice(0, 100)}{brief.q1_purpose.length > 100 ? '...' : ''}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-[1px] text-[#A0AEC0]">Dashboard Type</span>
+                    <p className="text-[14px] font-medium text-[#1A202C] mt-1">{brief.q3_type || 'General'}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-[1px] text-[#A0AEC0]">Target Users</span>
+                    <p className="text-[14px] font-medium text-[#1A202C] mt-1">{brief.q2_audience || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-[1px] text-[#A0AEC0]">Key Metrics</span>
+                    <p className="text-[14px] font-medium text-[#1A202C] mt-1">{brief.q4_metrics || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-[1px] text-[#A0AEC0]">Visual Style</span>
+                    <p className="text-[14px] font-medium text-[#1A202C] mt-1">
+                      {VISUAL_STYLE_OPTIONS.find(v => v.id === brief.q7_visualStyle)?.label || 'Not specified'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-[1px] text-[#A0AEC0]">Data Sources</span>
+                    <p className="text-[14px] font-medium text-[#1A202C] mt-1">{dataSourcesText || 'Not specified'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* View Full PRD Toggle */}
+              <div className="text-center mt-5">
+                <button
+                  onClick={() => setShowFullPrd(!showFullPrd)}
+                  className="px-6 py-2.5 rounded-full text-[14px] font-semibold flex items-center gap-2 mx-auto transition-colors"
+                  style={{ border: `1px solid ${DARK_ACCENT}`, color: DARK_ACCENT }}
+                >
+                  {showFullPrd ? 'Hide Full PRD' : 'View Full PRD'}
+                  <ChevronDown size={16} className={cn('transition-transform', showFullPrd && 'rotate-180')} />
+                </button>
+              </div>
+
+              {/* Full PRD Content */}
+              {showFullPrd && (
+                <div className="bg-white rounded-xl p-8 md:p-10 mt-4" style={{ border: '1px solid #E2E8F0' }}>
+                  {Object.entries(prdResult.sections).map(([key, value], idx) => {
+                    const def = PRD_SECTIONS.find(s => s.key === key);
+                    const displayValue = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+                    return (
+                      <div key={key} className={idx > 0 ? 'mt-8 pt-6 border-t border-[#E2E8F0]' : ''}>
+                        <h4 className="text-[18px] font-bold text-[#1A202C] mb-3">{def?.title || key}</h4>
+                        <div className="text-[14px] text-[#4A5568] leading-[1.7] whitespace-pre-wrap">{displayValue}</div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
-            </>
-          ) : (
-            <div className="bg-[#F7FAFC] border border-[#E2E8F0] rounded-lg px-4 py-3">
-              <p className="text-[14px] text-[#718096]">
-                Generate a dashboard above to automatically create your PRD.
-              </p>
             </div>
           )}
         </div>
+
+        {/* ═══════════════════════════════════════════
+            Bottom Actions
+        ═══════════════════════════════════════════ */}
+        {hasMockup && (
+          <div className="flex justify-center mb-12">
+            <button
+              onClick={handleStartOver}
+              className="px-6 py-3 border border-[#E2E8F0] text-[#4A5568] font-semibold rounded-full hover:bg-[#F7FAFC] transition-colors flex items-center gap-2"
+            >
+              <RotateCcw size={16} /> Start Over
+            </button>
+          </div>
+        )}
 
         {/* Closing */}
         <ArtifactClosing
           summaryText="You've designed a dashboard prototype and generated a PRD ready for AI-assisted development."
           ctaLabel="Continue to Level 5: Full AI Applications"
           ctaHref="#product-architecture"
-          accentColor={DARK_ACCENT_COLOR}
+          accentColor={DARK_ACCENT}
         />
       </div>
 
-      {/* Toast Notification */}
+      {/* ═══════════════════════════════════════════
+          Full Screen Modal
+      ═══════════════════════════════════════════ */}
+      {isFullScreen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center p-4" onClick={() => setIsFullScreen(false)}>
+          <div className="relative max-w-[95vw] max-h-[95vh] bg-white rounded-xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => setIsFullScreen(false)}
+              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-[#1A202C] bg-opacity-70 flex items-center justify-center text-white hover:bg-opacity-90 transition-colors"
+            >
+              <Minimize2 size={16} />
+            </button>
+            {imageUrl ? (
+              <img src={imageUrl} alt="Full screen dashboard mockup" className="max-w-full max-h-[90vh] object-contain" />
+            ) : dashboardHtml ? (
+              <iframe srcDoc={dashboardHtml} className="w-[1200px] h-[800px] border-0" title="Full Screen Dashboard" />
+            ) : dashboardSvg ? (
+              <div className="p-8" style={{ width: '1200px' }} dangerouslySetInnerHTML={{ __html: dashboardSvg }} />
+            ) : null}
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
       {showToast && (
-        <div
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#1A202C] text-white text-[14px] px-5 py-2.5 rounded-lg shadow-lg z-50 animate-toast-enter"
-          style={{ transform: 'translateX(-50%)' }}
-        >
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#1A202C] text-white text-[14px] px-5 py-2.5 rounded-lg shadow-lg z-50 animate-toast-enter">
           {toastMessage}
         </div>
       )}

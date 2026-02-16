@@ -237,3 +237,49 @@ export interface PersonaCardData {
     estimatedJourney: string;
   };
 }
+
+// Dashboard Designer types (Level 4)
+export type DashboardStepStatus = 'pending' | 'active' | 'completed';
+
+export interface DashboardBrief {
+  // Group 1: Context & Purpose
+  q1_purpose: string;
+  q2_audience: string;
+  q3_type: string;
+  // Group 2: Data & Metrics
+  q4_metrics: string;
+  q5_dataSources: string[];
+  q5_otherSource: string;
+  q6_frequency: string;
+  // Group 3: Inspiration & Style
+  q7_visualStyle: string;
+  q8_colorScheme: string;
+  q8_customColor: string;
+  q9_inspirationUrls: string[];
+  q9_uploadedImages: string[];
+}
+
+export interface RefinementSettings {
+  layoutColumns: string;
+  headerStyle: string;
+  widgetDensity: number;
+  colorOverride: string;
+  chartStyle: string;
+  darkMode: boolean;
+  additionalMetrics: string[];
+  additionalSections: string[];
+  freeTextFeedback: string;
+}
+
+export interface DashboardVersion {
+  version: number;
+  htmlContent: string;
+  imagePrompt: string;
+  jsonPrompt: object;
+  timestamp: number;
+}
+
+export interface NewPRDResult {
+  prd_content: string;
+  sections: Record<string, string>;
+}

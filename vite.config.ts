@@ -925,56 +925,21 @@ Only include levels that are "full" or "fast-track". Omit "awareness" and "skip"
 }
 
 function dashboardDesignProxyPlugin(apiKey: string, model: string): Plugin {
-  const systemPrompt = `You are an elite UI designer AND data strategist creating stunning, modern dashboard mockups. Your dashboards should look like they belong on Dribbble or Behance — minimal, airy, and visually refined.
+  // System prompt for Gemini HTML fallback (used when Imagen is unavailable)
+  const htmlFallbackPrompt = `You are an elite UI designer creating stunning, modern dashboard mockups. Generate a complete HTML dashboard.
 
-You will receive a description of dashboard needs, target audience, key metrics, data sources, and optionally an inspiration URL. Generate a complete HTML dashboard.
+METRIC REQUIREMENTS: Include EVERY metric the user listed. Infer 3-5 additional relevant metrics. Use realistic sample data with % change indicators.
 
-METRIC REQUIREMENTS (CRITICAL):
-- You MUST include EVERY metric the user listed in KEY METRICS. Each one must appear as either a KPI card or a chart — never omit any.
-- Beyond the user's listed metrics, INFER 3-5 additional relevant metrics based on the dashboard purpose, target audience, and data sources. For example:
-  - If the user asks for a "sales dashboard" with "Revenue, Deals" → also add: Conversion Rate, Average Deal Size, Sales Pipeline Value, Win Rate, Monthly Growth Trend
-  - If the user asks for "marketing analytics" with "Website Traffic" → also add: Bounce Rate, Session Duration, Top Channels, Lead Generation, Cost per Acquisition
-  - If the user asks for "HR dashboard" with "Headcount" → also add: Attrition Rate, Time to Hire, Employee Satisfaction, Department Distribution, Open Positions
-- Use realistic sample data with plausible values. Include % change indicators (up/down arrows with green/red badges) on KPI cards.
-- Show a mix of visualization types: KPI cards for headline numbers, an area/line chart for trends over time, a bar chart or donut chart for breakdowns by category.
-
-DESIGN AESTHETIC (MANDATORY):
-- MINIMAL and AIRY — think Notion analytics, Linear insights, or Vercel dashboard. NO sidebars, NO navigation menus, NO buttons. This is a data visualization mockup, not a full app.
-- Font: 'DM Sans', sans-serif loaded via Google Fonts link in HTML — NEVER use Inter, Roboto, or Arial
-- Background: #F8FAFC (soft off-white), NOT pure white
-- Cards: white (#FFFFFF) with border-radius: 16px, border: 1px solid #E2E8F0, subtle shadow: 0 1px 3px rgba(0,0,0,0.04)
-- Color palette:
-  - Primary: #38B2AC (teal) for charts, highlights
-  - Secondary: #5B6DC2 (lavender-indigo) for secondary charts
-  - Accent: #D47B5A (warm peach) for alerts, important callouts
-  - Gold: #C4A934 for tertiary data
-  - Text: #1A202C (headings), #4A5568 (body), #94A3B8 (muted)
-  - Borders: #E2E8F0
-- Layout: Single-column or grid layout with NO sidebar. Start with a simple header (dashboard title + subtitle/date range), then a row of compact KPI cards, then charts below. Lots of whitespace. Think content-first, not chrome-heavy.
-- KPI Cards: Compact — metric label (11px, uppercase, muted), large bold value (28-36px), small colored badge with % change. Keep cards slim, not tall.
-- Charts: Use inline SVG for smooth, elegant visualizations — area charts with gradient fills, clean bar charts, or donut charts. Keep them lightweight with thin grid lines, subtle axis labels, and smooth curves. NO heavy borders or 3D effects. IMPORTANT: All SVG charts must use viewBox (e.g. viewBox="0 0 400 200") and NOT use fixed width/height attributes — they should scale naturally with their container without stretching. Keep chart aspect ratios reasonable (roughly 2:1 width to height).
-- Typography hierarchy: Title (22-28px bold), values (28-36px bold), labels (11px semibold uppercase tracking-wide), body (13-14px regular)
-- Spacing: Moderate padding (20-24px in cards), consistent gaps (16-20px grid gaps). Avoid oversized paddings that make cards feel bloated.
-- DO NOT include: sidebars, navigation menus, hamburger menus, buttons, links, footers, or any interactive chrome. This is a clean data dashboard mockup — content only.
-
-If an INSPIRATION URL is provided, try to match the overall layout style, color mood, and component arrangement of that site while still using the color palette above.
+DESIGN AESTHETIC: MINIMAL and AIRY. Font: 'DM Sans'. Background: #F8FAFC. Cards: white, border-radius: 16px, border: 1px solid #E2E8F0. Colors: Primary #38B2AC, Secondary #5B6DC2, Accent #D47B5A. NO sidebars, NO navigation menus, NO buttons. Content only.
 
 RESPONSE FORMAT (JSON only, no markdown):
-
 {
   "image_url": "",
-  "image_prompt": "A description of the dashboard that was generated",
+  "image_prompt": "A description of the dashboard",
   "html_content": "<!DOCTYPE html><html>...</html>"
 }
 
-The html_content MUST be a complete, self-contained HTML document with a <link> to Google Fonts for DM Sans, all styles in a <style> tag, and semantic HTML. CRITICAL SIZING RULES:
-- The dashboard will be displayed inside an iframe that is approximately 1100px wide and 700px tall.
-- ALL content MUST fit within this size WITHOUT scrolling.
-- Add "html, body { margin: 0; padding: 24px; overflow: hidden; height: 100%; box-sizing: border-box; }" to the CSS.
-- Do NOT use fixed pixel widths on containers — use percentages or max-width instead so content adapts.
-- SVG charts should NOT have fixed width/height — use width: 100% and a viewBox so they scale proportionally without stretching.
-- Keep the layout compact: max 4-5 KPI cards in a row, max 2 charts side by side. Do not overfill the page.
-The dashboard should feel lightweight and breathable — something a designer would showcase as a clean data visualization.`;
+The html_content MUST fit inside a 1100x700px iframe WITHOUT scrolling. Add "html, body { margin: 0; padding: 24px; overflow: hidden; height: 100%; box-sizing: border-box; }" to CSS. Use viewBox for SVG charts. Keep compact: max 4-5 KPI cards, max 2 charts side by side.`;
 
   return {
     name: 'dashboard-design-proxy',
@@ -997,16 +962,181 @@ The dashboard should feel lightweight and breathable — something a designer wo
         req.on('data', (chunk: Buffer) => { body += chunk.toString(); });
         req.on('end', async () => {
           try {
-            const { user_needs, target_audience, key_metrics, data_sources, dashboard_title, dashboard_subtitle, inspiration_url } = JSON.parse(body);
+            const {
+              user_needs, target_audience, key_metrics, data_sources,
+              dashboard_type, visual_style, inspiration_url,
+              refinement_feedback, previous_prompt,
+              inspiration_images,
+            } = JSON.parse(body);
 
+            // Build a descriptive prompt for Gemini image generation
+            const styleDesc = visual_style === 'data-dense' ? 'data-dense with maximum information density'
+              : visual_style === 'executive-polished' ? 'executive and polished with large KPI cards'
+              : visual_style === 'colorful-visual' ? 'colorful and visual with bold infographic style'
+              : 'clean and minimal with lots of whitespace';
+
+            // ─── Analyze inspiration images if provided ───
+            let inspirationPatterns = '';
+            if (inspiration_images && Array.isArray(inspiration_images) && inspiration_images.length > 0) {
+              console.log(`Analyzing ${inspiration_images.length} inspiration image(s)...`);
+              try {
+                const analyzeUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                const imageParts = inspiration_images.map((img: string) => {
+                  // img is a data URL like "data:image/png;base64,..."
+                  // Use string splitting instead of regex for robustness with large base64 payloads
+                  if (!img.startsWith('data:')) return null;
+                  const commaIdx = img.indexOf(',');
+                  if (commaIdx === -1) return null;
+                  const header = img.slice(5, commaIdx); // e.g. "image/png;base64"
+                  const semiIdx = header.indexOf(';');
+                  if (semiIdx === -1) return null;
+                  const mimeType = header.slice(0, semiIdx);
+                  const data = img.slice(commaIdx + 1);
+                  if (!mimeType.startsWith('image/') || !data) return null;
+                  return { inlineData: { mimeType, data } };
+                }).filter(Boolean);
+
+                if (imageParts.length > 0) {
+                  const analyzeResponse = await fetch(analyzeUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      system_instruction: {
+                        parts: [{ text: `You are an expert UI/UX analyst specializing in dashboard design. Analyze the provided dashboard screenshot(s) and extract the key design patterns. Focus on:
+
+1. LAYOUT STRUCTURE: How are widgets arranged? Grid layout, column count, section grouping
+2. COLOR SCHEME: Primary colors, accent colors, background tones, card styling
+3. CHART TYPES: What visualization types are used (bar, line, donut, gauge, heatmap, sparkline, etc.)
+4. INFORMATION DENSITY: Is it data-dense or spacious? How many KPIs/widgets are visible?
+5. TYPOGRAPHY: Font style, heading sizes relative to body text, label formatting
+6. CARD DESIGN: Border radius, shadows, borders, padding style
+7. SPECIAL ELEMENTS: Any unique design patterns like progress bars, status indicators, alerts, tabs
+
+Output a concise paragraph (3-5 sentences) describing these patterns as design instructions that could guide generating a similar dashboard. Be specific about colors, layout ratios, and widget types. Do NOT describe the data — only the visual design patterns.` }],
+                      },
+                      contents: [{
+                        role: 'user',
+                        parts: [
+                          { text: 'Analyze these dashboard screenshot(s) and extract the key design patterns:' },
+                          ...imageParts,
+                        ],
+                      }],
+                      generationConfig: { temperature: 0.3 },
+                    }),
+                  });
+
+                  if (analyzeResponse.ok) {
+                    const analyzeData = await analyzeResponse.json();
+                    const patterns = analyzeData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                    if (patterns.trim()) {
+                      inspirationPatterns = patterns.trim();
+                      console.log('✅ Inspiration image analysis complete');
+                    }
+                  } else {
+                    console.log('Inspiration analysis failed, continuing without it');
+                  }
+                }
+              } catch (analyzeErr) {
+                console.log('Inspiration analysis error, continuing without it:', analyzeErr);
+              }
+            }
+
+            let imagePrompt: string;
+
+            // ─── If refinement feedback is provided, use Gemini text model to refine the prompt ───
+            if (refinement_feedback && previous_prompt) {
+              console.log('Refining image prompt based on user feedback...');
+              const refinementUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+              // Include inspiration patterns in the refinement context if available
+              const inspirationContext = inspirationPatterns
+                ? `\n\nDESIGN REFERENCE FROM INSPIRATION IMAGES (must be maintained in the refined prompt): ${inspirationPatterns}`
+                : '';
+
+              const refinementResponse = await fetch(refinementUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  system_instruction: {
+                    parts: [{ text: `You are an expert at refining image generation prompts for dashboard mockups. You will receive the original prompt that generated a dashboard image, the user's feedback about what they want changed, and optionally design patterns extracted from the user's inspiration images. Your job is to produce a NEW, complete image generation prompt that incorporates the user's feedback and the inspiration design patterns while keeping all the good parts of the original prompt. Output ONLY the refined prompt text, nothing else. Keep all formatting instructions (crisp text, 16:9 ratio, DM Sans font, etc.) from the original. If design reference patterns from inspiration images are provided, make sure they are incorporated into the new prompt.` }],
+                  },
+                  contents: [{
+                    role: 'user',
+                    parts: [{ text: `ORIGINAL PROMPT:\n${previous_prompt}\n\nUSER FEEDBACK:\n${refinement_feedback}${inspirationContext}\n\nGenerate the refined prompt:` }],
+                  }],
+                  generationConfig: { temperature: 0.4 },
+                }),
+              });
+
+              if (refinementResponse.ok) {
+                const refinementData = await refinementResponse.json();
+                const refinedText = refinementData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                if (refinedText.trim()) {
+                  imagePrompt = refinedText.trim();
+                  console.log('✅ Prompt refined successfully (with inspiration:', !!inspirationPatterns, ')');
+                } else {
+                  imagePrompt = `${previous_prompt} IMPORTANT CHANGES REQUESTED: ${refinement_feedback}${inspirationPatterns ? ` DESIGN REFERENCE: ${inspirationPatterns}` : ''}`;
+                }
+              } else {
+                imagePrompt = `${previous_prompt} IMPORTANT CHANGES REQUESTED: ${refinement_feedback}${inspirationPatterns ? ` DESIGN REFERENCE: ${inspirationPatterns}` : ''}`;
+              }
+            } else {
+              imagePrompt = `Generate a high-fidelity professional dashboard UI screenshot mockup for ${target_audience || 'business users'}. The dashboard shows: ${key_metrics || 'key business metrics'}. Purpose: ${user_needs}. Style: ${styleDesc}. ${dashboard_type ? `Type: ${dashboard_type}.` : ''} The dashboard has KPI metric cards at the top showing exact numbers with percentage change indicators, followed by line charts and bar charts below with clearly labeled axes. Modern flat design, white background with subtle gray borders, teal and navy color scheme. DM Sans font. Make ALL text, numbers, labels, and axis values crisp, sharp, and perfectly readable. 16:9 aspect ratio. This should look like a real production web application screenshot.${inspirationPatterns ? `\n\nIMPORTANT DESIGN REFERENCE — The user provided inspiration images. Match these design patterns closely: ${inspirationPatterns}` : ''}`;
+            }
+
+            console.log('Generating dashboard image with Gemini 2.5 Flash Image...');
+            console.log('  → Inspiration patterns:', inspirationPatterns ? 'YES (' + inspirationPatterns.slice(0, 100) + '...)' : 'NONE');
+            console.log('  → Feedback refinement:', refinement_feedback ? 'YES' : 'NO');
+            console.log('  → Prompt length:', imagePrompt.length, 'chars');
+
+            // ─── Strategy 1: Gemini 2.5 Flash Image (best text rendering) ───
+            try {
+              const geminiImageUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`;
+              const geminiImageResponse = await fetch(geminiImageUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: imagePrompt }] }],
+                  generationConfig: {
+                    responseModalities: ['IMAGE', 'TEXT'],
+                    imageConfig: { aspectRatio: '16:9' },
+                  },
+                }),
+              });
+
+              if (geminiImageResponse.ok) {
+                const geminiImageData = await geminiImageResponse.json();
+                const parts = geminiImageData?.candidates?.[0]?.content?.parts || [];
+                const imagePart = parts.find((p: any) => p.inlineData);
+                if (imagePart?.inlineData?.data) {
+                  const mimeType = imagePart.inlineData.mimeType || 'image/png';
+                  const imageUrl = `data:${mimeType};base64,${imagePart.inlineData.data}`;
+                  console.log('✅ Gemini 2.5 Flash Image generation successful');
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify({
+                    image_url: imageUrl,
+                    image_prompt: imagePrompt,
+                    generation_method: 'gemini-image',
+                  }));
+                  return;
+                }
+              }
+              const geminiImageErr = await geminiImageResponse.text().catch(() => '');
+              console.log('Gemini Image not available, falling back to HTML generation:', geminiImageErr.slice(0, 200));
+            } catch (geminiImageErr) {
+              console.log('Gemini Image error, falling back to HTML generation:', geminiImageErr);
+            }
+
+            // ─── Strategy 2: Fallback to Gemini HTML generation ───
+            console.log('Using Gemini HTML fallback...');
             const userMessage = [
               `DASHBOARD PURPOSE: ${user_needs}`,
               target_audience ? `TARGET AUDIENCE: ${target_audience}` : '',
               key_metrics ? `KEY METRICS: ${key_metrics}` : '',
               data_sources ? `DATA SOURCES: ${data_sources}` : '',
-              dashboard_title ? `DASHBOARD TITLE: ${dashboard_title}` : '',
-              dashboard_subtitle ? `DASHBOARD SUBTITLE: ${dashboard_subtitle}` : '',
-              inspiration_url ? `INSPIRATION URL: ${inspiration_url} — Use this website's layout, style, and visual approach as design inspiration for the dashboard.` : '',
+              dashboard_type ? `DASHBOARD TYPE: ${dashboard_type}` : '',
+              visual_style ? `VISUAL STYLE: ${visual_style}` : '',
+              inspiration_url ? `INSPIRATION URL: ${inspiration_url}` : '',
             ].filter(Boolean).join('\n');
 
             const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
@@ -1015,7 +1145,7 @@ The dashboard should feel lightweight and breathable — something a designer wo
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 system_instruction: {
-                  parts: [{ text: systemPrompt }],
+                  parts: [{ text: htmlFallbackPrompt }],
                 },
                 contents: [
                   {
@@ -1046,6 +1176,7 @@ The dashboard should feel lightweight and breathable — something a designer wo
             try {
               const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
               parsed = JSON.parse(cleaned);
+              parsed.generation_method = 'html';
             } catch {
               console.error('Failed to parse Gemini response (dashboard):', text);
               res.statusCode = 502;
@@ -1069,35 +1200,131 @@ The dashboard should feel lightweight and breathable — something a designer wo
 }
 
 function prdProxyPlugin(apiKey: string, model: string): Plugin {
-  const systemPrompt = `You are the Oxygy PRD Writer — an expert in creating Product Requirements Documents for AI-powered dashboard applications.
+  const systemPrompt = `You are a senior product manager and technical writer specializing in dashboard and data visualization products. You create production-grade Product Requirements Documents (PRDs) that development teams can use to build real dashboards.
 
-You will receive details about a dashboard (user needs, target audience, key metrics, data sources, and an image prompt describing the visual design). Generate a comprehensive PRD.
+You will receive details about a dashboard project including: purpose, target audience, key metrics, data sources, visual style preferences, and a description of the mockup design. Your job is to generate a comprehensive, detailed, and actionable PRD that a real development team or AI coding tool could use to build this dashboard.
 
-RESPONSE FORMAT (JSON only, no markdown):
+CRITICAL RULES:
+- Every section must be SPECIFIC to the user's actual project — reference their exact metrics, audience, data sources, and use case throughout.
+- Write at a professional level — this should read like a real PRD from a product team at a tech company.
+- Be quantitative wherever possible — specify pixel sizes, grid ratios, refresh intervals, loading times, character limits.
+- Include edge cases, error states, and fallback behaviors.
+- Use concrete examples that reference the user's specific metrics and data.
+- IMPORTANT: Every section value MUST be a plain text STRING, not a JSON object. Use formatted text with newlines, bullets (using * or -), and headers (using plain text) within the string. Never nest JSON objects inside section values.
+
+RESPONSE FORMAT (JSON only, no markdown, no code fences):
 
 {
-  "prd_content": "Full PRD title",
+  "prd_content": "PRD: [Descriptive dashboard name based on the user's purpose]",
   "sections": {
-    "title_and_author": "Title, author, date, version info",
-    "purpose_and_scope": "Business purpose and technical scope",
-    "stakeholders": "Primary and secondary stakeholders",
-    "market_assessment": "Target market and competitive context",
-    "product_overview": "High-level product description",
-    "functional_requirements": "Detailed functional requirements",
-    "usability_requirements": "UX and accessibility requirements",
-    "technical_requirements": "Tech stack, architecture, performance",
-    "environmental_requirements": "Hosting, infrastructure, compliance",
-    "support_requirements": "Documentation, monitoring, training",
-    "interaction_requirements": "API integrations and data connections",
-    "assumptions": "Key assumptions",
-    "constraints": "Known constraints",
-    "dependencies": "External dependencies",
-    "workflow_timeline": "Development phases and milestones",
-    "evaluation_metrics": "Success metrics and KPIs"
+    "dashboard_overview": "SECTION CONTENT — see requirements below",
+    "target_users": "SECTION CONTENT",
+    "information_architecture": "SECTION CONTENT",
+    "widget_specifications": "SECTION CONTENT",
+    "visual_design": "SECTION CONTENT",
+    "tech_stack": "SECTION CONTENT",
+    "data_integration": "SECTION CONTENT",
+    "interactions_filtering": "SECTION CONTENT",
+    "responsive_behavior": "SECTION CONTENT",
+    "human_checkpoints": "SECTION CONTENT",
+    "acceptance_criteria": "SECTION CONTENT"
   }
 }
 
-Each section should be 3-8 sentences of professional, specific content tailored to the user's dashboard project. Reference their specific metrics, audience, and data sources throughout.`;
+SECTION REQUIREMENTS (each section must be comprehensive):
+
+1. DASHBOARD OVERVIEW (15-25 sentences — this is the most important section):
+- Dashboard name and one-line elevator pitch
+- The specific business problem this dashboard solves — be very specific about the pain points
+- Who requested it and why existing tools (spreadsheets, manual reports, existing dashboards) are insufficient
+- 3-5 key success metrics for the dashboard itself (adoption rate >X%, time-to-insight <Xs, decision turnaround improvement)
+- Scope boundaries: what this dashboard covers AND what it explicitly does not cover
+- Expected launch timeline and iteration plan
+- VISUAL DESCRIPTION: Provide an extremely detailed description of what the dashboard should look like when built. Describe the overall layout (e.g., "A top navigation bar with the dashboard title and date filters, followed by a row of 4-5 KPI summary cards, then a 2-column section with a line chart on the left and a bar chart on the right, and a full-width data table at the bottom"). Reference specific widget types, their approximate sizes, positions, and how they relate to each other.
+- COLOR AND STYLE DIRECTION: Describe the intended visual tone — modern and minimal? Data-dense and enterprise? Colorful and engaging? Specify the primary color palette direction.
+- KEY USER FLOWS: Describe the 2-3 most important things a user does when they open this dashboard (e.g., "1. Glance at KPI cards to see today's numbers. 2. Check the trend chart to see if metrics are improving. 3. Filter by region to compare performance.")
+- This section should be comprehensive enough that an AI coding tool (like Cursor, Bolt, or Lovable) or a developer could read ONLY this section and understand exactly what to build
+
+2. TARGET USERS & USER STORIES (10-15 sentences):
+- 2-3 distinct user personas with their roles, goals, technical comfort, and typical usage patterns
+- 5-8 user stories in 'As a [specific role], I want to [concrete action on the dashboard] so that [specific business outcome]' format
+- Frequency of use per persona (daily, weekly, on-demand)
+- Key decisions each persona needs to make using this dashboard
+
+3. INFORMATION ARCHITECTURE (8-12 sentences):
+- Page layout description: header region, navigation, main content zones, sidebar (if applicable)
+- Section hierarchy with specific regions (e.g., "Top banner: 4 KPI summary cards. Middle: 2-column chart area. Bottom: data table with pagination")
+- Content priority ordering — what the user sees first, second, third
+- Navigation patterns (tabs, filters, drill-down paths)
+- State management: default view, filtered view, detail view, empty state, error state
+
+4. WIDGET SPECIFICATIONS (create a detailed spec for EACH metric):
+For each key metric, specify:
+- Widget type (KPI card, line chart, bar chart, donut chart, data table, sparkline, gauge, heatmap)
+- Data displayed: primary value, comparison value (vs. previous period), trend direction, percentage change
+- Visualization details: chart type, axis labels, legend, tooltip content, color coding rules
+- Size: grid position (e.g., "Row 1, spans 3 of 12 columns")
+- Interaction: hover behavior, click-through destination, drill-down capability
+- Update frequency and loading state behavior
+- Create at least one additional derived widget (e.g., trend chart combining multiple metrics, ranking table, distribution chart)
+
+5. VISUAL DESIGN REQUIREMENTS (8-12 sentences):
+- Color palette: primary, secondary, accent, success/warning/error states — with hex codes
+- Typography: font family, heading sizes (H1-H4), body text size, line height, font weights
+- Spacing system: padding, margins, gap between cards (use 4px/8px grid system)
+- Card component spec: background color, border radius, border color, shadow, padding
+- Chart color sequences for multi-series data
+- Dark mode support (if applicable) or explanation of why single-mode
+- Accessibility: contrast ratios, focus states, screen reader considerations
+
+6. RECOMMENDED TECH STACK (8-12 sentences):
+- Frontend framework recommendation with rationale (e.g., React + TypeScript for component reusability, or Next.js for SSR)
+- Charting/visualization library (e.g., Recharts, Tremor, D3.js, Chart.js) with rationale based on the dashboard's complexity
+- Backend/API layer (e.g., Node.js + Express, Supabase Edge Functions, serverless functions) based on data sources
+- Database recommendation if persistent storage is needed (e.g., PostgreSQL via Supabase, MongoDB)
+- Authentication approach (e.g., Clerk, Supabase Auth, Auth0) if role-based access is needed
+- Hosting/deployment platform (e.g., Vercel, Netlify, AWS Amplify) with rationale
+- Key dependencies and libraries (e.g., date-fns for date handling, tanstack-query for data fetching)
+- Development tools (e.g., ESLint, Prettier, Storybook for component development)
+- This section should be written so a non-technical stakeholder can understand WHY each technology is chosen — use analogies and plain language alongside the technical names
+
+7. DATA INTEGRATION (8-12 sentences):
+- List each data source with: connection method (API, database query, file import, webhook)
+- Data refresh strategy: real-time, polling interval, scheduled batch, on-demand
+- Data transformation pipeline: raw data → cleaned data → aggregated metrics → display-ready values
+- Caching strategy: what gets cached, TTL, invalidation triggers
+- Error handling: what happens when a data source is unavailable, stale data indicators
+- Data volume estimates: expected row counts, query performance requirements
+- Authentication and access control for each data source
+
+8. INTERACTIONS & FILTERING (8-12 sentences):
+- Global filters: date range picker (presets: Today, 7D, 30D, 90D, Custom), refresh button
+- Dimension filters: dropdowns for each categorical dimension (e.g., region, product, team)
+- Cross-filtering: clicking one widget filters others (specify which widgets are linked)
+- Drill-down paths: what happens when a user clicks a KPI card, chart data point, or table row
+- Search functionality: where applicable, what fields are searchable
+- Sort behavior: default sort order, sortable columns, multi-column sort
+- Export options: CSV, PDF, screenshot, email scheduled report
+
+9. RESPONSIVE BEHAVIOR (6-10 sentences):
+- Desktop (>1200px): full layout with all widgets visible, specific column grid (e.g., 12-column)
+- Tablet (768-1200px): reorganized grid, specify which widgets stack or collapse
+- Mobile (<768px): single-column stack, specify order priority, which widgets are hidden or collapsed
+- Touch interactions: swipe between tabs, pinch-to-zoom on charts
+- Performance: lazy loading for below-fold content, skeleton loading states
+
+10. HUMAN-IN-THE-LOOP CHECKPOINTS (6-10 sentences):
+- Data accuracy review: who verifies metric calculations before dashboard goes live
+- Metric definition sign-off: stakeholder approval of how each metric is calculated
+- Threshold configuration: who sets alert thresholds and how they are updated
+- Access control review: who approves user permissions for sensitive data views
+- Change management: process for updating metric definitions, adding new widgets, or modifying data sources
+- Anomaly escalation: when the dashboard flags unusual data, who gets notified and what is the review process
+
+11. ACCEPTANCE CRITERIA (12-20 numbered items):
+- Specific, testable criteria covering: data accuracy, performance (load time <2s), responsive behavior, filter functionality, export functionality, error handling, accessibility (WCAG 2.1 AA), cross-browser compatibility
+- Include edge cases: empty data states, single data point, maximum data volume, concurrent users
+- Each criterion must be binary pass/fail testable`;
 
   return {
     name: 'prd-proxy',
@@ -1120,7 +1347,7 @@ Each section should be 3-8 sentences of professional, specific content tailored 
         req.on('data', (chunk: Buffer) => { body += chunk.toString(); });
         req.on('end', async () => {
           try {
-            const { user_needs, image_prompt, target_audience, key_metrics, data_sources } = JSON.parse(body);
+            const { user_needs, image_prompt, target_audience, key_metrics, data_sources, dashboard_type, visual_style, color_scheme, update_frequency } = JSON.parse(body);
 
             const userMessage = [
               `DASHBOARD PURPOSE: ${user_needs}`,
@@ -1128,6 +1355,10 @@ Each section should be 3-8 sentences of professional, specific content tailored 
               target_audience ? `TARGET AUDIENCE: ${target_audience}` : '',
               key_metrics ? `KEY METRICS: ${key_metrics}` : '',
               data_sources ? `DATA SOURCES: ${data_sources}` : '',
+              dashboard_type ? `DASHBOARD TYPE: ${dashboard_type}` : '',
+              visual_style ? `VISUAL STYLE: ${visual_style}` : '',
+              color_scheme ? `COLOR SCHEME: ${color_scheme}` : '',
+              update_frequency ? `UPDATE FREQUENCY: ${update_frequency}` : '',
             ].filter(Boolean).join('\n');
 
             const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;

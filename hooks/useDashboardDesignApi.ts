@@ -1,32 +1,17 @@
 import { useState, useRef, useCallback } from 'react';
+import type { DashboardBrief, NewPRDResult } from '../types';
 
 export interface DashboardImageResult {
   image_url: string;
   image_prompt: string;
   html_content?: string;
   use_fallback?: boolean;
+  generation_method?: 'gemini-image' | 'imagen' | 'html';
 }
 
 export interface PRDResult {
   prd_content: string;
-  sections: {
-    title_and_author: string;
-    purpose_and_scope: string;
-    stakeholders: string;
-    market_assessment: string;
-    product_overview: string;
-    functional_requirements: string;
-    usability_requirements: string;
-    technical_requirements: string;
-    environmental_requirements: string;
-    support_requirements: string;
-    interaction_requirements: string;
-    assumptions: string;
-    constraints: string;
-    dependencies: string;
-    workflow_timeline: string;
-    evaluation_metrics: string;
-  };
+  sections: Record<string, string>;
 }
 
 interface DashboardDesignPayload {
@@ -34,11 +19,12 @@ interface DashboardDesignPayload {
   target_audience?: string;
   key_metrics?: string;
   data_sources?: string;
-  image_prompt?: string;
-  dashboard_title?: string;
-  dashboard_subtitle?: string;
-  editable_metrics?: Array<{name: string; value: number; change: number}>;
+  dashboard_type?: string;
+  visual_style?: string;
   inspiration_url?: string;
+  refinement_feedback?: string;
+  previous_prompt?: string;
+  inspiration_images?: string[];
 }
 
 interface PRDPayload {
@@ -47,31 +33,68 @@ interface PRDPayload {
   target_audience?: string;
   key_metrics?: string;
   data_sources?: string;
+  dashboard_type?: string;
+  visual_style?: string;
 }
+
+export const MAX_REGENERATIONS = 5;
+export const MAX_PRD_GENERATIONS = 3;
 
 export function useDashboardDesignApi() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isPrdLoading, setIsPrdLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [regenerationCount, setRegenerationCount] = useState(0);
+  const [prdGenerationCount, setPrdGenerationCount] = useState(0);
   const lastCallRef = useRef(0);
 
+  const buildPayload = useCallback((
+    brief: DashboardBrief,
+    feedback?: string,
+    previousPrompt?: string,
+    inspirationImages?: string[],
+  ): DashboardDesignPayload => ({
+    user_needs: brief.q1_purpose,
+    target_audience: brief.q2_audience || undefined,
+    key_metrics: brief.q4_metrics || undefined,
+    data_sources: brief.q5_dataSources.join(', ') || undefined,
+    dashboard_type: brief.q3_type || undefined,
+    visual_style: brief.q7_visualStyle || undefined,
+    inspiration_url: brief.q9_inspirationUrls[0] || undefined,
+    refinement_feedback: feedback || undefined,
+    previous_prompt: previousPrompt || undefined,
+    inspiration_images: inspirationImages && inspirationImages.length > 0 ? inspirationImages : undefined,
+  }), []);
+
   const generateDashboardImage = useCallback(async (
-    payload: DashboardDesignPayload
+    brief: DashboardBrief,
+    feedback?: string,
+    previousPrompt?: string,
+    inspirationImages?: string[],
   ): Promise<DashboardImageResult | null> => {
-    // Rate limit: 1 request per 5 seconds
     const now = Date.now();
-    if (now - lastCallRef.current < 5000) {
+    if (now - lastCallRef.current < 3000) {
       setError('Please wait a few seconds before trying again.');
       return null;
     }
     lastCallRef.current = now;
 
+    if (regenerationCount >= MAX_REGENERATIONS) {
+      setError(`You've reached the maximum of ${MAX_REGENERATIONS} generations for this session.`);
+      return null;
+    }
+
     setIsLoading(true);
     setError(null);
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000);
+    // Longer timeout for feedback refinement or inspiration analysis (extra API calls)
+    const hasExtraSteps = feedback || (inspirationImages && inspirationImages.length > 0);
+    const timeoutMs = hasExtraSteps ? 90000 : 60000;
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
+      const payload = buildPayload(brief, feedback, previousPrompt, inspirationImages);
       const res = await fetch('/api/design-dashboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -82,26 +105,16 @@ export function useDashboardDesignApi() {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        
-        // Check if API explicitly says to use fallback (quota exceeded)
-        if (errData.use_fallback) {
-          console.log('API requested fallback:', errData.error);
-          return null; // Trigger fallback
+        console.error('Dashboard API error:', res.status, errData);
+        if (errData.error === 'API key not configured') {
+          setError('Gemini API key not configured. Please add GEMINI_API_KEY to .env.local and restart the server.');
         }
-        
-        const errorMsg = errData.error || `API error (status ${res.status})`;
-        console.error('Dashboard API error:', errorMsg, errData);
-        // Return null to trigger fallback
         return null;
       }
 
       const data: DashboardImageResult = await res.json();
-      
-      // Check if API returned fallback signal
-      if (data.use_fallback) {
-        return null; // Trigger fallback
-      }
-      
+
+      setRegenerationCount(prev => prev + 1);
       return data;
     } catch (err: any) {
       clearTimeout(timeout);
@@ -114,18 +127,34 @@ export function useDashboardDesignApi() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [regenerationCount, buildPayload]);
 
   const generatePRD = useCallback(async (
-    payload: PRDPayload
+    brief: DashboardBrief,
+    imagePrompt: string
   ): Promise<PRDResult | null> => {
-    setIsLoading(true);
+    if (prdGenerationCount >= MAX_PRD_GENERATIONS) {
+      setError(`You've reached the maximum of ${MAX_PRD_GENERATIONS} PRD generations.`);
+      return null;
+    }
+
+    setIsPrdLoading(true);
     setError(null);
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000); // Reduced timeout
+    const timeout = setTimeout(() => controller.abort(), 30000);
 
     try {
+      const payload: PRDPayload = {
+        user_needs: brief.q1_purpose,
+        image_prompt: imagePrompt,
+        target_audience: brief.q2_audience || undefined,
+        key_metrics: brief.q4_metrics || undefined,
+        data_sources: brief.q5_dataSources.join(', ') || undefined,
+        dashboard_type: brief.q3_type || undefined,
+        visual_style: brief.q7_visualStyle || undefined,
+      };
+
       const res = await fetch('/api/generate-prd', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -136,8 +165,9 @@ export function useDashboardDesignApi() {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        if (res.status === 503) {
-          setError('The PRD generation service is temporarily unavailable.');
+        console.error('PRD API error:', res.status, errData);
+        if (errData.error === 'API key not configured') {
+          setError('Gemini API key not configured. Please add GEMINI_API_KEY to .env.local and restart the server.');
         } else {
           setError('Something went wrong generating your PRD. Please try again.');
         }
@@ -145,43 +175,30 @@ export function useDashboardDesignApi() {
       }
 
       const data: PRDResult = await res.json();
+      setPrdGenerationCount(prev => prev + 1);
       return data;
     } catch (err: any) {
       clearTimeout(timeout);
       if (err.name === 'AbortError') {
-        setError('PRD generation timed out. Using simplified version.');
-        // Return a simple fallback PRD
-        return {
-          prd_content: `PRD for Dashboard - ${payload.target_audience || 'Business Users'}`,
-          sections: {
-            title_and_author: `Title: Dashboard\nAuthor: Product Team\nDate: ${new Date().toLocaleDateString()}\nVersion: 1.0`,
-            purpose_and_scope: `Business Purpose: ${payload.user_needs || 'Provide visibility into key metrics.'}\n\nTechnical Scope: Web-based dashboard with data visualization capabilities.`,
-            stakeholders: `Primary: ${payload.target_audience || 'Business users'}\nSecondary: IT/Data teams`,
-            market_assessment: `Target: ${payload.target_audience || 'Business professionals'} requiring data insights.`,
-            product_overview: `Dashboard displaying ${payload.key_metrics || 'key metrics'} for monitoring and decision-making.`,
-            functional_requirements: 'Display metrics, charts, and data tables. Support filtering and export.',
-            usability_requirements: 'Intuitive interface, responsive design, accessible components.',
-            technical_requirements: 'Web-based (React/Next.js), secure API integration, modern browsers.',
-            environmental_requirements: 'Cloud hosting, Node.js runtime, RESTful APIs.',
-            support_requirements: 'Documentation, monitoring, user training.',
-            interaction_requirements: `Integrates with ${payload.data_sources || 'data sources'} via APIs.`,
-            assumptions: 'Data sources available, users authenticated, network stable.',
-            constraints: 'Performance targets, browser compatibility, security compliance.',
-            dependencies: 'Data APIs, authentication system, hosting infrastructure.',
-            workflow_timeline: 'Design (Weeks 1-2), Development (Weeks 3-4), Testing (Week 5), Launch (Week 6).',
-            evaluation_metrics: 'Performance: < 2s load time. Usability: > 4/5 satisfaction. Adoption: Daily active users.',
-          },
-        };
+        setError('PRD generation timed out. Please try again.');
       } else {
         setError('Something went wrong generating your PRD. Please try again.');
       }
       return null;
     } finally {
-      setIsLoading(false);
+      setIsPrdLoading(false);
     }
-  }, []);
+  }, [prdGenerationCount]);
 
   const clearError = useCallback(() => setError(null), []);
+  const resetCounts = useCallback(() => {
+    setRegenerationCount(0);
+    setPrdGenerationCount(0);
+  }, []);
 
-  return { generateDashboardImage, generatePRD, isLoading, error, clearError };
+  return {
+    generateDashboardImage, generatePRD,
+    isLoading, isPrdLoading, error, clearError,
+    regenerationCount, prdGenerationCount, resetCounts,
+  };
 }
