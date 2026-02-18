@@ -227,8 +227,10 @@ const LOADING_STEPS = [
 type DepthMatrix = Record<string, Record<string, [LevelDepth, LevelDepth, LevelDepth, LevelDepth, LevelDepth]>>;
 
 const DEPTH_MATRIX: DepthMatrix = {
+  // Level 1 and Level 2 are MANDATORY for everyone — minimum is 'fast-track'.
+  // Only Levels 3–5 can be skipped when too advanced for the learner.
   'beginner': {
-    'confident-daily-use': ['full', 'awareness', 'skip', 'skip', 'skip'],
+    'confident-daily-use': ['full', 'full', 'skip', 'skip', 'skip'],
     'build-reusable-tools': ['full', 'full', 'awareness', 'skip', 'skip'],
     'own-ai-processes': ['full', 'full', 'full', 'awareness', 'skip'],
     'build-full-apps': ['full', 'full', 'full', 'full', 'full'],
@@ -240,16 +242,16 @@ const DEPTH_MATRIX: DepthMatrix = {
     'build-full-apps': ['fast-track', 'full', 'full', 'full', 'full'],
   },
   'builder': {
-    'confident-daily-use': ['skip', 'fast-track', 'skip', 'skip', 'skip'],
-    'build-reusable-tools': ['skip', 'fast-track', 'full', 'skip', 'skip'],
-    'own-ai-processes': ['skip', 'fast-track', 'full', 'full', 'skip'],
-    'build-full-apps': ['skip', 'fast-track', 'full', 'full', 'full'],
+    'confident-daily-use': ['fast-track', 'fast-track', 'skip', 'skip', 'skip'],
+    'build-reusable-tools': ['fast-track', 'fast-track', 'full', 'skip', 'skip'],
+    'own-ai-processes': ['fast-track', 'fast-track', 'full', 'full', 'skip'],
+    'build-full-apps': ['fast-track', 'fast-track', 'full', 'full', 'full'],
   },
   'integrator': {
-    'confident-daily-use': ['skip', 'skip', 'fast-track', 'skip', 'skip'],
-    'build-reusable-tools': ['skip', 'skip', 'fast-track', 'skip', 'skip'],
-    'own-ai-processes': ['skip', 'skip', 'fast-track', 'full', 'skip'],
-    'build-full-apps': ['skip', 'skip', 'fast-track', 'full', 'full'],
+    'confident-daily-use': ['fast-track', 'fast-track', 'fast-track', 'skip', 'skip'],
+    'build-reusable-tools': ['fast-track', 'fast-track', 'fast-track', 'skip', 'skip'],
+    'own-ai-processes': ['fast-track', 'fast-track', 'fast-track', 'full', 'skip'],
+    'build-full-apps': ['fast-track', 'fast-track', 'fast-track', 'full', 'full'],
   },
 };
 
@@ -426,19 +428,63 @@ function LearningBreakdown({ applied, community, individual, accentColor }: {
 
 // ---- Main Component ----
 
-export const LearningPathway: React.FC = () => {
-  // Form state
-  const [formData, setFormData] = useState<PathwayFormData>({
+// ---- localStorage helpers for persistence ----
+
+const LP_FORM_KEY = 'oxygy_user_profile';
+const LP_RESULTS_KEY = 'oxygy_learning_plan';
+const LP_DEPTHS_KEY = 'oxygy_learning_plan_depths';
+
+function loadSavedFormData(): PathwayFormData {
+  try {
+    const raw = localStorage.getItem(LP_FORM_KEY);
+    if (raw) {
+      const profile = JSON.parse(raw);
+      return {
+        role: profile.role || '',
+        function: profile.function || '',
+        functionOther: profile.functionOther || '',
+        seniority: profile.seniority || '',
+        aiExperience: profile.aiExperience || '',
+        ambition: profile.ambition || '',
+        challenge: profile.challenge || '',
+        availability: profile.availability || '',
+        experienceDescription: profile.experienceDescription || '',
+        goalDescription: profile.goalDescription || '',
+      };
+    }
+  } catch { /* ignore */ }
+  return {
     role: '', function: '', functionOther: '', seniority: '',
     aiExperience: '', ambition: '', challenge: '', availability: '',
     experienceDescription: '', goalDescription: '',
-  });
+  };
+}
+
+function loadSavedResults(): PathwayApiResponse | null {
+  try {
+    const raw = localStorage.getItem(LP_RESULTS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch { /* ignore */ }
+  return null;
+}
+
+function loadSavedDepths(): Record<string, LevelDepth> | null {
+  try {
+    const raw = localStorage.getItem(LP_DEPTHS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch { /* ignore */ }
+  return null;
+}
+
+export const LearningPathway: React.FC = () => {
+  // Form state — pre-fill from dashboard profile if available
+  const [formData, setFormData] = useState<PathwayFormData>(loadSavedFormData);
   const [selectedProfile, setSelectedProfile] = useState<string | null>(null);
   const [answersChanged, setAnswersChanged] = useState(false);
 
-  // Results state
-  const [pathwayResults, setPathwayResults] = useState<PathwayApiResponse | null>(null);
-  const [levelDepths, setLevelDepths] = useState<Record<string, LevelDepth> | null>(null);
+  // Results state — load previously generated plan if available
+  const [pathwayResults, setPathwayResults] = useState<PathwayApiResponse | null>(loadSavedResults);
+  const [levelDepths, setLevelDepths] = useState<Record<string, LevelDepth> | null>(loadSavedDepths);
 
   // UI state
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -521,6 +567,27 @@ export const LearningPathway: React.FC = () => {
     const result = await generatePathway(formData, depths);
     if (result) {
       setPathwayResults(result);
+      // Persist plan and form data to localStorage for dashboard integration
+      try {
+        localStorage.setItem(LP_RESULTS_KEY, JSON.stringify(result));
+        localStorage.setItem(LP_DEPTHS_KEY, JSON.stringify(depths));
+        // Also sync form data to shared profile key
+        const existingProfile = JSON.parse(localStorage.getItem(LP_FORM_KEY) || '{}');
+        const updatedProfile = {
+          ...existingProfile,
+          role: formData.role,
+          function: formData.function,
+          functionOther: formData.functionOther,
+          seniority: formData.seniority,
+          aiExperience: formData.aiExperience,
+          ambition: formData.ambition,
+          challenge: formData.challenge,
+          availability: formData.availability,
+          experienceDescription: formData.experienceDescription,
+          goalDescription: formData.goalDescription,
+        };
+        localStorage.setItem(LP_FORM_KEY, JSON.stringify(updatedProfile));
+      } catch { /* ignore storage errors */ }
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 200);
@@ -541,6 +608,12 @@ export const LearningPathway: React.FC = () => {
     setExpandedResults({});
     setShowOptional(false);
     clearError();
+    // Clear all persisted data (profile + plan) so dashboard reflects the reset
+    try {
+      localStorage.removeItem(LP_FORM_KEY);
+      localStorage.removeItem(LP_RESULTS_KEY);
+      localStorage.removeItem(LP_DEPTHS_KEY);
+    } catch { /* ignore */ }
     setTimeout(() => {
       questionnaireRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);

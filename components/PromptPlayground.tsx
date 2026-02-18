@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, ArrowRight, ArrowDown, Sparkles, Puzzle, Mic, MicOff, Info, Copy, Check, RotateCcw, ChevronDown, Code } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowDown, Sparkles, Puzzle, Mic, MicOff, Info, Copy, Check, RotateCcw, ChevronDown, Code, Library } from 'lucide-react';
 import { EXAMPLE_PROMPTS, PROMPT_BLUEPRINT, BLUEPRINT_EDUCATION } from '../data/playground-content';
 import { useGeminiApi } from '../hooks/useGeminiApi';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
@@ -24,6 +24,7 @@ export const PromptPlayground: React.FC = () => {
   const [showResultsBanner, setShowResultsBanner] = useState(false);
   const [visibleBlocks, setVisibleBlocks] = useState(0);
   const [showMarkdownTooltip, setShowMarkdownTooltip] = useState(false);
+  const [savedToLibrary, setSavedToLibrary] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputAreaRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
@@ -58,6 +59,7 @@ export const PromptPlayground: React.FC = () => {
       setResult(data);
       setResultMode('enhance');
       setShowResultsBanner(true);
+      try { localStorage.setItem('oxygy_tool_used_L1', 'true'); } catch { /* ignore */ }
       setTimeout(() => {
         setShowResultsBanner(false);
         cardsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -71,6 +73,7 @@ export const PromptPlayground: React.FC = () => {
       setResult(data);
       setResultMode('build');
       setShowResultsBanner(true);
+      try { localStorage.setItem('oxygy_tool_used_L1', 'true'); } catch { /* ignore */ }
       setTimeout(() => {
         setShowResultsBanner(false);
         cardsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -82,6 +85,7 @@ export const PromptPlayground: React.FC = () => {
     setResult(null);
     setInputPrompt('');
     setOriginalPrompt('');
+    setSavedToLibrary(false);
     clearError();
     inputAreaRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -157,6 +161,27 @@ export const PromptPlayground: React.FC = () => {
     setCopied(true);
     showToastNotification('Markdown prompt copied to clipboard');
     setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handleSaveToLibrary = () => {
+    if (!result) return;
+    const fullPrompt = buildMarkdownPrompt(result);
+    const newPrompt = {
+      id: `l1-${Date.now()}`,
+      level: 1,
+      title: result.task.slice(0, 60) + (result.task.length > 60 ? '...' : ''),
+      content: fullPrompt,
+      savedAt: Date.now(),
+    };
+    try {
+      const existing = JSON.parse(localStorage.getItem('oxygy_prompts') || '[]');
+      localStorage.setItem('oxygy_prompts', JSON.stringify([newPrompt, ...existing]));
+    } catch {
+      localStorage.setItem('oxygy_prompts', JSON.stringify([newPrompt]));
+    }
+    setSavedToLibrary(true);
+    showToastNotification('Prompt saved to your library');
+    setTimeout(() => setSavedToLibrary(false), 3000);
   };
 
   const scrollToModes = () => {
@@ -454,6 +479,20 @@ export const PromptPlayground: React.FC = () => {
                   {copied ? <Check size={13} /> : <Copy size={13} />}
                   {copied ? 'Copied!' : 'Copy Full Prompt'}
                 </button>
+                <button
+                  onClick={handleSaveToLibrary}
+                  disabled={savedToLibrary}
+                  className="px-4 py-2 text-[13px] font-semibold rounded-full transition-colors flex items-center gap-1.5"
+                  style={{
+                    backgroundColor: savedToLibrary ? '#E6FFFA' : '#1A202C',
+                    color: savedToLibrary ? '#38B2AC' : '#FFFFFF',
+                    border: savedToLibrary ? '1px solid #38B2AC' : 'none',
+                    cursor: savedToLibrary ? 'default' : 'pointer',
+                  }}
+                >
+                  {savedToLibrary ? <Check size={13} /> : <Library size={13} />}
+                  {savedToLibrary ? 'Saved!' : 'Save to Library'}
+                </button>
               </div>
             )}
           </div>
@@ -552,6 +591,20 @@ export const PromptPlayground: React.FC = () => {
                   {copied ? <Check size={13} /> : <Copy size={13} />}
                   {copied ? 'Copied!' : 'Copy Markdown'}
                 </button>
+                <button
+                  onClick={handleSaveToLibrary}
+                  disabled={savedToLibrary}
+                  className="px-4 py-1.5 text-[13px] font-semibold rounded-full transition-colors flex items-center gap-1.5"
+                  style={{
+                    backgroundColor: savedToLibrary ? '#E6FFFA' : '#1A202C',
+                    color: savedToLibrary ? '#38B2AC' : '#FFFFFF',
+                    border: savedToLibrary ? '1px solid #38B2AC' : 'none',
+                    cursor: savedToLibrary ? 'default' : 'pointer',
+                  }}
+                >
+                  {savedToLibrary ? <Check size={13} /> : <Library size={13} />}
+                  {savedToLibrary ? 'Saved!' : 'Save to Library'}
+                </button>
               </div>
               <div className="relative">
                 <pre className="bg-[#1A202C] text-[#E2E8F0] text-[13px] leading-[1.8] rounded-xl p-6 overflow-x-auto whitespace-pre-wrap font-mono">
@@ -638,6 +691,19 @@ export const PromptPlayground: React.FC = () => {
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
                 {copied ? 'Copied!' : 'Copy Full Prompt'}
+              </button>
+              <button
+                onClick={handleSaveToLibrary}
+                disabled={savedToLibrary}
+                className="px-5 py-2.5 text-[14px] font-semibold rounded-full transition-colors flex items-center justify-center gap-2"
+                style={{
+                  backgroundColor: savedToLibrary ? '#E6FFFA' : '#1A202C',
+                  color: savedToLibrary ? '#38B2AC' : '#FFFFFF',
+                  border: savedToLibrary ? '1px solid #38B2AC' : 'none',
+                }}
+              >
+                {savedToLibrary ? <Check size={14} /> : <Library size={14} />}
+                {savedToLibrary ? 'Saved!' : 'Save to Library'}
               </button>
             </div>
           )}

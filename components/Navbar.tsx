@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown, Home, Menu, X } from 'lucide-react';
+import { ChevronDown, Home, Menu, X, LayoutDashboard } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 const AI_TOOLS = [
@@ -10,7 +10,7 @@ const AI_TOOLS = [
   { level: 5, emoji: '\uD83C\uDFD7\uFE0F', label: 'Product Architecture Sprint', href: '#product-architecture' },
 ];
 
-const ARTIFACT_HASHES = new Set([...AI_TOOLS.map((t) => t.href), '#learning-pathway', '#user-journey', '#case-studies']);
+const ARTIFACT_HASHES = new Set([...AI_TOOLS.map((t) => t.href), '#learning-pathway', '#user-journey', '#case-studies', '#engagement-model', '#dashboard']);
 
 /* Thin vertical divider between nav items */
 const Divider = () => (
@@ -51,6 +51,9 @@ export const Navbar: React.FC = () => {
   const isOnAiTool = AI_TOOLS.some((t) => t.href === currentHash);
   const isOnLearningPlan = currentHash === '#learning-pathway';
   const isOnUserJourney = currentHash === '#user-journey';
+  const isOnCaseStudies = currentHash === '#case-studies';
+  const isOnEngagementModel = currentHash === '#engagement-model';
+  const isOnDashboard = currentHash === '#dashboard';
 
   const goHome = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -65,15 +68,26 @@ export const Navbar: React.FC = () => {
   };
 
   const scrollToSection = (id: string) => {
+    const doScroll = () => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        return true;
+      }
+      return false;
+    };
+
     if (window.location.hash && window.location.hash !== '#') {
       window.location.hash = '';
-      setTimeout(() => {
-        const el = document.getElementById(id);
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+      let attempts = 0;
+      const tryScroll = () => {
+        if (doScroll() || attempts >= 10) return;
+        attempts++;
+        setTimeout(tryScroll, 100);
+      };
+      setTimeout(tryScroll, 150);
     } else {
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      doScroll();
     }
     setMobileOpen(false);
     setDropdownOpen(false);
@@ -257,7 +271,7 @@ export const Navbar: React.FC = () => {
 
           <Divider />
 
-          {/* Your Journey */}
+          {/* Learner Journey */}
           <a
             href="#user-journey"
             className={cn(
@@ -266,7 +280,21 @@ export const Navbar: React.FC = () => {
             )}
             style={{ textDecoration: 'none' }}
           >
-            Learning Journey
+            Learner Journey
+          </a>
+
+          <Divider />
+
+          {/* Engagement Model */}
+          <a
+            href="#engagement-model"
+            className={cn(
+              'flex items-center px-4 h-[36px] rounded-full text-[14px] font-medium transition-all duration-150 whitespace-nowrap',
+              isOnEngagementModel ? pillActive : pillInactive,
+            )}
+            style={{ textDecoration: 'none' }}
+          >
+            Engagement Model
           </a>
 
           <Divider />
@@ -276,12 +304,13 @@ export const Navbar: React.FC = () => {
             href="#case-studies"
             className={cn(
               'flex items-center px-4 h-[36px] rounded-full text-[14px] font-medium transition-all duration-150 whitespace-nowrap',
-              currentHash === '#case-studies' ? pillActive : pillInactive,
+              isOnCaseStudies ? pillActive : pillInactive,
             )}
             style={{ textDecoration: 'none' }}
           >
             Case Studies
           </a>
+
         </div>
 
         {/* Right — CTA + Mobile Toggle */}
@@ -300,6 +329,21 @@ export const Navbar: React.FC = () => {
             }}
           >
             Contact Us
+          </a>
+
+          {/* Dashboard icon button */}
+          <a
+            href="#dashboard"
+            className={cn(
+              'hidden sm:flex items-center justify-center rounded-full transition-all duration-200 flex-shrink-0',
+              isOnDashboard
+                ? 'bg-[#38B2AC] text-white'
+                : 'bg-[#F0F2F5] text-[#4A5568] hover:bg-[#E2E6EB]',
+            )}
+            style={{ width: '40px', height: '40px', textDecoration: 'none' }}
+            title="My Dashboard"
+          >
+            <LayoutDashboard size={18} />
           </a>
 
           {/* Mobile hamburger */}
@@ -398,14 +442,28 @@ export const Navbar: React.FC = () => {
               style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
               onClick={() => setMobileOpen(false)}
             >
-              Learning Journey
+              Learner Journey
+            </a>
+
+            <a
+              href="#engagement-model"
+              className={cn(
+                'flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors',
+                isOnEngagementModel
+                  ? 'bg-[#E6FFFA] text-[#2C9A94]'
+                  : 'hover:bg-[#F7FAFC] text-[#2D3748]',
+              )}
+              style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
+              onClick={() => setMobileOpen(false)}
+            >
+              Engagement Model
             </a>
 
             <a
               href="#case-studies"
               className={cn(
                 'flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors',
-                currentHash === '#case-studies'
+                isOnCaseStudies
                   ? 'bg-[#E6FFFA] text-[#2C9A94]'
                   : 'hover:bg-[#F7FAFC] text-[#2D3748]',
               )}
@@ -413,6 +471,21 @@ export const Navbar: React.FC = () => {
               onClick={() => setMobileOpen(false)}
             >
               Case Studies
+            </a>
+
+            <a
+              href="#dashboard"
+              className={cn(
+                'flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors',
+                isOnDashboard
+                  ? 'bg-[#E6FFFA] text-[#2C9A94]'
+                  : 'hover:bg-[#F7FAFC] text-[#2D3748]',
+              )}
+              style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
+              onClick={() => setMobileOpen(false)}
+            >
+              <LayoutDashboard size={16} />
+              <span>My Dashboard</span>
             </a>
 
             <div className="h-px bg-gray-100 my-2" />

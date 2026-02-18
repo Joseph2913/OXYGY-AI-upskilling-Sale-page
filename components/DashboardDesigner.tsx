@@ -477,6 +477,7 @@ export const DashboardDesigner: React.FC = () => {
     } else {
       setPrdResult(generateFallbackPRD(brief));
     }
+    try { localStorage.setItem('oxygy_tool_used_L4', 'true'); } catch { /* ignore */ }
 
     setTimeout(() => {
       prdRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -573,6 +574,7 @@ export const DashboardDesigner: React.FC = () => {
     } else {
       setPrdResult(generateFallbackPRD(brief));
     }
+    try { localStorage.setItem('oxygy_tool_used_L4', 'true'); } catch { /* ignore */ }
 
     setTimeout(() => {
       prdRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });

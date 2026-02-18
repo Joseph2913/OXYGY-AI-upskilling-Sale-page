@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reset User Data</title>
+  <style>
+    body { font-family: "DM Sans", sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #F7FAFC; }
+    .card { background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 40px; text-align: center; max-width: 420px; }
+    h1 { font-size: 20px; color: #1A202C; margin: 0 0 8px; }
+    p { font-size: 14px; color: #718096; line-height: 1.6; margin: 0 0 24px; }
+    button { padding: 10px 24px; border-radius: 24px; border: none; background: #E53E3E; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+    button:hover { background: #C53030; }
+    .done { color: #38B2AC; font-weight: 600; font-size: 14px; margin-top: 16px; display: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Reset All User Data</h1>
+    <p>This will clear your profile, learning plan, prompts, workshop codes, insights, and all tool usage flags. The page will reload to the homepage.</p>
+    <button onclick="resetAll()">Reset Everything</button>
+    <div class="done" id="done">All data cleared. Redirecting...</div>
+  </div>
+  <script>
+    function resetAll() {
+      var keys = [
+        'oxygy_user_profile',
+        'oxygy_learning_plan',
+        'oxygy_learning_plan_depths',
+        'oxygy_prompts',
+        'oxygy_workshop_codes',
+        'oxygy_insights',
+        'oxygy_profile_nudge_dismissed',
+        'oxygy_tool_used_L1',
+        'oxygy_tool_used_L2',
+        'oxygy_tool_used_L3',
+        'oxygy_tool_used_L4',
+        'oxygy_tool_used_L5',
+      ];
+      keys.forEach(function(k) { localStorage.removeItem(k); });
+      document.getElementById('done').style.display = 'block';
+      setTimeout(function() { window.location.href = '/'; }, 1000);
+    }
+  </script>
+</body>
+</html>

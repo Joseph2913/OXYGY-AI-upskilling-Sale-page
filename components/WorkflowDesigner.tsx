@@ -621,6 +621,7 @@ export function WorkflowDesigner() {
     });
     if (result && 'workflow_name' in result) {
       setGenerateResult(result);
+      try { localStorage.setItem('oxygy_tool_used_L3', 'true'); } catch { /* ignore */ }
     }
   };
 
@@ -706,6 +707,7 @@ export function WorkflowDesigner() {
       setComparisonView('ai');
       setNodesAnimated(0);
       setConnectionsAnimated(0);
+      try { localStorage.setItem('oxygy_tool_used_L3', 'true'); } catch { /* ignore */ }
     }
   };
 

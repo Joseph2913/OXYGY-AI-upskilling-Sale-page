@@ -1,5 +1,61 @@
 /* Oxygy AI Upskilling — Global Styles */
 
+/* ─── Engagement Model CSS Custom Properties ─── */
+:root {
+  --em-navy: #1A202C;
+  --em-navy-mid: #2D3748;
+  --em-deep-blue: #1E3A5F;
+  --em-deep-blue-mid: #2B4C7E;
+  --em-teal: #38B2AC;
+  --em-teal-light: #4FD1C5;
+  --em-teal-5: rgba(56, 178, 172, 0.05);
+  --em-teal-10: rgba(56, 178, 172, 0.10);
+  --em-teal-15: rgba(56, 178, 172, 0.15);
+  --em-white: #FFFFFF;
+  --em-section-bg: #F7FAFC;
+  --em-ice-blue: #E6FFFA;
+  --em-body: #4A5568;
+  --em-body-light: #718096;
+  --em-med-gray: #A0AEC0;
+  --em-border: #E2E8F0;
+  --em-peach: #F5B8A0;
+  --em-yellow: #F7E8A4;
+  --em-mint: #A8F0E0;
+  --em-catalyst-bg: #1A202C;
+  --em-catalyst-text: #FFFFFF;
+  --em-catalyst-muted: rgba(255, 255, 255, 0.7);
+  --em-catalyst-subtle: rgba(255, 255, 255, 0.8);
+  --em-catalyst-pill: rgba(255, 255, 255, 0.12);
+
+  /* ─── Tier Card Accents ─── */
+  --em-foundation-border: #2B4C7E;
+  --em-foundation-bg: #F0F4FA;
+  --em-foundation-badge: #E8EDF5;
+  --em-gold: #C9A227;
+  --em-gold-light: #E5C54B;
+  --em-gold-border: rgba(201, 162, 39, 0.5);
+  --em-gold-pill: rgba(201, 162, 39, 0.15);
+
+  /* ─── Phase-specific accent colors ─── */
+  --em-phase01-accent: #1E3A5F;
+  --em-phase01-accent-mid: #2B4C7E;
+  --em-phase01-accent-5: rgba(30, 58, 95, 0.05);
+  --em-phase01-accent-10: rgba(30, 58, 95, 0.10);
+  --em-phase01-accent-15: rgba(30, 58, 95, 0.15);
+
+  --em-phase2-accent: #38B2AC;
+  --em-phase2-accent-mid: #2C9A94;
+  --em-phase2-accent-5: rgba(56, 178, 172, 0.05);
+  --em-phase2-accent-10: rgba(56, 178, 172, 0.10);
+  --em-phase2-accent-15: rgba(56, 178, 172, 0.15);
+
+  --em-phase3-accent: #C9A227;
+  --em-phase3-accent-mid: #E5C54B;
+  --em-phase3-accent-5: rgba(201, 162, 39, 0.05);
+  --em-phase3-accent-10: rgba(201, 162, 39, 0.10);
+  --em-phase3-accent-15: rgba(201, 162, 39, 0.15);
+}
+
 body {
   font-family: 'DM Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -218,4 +274,115 @@ body {
 
 .grid-rows-collapse > * {
   overflow: hidden;
+}
+
+/* Engagement Model — Focus states for interactive elements */
+
+.engagement-focus:focus-visible {
+  outline: 2px solid #38B2AC;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Engagement Model — Reduced motion overrides */
+
+@media (prefers-reduced-motion: reduce) {
+  .engagement-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+
+/* ─── My Dashboard — Animations ─── */
+
+@keyframes dash-section-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-dash-section-enter {
+  animation: dash-section-enter 0.2s ease-out;
+}
+
+@keyframes dash-panel-slide-in {
+  from { max-height: 0; opacity: 0; }
+  to { max-height: 200px; opacity: 1; }
+}
+
+.animate-dash-panel-slide-in {
+  animation: dash-panel-slide-in 0.2s ease-out forwards;
+  overflow: hidden;
+}
+
+@keyframes dash-plan-expand {
+  from { max-height: 0; opacity: 0; }
+  to { max-height: 800px; opacity: 1; }
+}
+
+.animate-dash-plan-expand {
+  animation: dash-plan-expand 0.3s ease-out forwards;
+  overflow: hidden;
+}
+
+@keyframes dash-feedback-appear {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-dash-feedback-appear {
+  animation: dash-feedback-appear 0.3s ease;
+}
+
+@keyframes dash-card-collapse {
+  from { opacity: 1; max-height: 300px; margin-bottom: 16px; }
+  to { opacity: 0; max-height: 0; margin-bottom: 0; }
+}
+
+.animate-dash-card-collapse {
+  animation: dash-card-collapse 0.3s ease-out forwards;
+  overflow: hidden;
+}
+
+@keyframes dash-status-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.animate-dash-status-pulse {
+  animation: dash-status-pulse 2s ease-in-out infinite;
+}
+
+@keyframes dash-spinner {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-dash-spinner {
+  animation: dash-spinner 1s linear infinite;
+}
+
+/* Dashboard — Focus states */
+
+.dash-focus:focus-visible {
+  outline: 2px solid #38B2AC;
+  outline-offset: 2px;
+}
+
+/* Dashboard — Reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-dash-section-enter,
+  .animate-dash-panel-slide-in,
+  .animate-dash-plan-expand,
+  .animate-dash-feedback-appear,
+  .animate-dash-card-collapse,
+  .animate-dash-status-pulse,
+  .animate-dash-spinner {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    max-height: none !important;
+  }
 }

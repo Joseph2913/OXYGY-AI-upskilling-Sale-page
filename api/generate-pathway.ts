@@ -84,6 +84,10 @@ Objective: Full-stack AI applications where different users get different experi
 
 ## INSTRUCTIONS
 
+IMPORTANT: Level 1 and Level 2 are MANDATORY for every learner — they will always be classified as "full" or "fast-track", never "awareness" or "skip". These foundational levels must always be included and tailored to the learner's experience level. For advanced learners doing fast-track at L1/L2, frame it as "validate and sharpen" rather than "learn from scratch."
+
+Only Levels 3, 4, and 5 may be classified as "awareness" or "skip" when they are too advanced for the learner's current experience level.
+
 Generate content ONLY for levels classified as "full" or "fast-track". Do NOT generate content for "awareness" or "skip" levels.
 
 For each applicable level, generate:

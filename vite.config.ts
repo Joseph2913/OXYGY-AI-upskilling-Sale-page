@@ -1420,6 +1420,150 @@ For each key metric, specify:
   };
 }
 
+// ─── Insight Analysis Proxy ───
+
+function insightAnalysisProxyPlugin(apiKey: string, model: string): Plugin {
+  const systemPrompt = `You are an AI Upskilling Coach for the Oxygy AI Center of Excellence. You analyze how learners apply AI in their work and give concise, actionable feedback.
+
+CRITICAL RULE — QUALITY GATE:
+Before providing analysis, assess whether the learner has given enough meaningful information. If the context or outcome is:
+- Too vague (e.g., "used AI for something", "it was good")
+- Nonsensical or irrelevant (e.g., random text, off-topic content)
+- Too short to meaningfully analyze (fewer than ~15 words across both fields)
+
+Then you MUST respond with the clarification format instead of the analysis format.
+
+The five levels of the Oxygy AI upskilling framework are:
+- Level 1: AI Fundamentals & Awareness — Basic prompting, everyday use cases, understanding LLMs
+- Level 2: Applied Capability — Custom GPTs, AI agents, system prompt design
+- Level 3: Systemic Integration — Workflow mapping, agent chaining, automated processes
+- Level 4: Interactive Dashboards & Front-Ends — UX design for AI, dashboard prototyping, data visualisation
+- Level 5: Full AI-Powered Applications — Application architecture, personalisation engines, full-stack AI
+
+RESPONSE FORMAT — Choose ONE of the two formats below:
+
+FORMAT A — When the insight lacks sufficient detail:
+{
+  "needsClarification": true,
+  "clarificationMessage": "A friendly 1-2 sentence message explaining what additional detail would help. Be specific about what's missing.",
+  "useCaseSummary": "",
+  "nextLevelTranslation": "",
+  "considerations": [],
+  "nextSteps": ""
+}
+
+FORMAT B — When the insight has enough detail to analyze:
+{
+  "needsClarification": false,
+  "useCaseSummary": "A concise 2-3 sentence summary of what they built or applied. Start with what they did, then acknowledge the outcome. Keep it factual and encouraging.",
+  "nextLevelTranslation": "1-2 sentences explaining how this use case could be evolved into the NEXT level of the framework. Be specific — e.g., if they built a Level 2 custom GPT, describe what a Level 3 workflow integration version would look like.",
+  "considerations": [
+    "A practical consideration about data privacy, security, or governance",
+    "A consideration about reliability, testing, or user adoption"
+  ],
+  "nextSteps": "1 sentence with a specific, actionable next step for their learning journey."
+}
+
+RULES:
+- Keep all text concise. No filler phrases.
+- Be direct and useful. Every sentence should contain actionable information.
+- The nextLevelTranslation is the most important field — make it specific and practical.
+- You must respond in valid JSON only.`;
+
+  return {
+    name: 'insight-analysis-proxy',
+    configureServer(server) {
+      server.middlewares.use('/api/analyze-insight', (req: Connect.IncomingMessage, res: ServerResponse) => {
+        if (req.method !== 'POST') {
+          res.statusCode = 405;
+          res.end(JSON.stringify({ error: 'Method not allowed' }));
+          return;
+        }
+
+        if (!apiKey || apiKey === 'PLACEHOLDER_API_KEY') {
+          res.statusCode = 503;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'API key not configured' }));
+          return;
+        }
+
+        let body = '';
+        req.on('data', (chunk: Buffer) => { body += chunk.toString(); });
+        req.on('end', async () => {
+          try {
+            const { level, topic, context, outcome, rating, userProfile } = JSON.parse(body);
+
+            const profileContext = userProfile
+              ? `\n\nLearner Profile:\n- Role: ${userProfile.role || 'Not specified'}\n- Function: ${userProfile.function || 'Not specified'}\n- Seniority: ${userProfile.seniority || 'Not specified'}\n- AI Experience Level: ${userProfile.aiExperience || 'Not specified'}`
+              : '';
+
+            const userMessage = `Please analyze this AI application insight:
+
+Level: ${level}
+Topic: ${topic}
+Context: ${context}
+Outcome: ${outcome}
+Self-assessed Impact Rating: ${rating}/5${profileContext}`;
+
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            const geminiResponse = await fetch(geminiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                system_instruction: {
+                  parts: [{ text: systemPrompt }],
+                },
+                contents: [
+                  {
+                    role: 'user',
+                    parts: [{ text: userMessage }],
+                  },
+                ],
+                generationConfig: {
+                  temperature: 0.7,
+                  responseMimeType: 'application/json',
+                },
+              }),
+            });
+
+            if (!geminiResponse.ok) {
+              const errText = await geminiResponse.text();
+              console.error('Gemini API error (Insight):', errText);
+              res.statusCode = 502;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ error: 'AI service error' }));
+              return;
+            }
+
+            const data = await geminiResponse.json();
+            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+            let parsed;
+            try {
+              const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+              parsed = JSON.parse(cleaned);
+            } catch {
+              console.error('Failed to parse Gemini response (Insight):', text);
+              res.statusCode = 502;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ error: 'Failed to parse AI response' }));
+              return;
+            }
+
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify(parsed));
+          } catch (err) {
+            console.error('Proxy error (Insight):', err);
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: 'Internal server error' }));
+          }
+        });
+      });
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   const geminiModel = env.GEMINI_MODEL || 'gemini-2.0-flash';
@@ -1438,6 +1582,7 @@ export default defineConfig(({ mode }) => {
       pathwayProxyPlugin(env.GEMINI_API_KEY, geminiModel),
       dashboardDesignProxyPlugin(env.GEMINI_API_KEY, geminiModel),
       prdProxyPlugin(env.GEMINI_API_KEY, geminiModel),
+      insightAnalysisProxyPlugin(env.GEMINI_API_KEY, geminiModel),
     ],
     resolve: {
       alias: {

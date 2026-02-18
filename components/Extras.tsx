@@ -13,7 +13,7 @@ const IconMap: Record<string, React.ElementType> = {
 
 export const Departments: React.FC = () => {
   return (
-    <section className="py-24 bg-white border-t border-gray-100">
+    <section id="case-studies" className="py-24 bg-white border-t border-gray-100">
       <div className="max-w-7xl mx-auto px-6">
         
         {/* Section Header */}

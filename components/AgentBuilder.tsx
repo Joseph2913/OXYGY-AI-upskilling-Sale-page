@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   ArrowLeft, ArrowRight, Bot, MessageSquare, Eye, Code, Copy, Check,
-  ChevronDown, ChevronUp, Info, Square, CheckSquare,
+  ChevronDown, ChevronUp, Info, Square, CheckSquare, Library,
 } from 'lucide-react';
 import { useAgentDesignApi } from '../hooks/useAgentDesignApi';
 import {
@@ -264,6 +264,10 @@ export const AgentBuilder: React.FC = () => {
   // Accountability checkbox state
   const [selectedChecks, setSelectedChecks] = useState<Record<number, boolean>>({});
 
+  // Save to library state
+  const [savedPromptToLibrary, setSavedPromptToLibrary] = useState(false);
+  const [savedAccountabilityToLibrary, setSavedAccountabilityToLibrary] = useState(false);
+
   // Refs
   const inputSectionRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
@@ -321,6 +325,7 @@ export const AgentBuilder: React.FC = () => {
 
     if (data) {
       setResult(data);
+      try { localStorage.setItem('oxygy_tool_used_L2', 'true'); } catch { /* ignore */ }
     }
   };
 
@@ -334,6 +339,8 @@ export const AgentBuilder: React.FC = () => {
     setCopiedItems({});
     setSelectedChecks({});
     setExpandedSteps({});
+    setSavedPromptToLibrary(false);
+    setSavedAccountabilityToLibrary(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -381,6 +388,42 @@ export const AgentBuilder: React.FC = () => {
       .map(c => c.prompt_instruction)
       .join('\n\n');
     return result.system_prompt + '\n\n--- BUILT-IN ACCOUNTABILITY FEATURES ---\n\n' + selectedInstructions;
+  };
+
+  const saveToLibrary = (title: string, content: string) => {
+    const newPrompt = {
+      id: `l2-${Date.now()}`,
+      level: 2,
+      title: title.slice(0, 60) + (title.length > 60 ? '...' : ''),
+      content,
+      savedAt: Date.now(),
+    };
+    try {
+      const existing = JSON.parse(localStorage.getItem('oxygy_prompts') || '[]');
+      localStorage.setItem('oxygy_prompts', JSON.stringify([newPrompt, ...existing]));
+    } catch {
+      localStorage.setItem('oxygy_prompts', JSON.stringify([newPrompt]));
+    }
+  };
+
+  const handleSaveSystemPrompt = () => {
+    if (!result) return;
+    saveToLibrary(`Agent: ${taskDescription.slice(0, 50)}`, result.system_prompt);
+    setSavedPromptToLibrary(true);
+    setToastMessage('System prompt saved to your library');
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 2500);
+    setTimeout(() => setSavedPromptToLibrary(false), 3000);
+  };
+
+  const handleSaveFullWithChecks = () => {
+    if (!result) return;
+    saveToLibrary(`Agent + Accountability: ${taskDescription.slice(0, 40)}`, buildFullPromptWithChecks());
+    setSavedAccountabilityToLibrary(true);
+    setToastMessage('Full prompt with accountability saved to your library');
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 2500);
+    setTimeout(() => setSavedAccountabilityToLibrary(false), 3000);
   };
 
   const selectedCount = Object.values(selectedChecks).filter(Boolean).length;
@@ -524,11 +567,24 @@ export const AgentBuilder: React.FC = () => {
           <div className="flex items-center gap-2 text-[14px] text-[#1A202C] font-medium">
             <span>{'\uD83D\uDCCB'}</span> Your system prompt is ready
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <button onClick={() => copyToClipboard(result!.system_prompt, 'System prompt copied to clipboard', 'system-prompt')}
               className="flex items-center gap-2 px-5 py-2.5 rounded-full text-[14px] font-semibold text-white bg-[#5B6DC2] hover:bg-[#4A5AB0] transition-colors"
             >
               {copiedItems['system-prompt'] ? <><Check size={16} /> Copied</> : <><Copy size={16} /> Copy System Prompt</>}
+            </button>
+            <button
+              onClick={handleSaveSystemPrompt}
+              disabled={savedPromptToLibrary}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-[14px] font-semibold transition-colors"
+              style={{
+                backgroundColor: savedPromptToLibrary ? '#E6FFFA' : '#1A202C',
+                color: savedPromptToLibrary ? '#38B2AC' : '#FFFFFF',
+                border: savedPromptToLibrary ? '1px solid #38B2AC' : 'none',
+                cursor: savedPromptToLibrary ? 'default' : 'pointer',
+              }}
+            >
+              {savedPromptToLibrary ? <><Check size={16} /> Saved!</> : <><Library size={16} /> Save to Library</>}
             </button>
             <button onClick={() => setPromptExpanded(!promptExpanded)}
               className="flex items-center gap-1 text-[14px] text-[#718096] hover:text-[#5B6DC2] transition-colors"
@@ -636,6 +692,19 @@ export const AgentBuilder: React.FC = () => {
           className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-semibold text-white bg-[#5B6DC2] hover:bg-[#4A5AB0] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {copiedItems['full-with-checks'] ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy Full Prompt + Features</>}
+        </button>
+        <button
+          onClick={handleSaveFullWithChecks}
+          disabled={selectedCount === 0 || savedAccountabilityToLibrary}
+          className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          style={{
+            backgroundColor: savedAccountabilityToLibrary ? '#E6FFFA' : '#1A202C',
+            color: savedAccountabilityToLibrary ? '#38B2AC' : '#FFFFFF',
+            border: savedAccountabilityToLibrary ? '1px solid #38B2AC' : 'none',
+            cursor: selectedCount === 0 || savedAccountabilityToLibrary ? 'default' : 'pointer',
+          }}
+        >
+          {savedAccountabilityToLibrary ? <><Check size={14} /> Saved!</> : <><Library size={14} /> Save to Library</>}
         </button>
       </div>
     </>

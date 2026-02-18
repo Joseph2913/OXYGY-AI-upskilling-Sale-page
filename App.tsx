@@ -11,10 +11,12 @@ import { WorkflowDesigner } from './components/WorkflowDesigner';
 import { ProductArchitecture } from './components/ProductArchitecture';
 import { DashboardDesigner } from './components/DashboardDesigner';
 import { LearningPathway } from './components/LearningPathway';
+import { EngagementModel } from './components/EngagementModel';
 import { CaseStudiesSection, CaseStudiesPage } from './components/CaseStudies';
 import { UserJourney } from './components/UserJourney';
+import { Dashboard } from './components/dashboard/Dashboard';
 
-type Page = 'home' | 'playground' | 'agent-builder' | 'workflow-designer' | 'product-architecture' | 'dashboard-design' | 'learning-pathway' | 'case-studies' | 'user-journey';
+type Page = 'home' | 'playground' | 'agent-builder' | 'workflow-designer' | 'product-architecture' | 'dashboard-design' | 'learning-pathway' | 'engagement-model' | 'case-studies' | 'user-journey' | 'dashboard';
 
 function getPageFromHash(): Page {
   const hash = window.location.hash;
@@ -24,8 +26,10 @@ function getPageFromHash(): Page {
   if (hash === '#product-architecture') return 'product-architecture';
   if (hash === '#dashboard-design') return 'dashboard-design';
   if (hash === '#learning-pathway') return 'learning-pathway';
-  if (hash === '#user-journey') return 'user-journey';
+  if (hash === '#engagement-model') return 'engagement-model';
   if (hash === '#case-studies') return 'case-studies';
+  if (hash === '#user-journey') return 'user-journey';
+  if (hash === '#dashboard') return 'dashboard';
   return 'home';
 }
 
@@ -61,8 +65,10 @@ function App() {
       {currentPage === 'product-architecture' && <ProductArchitecture />}
       {currentPage === 'dashboard-design' && <DashboardDesigner />}
       {currentPage === 'learning-pathway' && <LearningPathway />}
-      {currentPage === 'user-journey' && <UserJourney />}
+      {currentPage === 'engagement-model' && <EngagementModel />}
       {currentPage === 'case-studies' && <CaseStudiesPage />}
+      {currentPage === 'user-journey' && <UserJourney />}
+      {currentPage === 'dashboard' && <Dashboard />}
     </div>
   );
 }
