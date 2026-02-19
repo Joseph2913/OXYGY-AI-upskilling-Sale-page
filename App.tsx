@@ -22,6 +22,10 @@ type Page = 'home' | 'playground' | 'agent-builder' | 'workflow-designer' | 'pro
 
 function getPageFromHash(): Page {
   const hash = window.location.hash;
+  // Ignore Supabase auth callback tokens in the hash
+  if (hash.includes('access_token=') || hash.includes('refresh_token=') || hash.includes('error_description=')) {
+    return 'home';
+  }
   if (hash === '#playground') return 'playground';
   if (hash === '#agent-builder') return 'agent-builder';
   if (hash === '#workflow-designer') return 'workflow-designer';
