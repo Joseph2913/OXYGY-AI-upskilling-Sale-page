@@ -558,7 +558,7 @@ const ConcentricCircles: React.FC<DiagramProps> = ({
       <div
         style={{
           position: 'absolute',
-          top: '1%',
+          top: '2%',
           left: '50%',
           transform: 'translateX(-50%)',
         }}
@@ -750,7 +750,7 @@ export const Hero: React.FC = () => {
               style={{ marginTop: '32px' }}
             >
               <a
-                href="#journey"
+                href="#learning-pathway"
                 className="inline-flex items-center justify-center gap-2 transition-colors"
                 style={{
                   background: '#38B2AC',
@@ -772,7 +772,7 @@ export const Hero: React.FC = () => {
                 Start the Journey <ChevronRight size={16} />
               </a>
               <a
-                href="#framework"
+                href="#journey"
                 className="inline-flex items-center justify-center transition-colors"
                 style={{
                   background: 'transparent',
@@ -806,7 +806,7 @@ export const Hero: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginTop: isMobile ? '40px' : 0,
+              marginTop: isMobile ? '40px' : '24px',
               maxWidth: isMobile ? '440px' : undefined,
               marginLeft: isMobile ? 'auto' : undefined,
               marginRight: isMobile ? 'auto' : undefined,
