@@ -29,6 +29,10 @@ export const Navbar: React.FC = () => {
   const dropdownTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const [methodologyOpen, setMethodologyOpen] = useState(false);
+  const methodologyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const methodologyRef = useRef<HTMLDivElement>(null);
+
   const [currentHash, setCurrentHash] = useState(() => window.location.hash);
 
   useEffect(() => {
@@ -57,8 +61,10 @@ export const Navbar: React.FC = () => {
   const isOnEngagementModel = currentHash === '#engagement-model';
   const isOnDashboard = currentHash === '#dashboard';
 
-  // Dropdown is "active" if on any artifact tool OR on learning pathway
-  const isDropdownActive = isOnAiTool || isOnLearningPlan;
+  // AI Tools dropdown active if on any artifact tool
+  const isDropdownActive = isOnAiTool;
+  // Our Methodology dropdown active if on learner journey or engagement model
+  const isMethodologyActive = isOnUserJourney || isOnEngagementModel;
 
   const goHome = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -104,6 +110,14 @@ export const Navbar: React.FC = () => {
   };
   const closeDropdown = () => {
     dropdownTimeout.current = setTimeout(() => setDropdownOpen(false), 150);
+  };
+
+  const openMethodology = () => {
+    if (methodologyTimeout.current) clearTimeout(methodologyTimeout.current);
+    setMethodologyOpen(true);
+  };
+  const closeMethodology = () => {
+    methodologyTimeout.current = setTimeout(() => setMethodologyOpen(false), 150);
   };
 
   /* Active = dark teal pill, inactive = transparent */
@@ -213,32 +227,6 @@ export const Navbar: React.FC = () => {
                   overflow: 'hidden',
                 }}
               >
-                {/* Learning Plan Generator — same layout as tools, subtle teal tint */}
-                <a
-                  href="#learning-pathway"
-                  className="flex items-center gap-3 transition-colors duration-150 hover:bg-[#E6FFFA]"
-                  style={{
-                    padding: '10px 16px',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    color: '#2D3748',
-                    textDecoration: 'none',
-                    background: isOnLearningPlan ? '#E6FFFA' : 'rgba(56, 178, 172, 0.04)',
-                  }}
-                  onClick={() => setDropdownOpen(false)}
-                >
-                  <span
-                    className="shrink-0 flex items-center justify-center"
-                    style={{ width: '24px', height: '24px', fontSize: '15px' }}
-                  >
-                    📋
-                  </span>
-                  <span className="truncate">Learning Plan Generator</span>
-                </a>
-
-                {/* Divider */}
-                <div style={{ height: '1px', backgroundColor: '#E2E8F0' }} />
-
                 {AI_TOOLS.map((tool) => (
                   <a
                     key={tool.level}
@@ -274,31 +262,114 @@ export const Navbar: React.FC = () => {
 
           <Divider />
 
-          {/* Learner Journey */}
+          {/* Learning Plan Generator — standalone button */}
           <a
-            href="#user-journey"
+            href="#learning-pathway"
             className={cn(
               'flex items-center px-4 h-[36px] rounded-full text-[14px] font-medium transition-all duration-150 whitespace-nowrap',
-              isOnUserJourney ? pillActive : pillInactive,
+              isOnLearningPlan ? pillActive : pillInactive,
             )}
             style={{ textDecoration: 'none' }}
           >
-            Learner Journey
+            Learning Plan
           </a>
 
           <Divider />
 
-          {/* Engagement Model */}
-          <a
-            href="#engagement-model"
-            className={cn(
-              'flex items-center px-4 h-[36px] rounded-full text-[14px] font-medium transition-all duration-150 whitespace-nowrap',
-              isOnEngagementModel ? pillActive : pillInactive,
-            )}
-            style={{ textDecoration: 'none' }}
+          {/* Our Methodology Dropdown (Learner Journey + Engagement Model) */}
+          <div
+            ref={methodologyRef}
+            className="relative"
+            onMouseEnter={openMethodology}
+            onMouseLeave={closeMethodology}
           >
-            Engagement Model
-          </a>
+            <button
+              className={cn(
+                'flex items-center gap-1.5 px-4 h-[36px] rounded-full text-[14px] font-medium transition-all duration-150 cursor-pointer whitespace-nowrap',
+                isMethodologyActive ? pillActive : pillInactive,
+              )}
+              onClick={() => setMethodologyOpen(!methodologyOpen)}
+            >
+              Our Methodology
+              <ChevronDown
+                size={14}
+                className={cn(
+                  'transition-transform duration-150',
+                  methodologyOpen && 'rotate-180',
+                )}
+              />
+            </button>
+
+            {/* Methodology dropdown panel */}
+            <div
+              className={cn(
+                'absolute top-full left-1/2 pt-3 transition-all duration-150',
+                methodologyOpen
+                  ? 'opacity-100 translate-y-0 pointer-events-auto'
+                  : 'opacity-0 -translate-y-1 pointer-events-none',
+              )}
+              style={{
+                transform: methodologyOpen
+                  ? 'translateX(-50%) translateY(0)'
+                  : 'translateX(-50%) translateY(-4px)',
+              }}
+            >
+              <div
+                style={{
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+                  minWidth: '220px',
+                  overflow: 'hidden',
+                }}
+              >
+                <a
+                  href="#user-journey"
+                  className="flex items-center gap-3 transition-colors duration-150 hover:bg-[#F7FAFC] hover:text-[#38B2AC]"
+                  style={{
+                    padding: '10px 16px',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    color: '#2D3748',
+                    textDecoration: 'none',
+                    background: isOnUserJourney ? '#E6FFFA' : undefined,
+                  }}
+                  onClick={() => setMethodologyOpen(false)}
+                >
+                  <span
+                    className="shrink-0 flex items-center justify-center"
+                    style={{ width: '24px', height: '24px', fontSize: '15px' }}
+                  >
+                    🗺️
+                  </span>
+                  <span>Learner Journey</span>
+                </a>
+                <div style={{ height: '1px', backgroundColor: '#E2E8F0' }} />
+                <a
+                  href="#engagement-model"
+                  className="flex items-center gap-3 transition-colors duration-150 hover:bg-[#F7FAFC] hover:text-[#38B2AC]"
+                  style={{
+                    padding: '10px 16px',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    color: '#2D3748',
+                    textDecoration: 'none',
+                    background: isOnEngagementModel ? '#E6FFFA' : undefined,
+                  }}
+                  onClick={() => setMethodologyOpen(false)}
+                >
+                  <span
+                    className="shrink-0 flex items-center justify-center"
+                    style={{ width: '24px', height: '24px', fontSize: '15px' }}
+                  >
+                    🤝
+                  </span>
+                  <span>Engagement Model</span>
+                </a>
+              </div>
+            </div>
+          </div>
 
           <Divider />
 
@@ -423,25 +494,6 @@ export const Navbar: React.FC = () => {
               </span>
             </div>
 
-            {/* Learning Plan Generator */}
-            <a
-              href="#learning-pathway"
-              className={cn(
-                'flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors',
-                isOnLearningPlan
-                  ? 'bg-[#E6FFFA] text-[#2C9A94]'
-                  : 'hover:bg-[#F7FAFC] text-[#2D3748]',
-              )}
-              style={{
-                fontSize: '14px',
-                fontWeight: 600,
-                textDecoration: 'none',
-              }}
-              onClick={() => setMobileOpen(false)}
-            >
-              <span style={{ fontSize: '15px' }}>📋</span>
-              <span>Learning Plan Generator</span>
-            </a>
             {AI_TOOLS.map((tool) => (
               <a
                 key={tool.level}
@@ -462,6 +514,39 @@ export const Navbar: React.FC = () => {
 
             <div className="h-px bg-gray-100 my-2" />
 
+            {/* Learning Plan Generator — standalone */}
+            <a
+              href="#learning-pathway"
+              className={cn(
+                'flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors',
+                isOnLearningPlan
+                  ? 'bg-[#E6FFFA] text-[#2C9A94]'
+                  : 'hover:bg-[#F7FAFC] text-[#2D3748]',
+              )}
+              style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
+              onClick={() => setMobileOpen(false)}
+            >
+              <span style={{ fontSize: '15px' }}>📋</span>
+              <span>Learning Plan Generator</span>
+            </a>
+
+            <div className="h-px bg-gray-100 my-2" />
+
+            {/* Our Methodology section */}
+            <div className="py-2">
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                  color: '#A0AEC0',
+                }}
+              >
+                Our Methodology
+              </span>
+            </div>
+
             <a
               href="#user-journey"
               className={cn(
@@ -473,7 +558,8 @@ export const Navbar: React.FC = () => {
               style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
               onClick={() => setMobileOpen(false)}
             >
-              Learner Journey
+              <span style={{ fontSize: '15px' }}>🗺️</span>
+              <span>Learner Journey</span>
             </a>
 
             <a
@@ -487,8 +573,11 @@ export const Navbar: React.FC = () => {
               style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
               onClick={() => setMobileOpen(false)}
             >
-              Engagement Model
+              <span style={{ fontSize: '15px' }}>🤝</span>
+              <span>Engagement Model</span>
             </a>
+
+            <div className="h-px bg-gray-100 my-2" />
 
             <a
               href="#case-studies"
