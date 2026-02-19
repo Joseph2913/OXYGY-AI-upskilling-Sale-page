@@ -719,6 +719,9 @@ export const LearningPathway: React.FC = () => {
               />
             </span>
           </h1>
+          <p className="text-[16px] md:text-[18px] text-[#718096] leading-[1.7] max-w-[700px] mx-auto mt-6">
+            This generator builds you a personalized plan for progressing through the levels &mdash; and assigns a relevant, hands-on project at each level to ensure your learning is applied and grounded in real business needs.
+          </p>
         </div>
 
         {/* Did You Know? Card */}
@@ -1201,22 +1204,26 @@ export const LearningPathway: React.FC = () => {
                       onClick={() => toggleDefaultExpand(level)}
                       className="w-full text-left p-5 flex items-start gap-4 hover:bg-[#FAFAFA] transition-colors"
                     >
-                      <div className="flex-shrink-0 pt-0.5">
+                      <div className="flex-1 min-w-0">
                         <span
-                          className="text-xs font-bold uppercase px-3 py-1 rounded-full"
+                          className="inline-block text-xs font-bold uppercase px-3 py-1.5 rounded-full mb-3"
                           style={{ backgroundColor: `${colors.accent}33`, color: '#2D3748' }}
                         >
-                          Level {String(level).padStart(2, '0')}
+                          Level {String(level).padStart(2, '0')} &mdash; {colors.name}
                         </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-bold text-[#1A202C] mb-0.5">{colors.name}</h3>
-                        <p className="text-xs text-[#718096] mb-2">{colors.tagline}</p>
-                        {/* Show project + deliverable in collapsed state */}
-                        <p className="text-sm font-semibold text-[#2D3748] mb-1">{content.project}</p>
-                        <p className="text-xs text-[#4A5568]">
-                          <span className="font-semibold text-[#1A202C]">Deliverable:</span> {content.deliverable}
-                        </p>
+                        {/* Project — emphasized */}
+                        <div
+                          className="rounded-lg p-3"
+                          style={{ backgroundColor: `${colors.accent}0D`, border: `1px solid ${colors.accent}25` }}
+                        >
+                          <p className="text-[11px] font-bold uppercase tracking-wider mb-1" style={{ color: colors.dark }}>
+                            Project
+                          </p>
+                          <p className="text-base font-bold text-[#1A202C] mb-1">{content.project}</p>
+                          <p className="text-xs text-[#4A5568]">
+                            <span className="font-semibold text-[#1A202C]">Deliverable:</span> {content.deliverable}
+                          </p>
+                        </div>
                       </div>
                       <div className="flex-shrink-0 flex items-center gap-1.5 pt-1">
                         <span
@@ -1469,15 +1476,14 @@ export const LearningPathway: React.FC = () => {
                       }}
                     >
                       <div className="p-6">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-xs font-bold uppercase px-3 py-1 rounded-full" style={{ backgroundColor: `${colors.accent}33`, color: '#2D3748' }}>
-                            Level {String(level).padStart(2, '0')}
+                        <div className="flex items-center gap-2 mb-3 flex-wrap">
+                          <span className="text-xs font-bold uppercase px-3 py-1.5 rounded-full" style={{ backgroundColor: `${colors.accent}33`, color: '#2D3748' }}>
+                            Level {String(level).padStart(2, '0')} &mdash; {colors.name}
                           </span>
                           <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#F7FAFC] text-[#A0AEC0]" style={{ border: '1px solid #E2E8F0' }}>
                             Awareness
                           </span>
                         </div>
-                        <h3 className="text-lg font-bold text-[#1A202C] mb-1">{colors.name}</h3>
                         <p className="text-sm text-[#4A5568] leading-relaxed mb-4">
                           You don&rsquo;t need a full project at this level, but understanding these concepts will
                           strengthen your work at higher levels. Explore when you&rsquo;re curious.
@@ -1517,9 +1523,9 @@ export const LearningPathway: React.FC = () => {
                   >
                     {/* Section 1: Header */}
                     <div className="p-6 pb-4">
-                      <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <span className="text-xs font-bold uppercase px-3 py-1 rounded-full" style={{ backgroundColor: `${colors.accent}33`, color: '#2D3748' }}>
-                          Level {String(level).padStart(2, '0')}
+                      <div className="flex items-center gap-2 mb-3 flex-wrap">
+                        <span className="text-xs font-bold uppercase px-3 py-1.5 rounded-full" style={{ backgroundColor: `${colors.accent}33`, color: '#2D3748' }}>
+                          Level {String(level).padStart(2, '0')} &mdash; {colors.name}
                         </span>
                         {depth === 'full' ? (
                           <span className="text-xs font-bold px-3 py-1 rounded-full text-white" style={{ backgroundColor: ACCENT }}>
@@ -1534,14 +1540,12 @@ export const LearningPathway: React.FC = () => {
                           ~{getTimeEstimate(depth, formData.availability)} at {formData.availability}/week
                         </span>
                       </div>
-                      <h3 className="text-xl font-bold text-[#1A202C] mb-0.5">{colors.name}</h3>
-                      <p className="text-sm text-[#718096]">{colors.tagline}</p>
                     </div>
 
-                    {/* Section 2: Your Project */}
-                    <div className="px-6 pb-5">
-                      <p className="text-[11px] font-bold uppercase tracking-wider text-[#A0AEC0] mb-2">Your Project</p>
-                      <h4 className="text-lg font-semibold text-[#1A202C] mb-2">{result.projectTitle}</h4>
+                    {/* Section 2: Your Project — emphasized */}
+                    <div className="mx-6 mb-5 rounded-lg p-4" style={{ backgroundColor: `${colors.accent}0D`, border: `1px solid ${colors.accent}25` }}>
+                      <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: colors.dark }}>Your Project</p>
+                      <h4 className="text-lg font-bold text-[#1A202C] mb-2">{result.projectTitle}</h4>
                       <p className="text-sm text-[#4A5568] leading-relaxed mb-3">{result.projectDescription}</p>
                       <p className="text-xs">
                         <span className="font-bold text-[#1A202C]">Deliverable: </span>

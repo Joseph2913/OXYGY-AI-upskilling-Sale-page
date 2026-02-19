@@ -97,24 +97,25 @@ function BranchConnector({ direction }: { direction: 'split' | 'merge' }) {
 const LEARNING_MODES = [
   {
     step: 2,
-    pct: '10%',
-    title: 'Self-Paced Study',
-    icon: BookOpen,
-    accentColor: '#718096',
-    accentDark: '#4A5568',
-    topColor: '#718096',
-    pctColor: '#4A5568',
+    pct: '70%',
+    title: 'Learn by Doing',
+    icon: Briefcase,
+    accentColor: ACCENT,
+    accentDark: ACCENT_DARK,
+    topColor: ACCENT,
+    pctColor: ACCENT_DARK,
     description:
-      'Build foundational knowledge at your own pace. Self-paced modules give you the theory and context that makes hands-on practice more effective.',
+      'Every level gives you a tangible project — something you build, deliver, and can point to. From a personal prompt library at Level 1 to a deployed AI application at Level 5, you\'re always working towards a real deliverable grounded in your actual work.',
     bullets: [
-      'Curated reading, articles, and reference guides for each level',
-      'Short video modules explaining key concepts and techniques',
-      'Knowledge checks to test your understanding before moving on',
-      'On-demand resources you can revisit anytime as a reference',
+      'Complete a hands-on project at every level with a clear deliverable',
+      'Build AI tools directly relevant to your role and function',
+      'Work with real business data and workplace challenges — not hypothetical exercises',
+      'Receive iterative feedback from OXYGY coaches as you build',
+      'Each project builds on the last, growing in complexity and impact',
     ],
-    exampleIcon: Play,
-    example: 'Watch a 10-minute video on prompt engineering best practices before your next session',
-    oxygySupport: 'OXYGY curates all materials and adapts your reading list based on your progress and goals.',
+    exampleIcon: Lightbulb,
+    example: 'At Level 2, your project might be building a custom AI agent that triages your team\'s incoming requests — a tool you deliver and your team actually uses',
+    oxygySupport: 'OXYGY coaches review your project work, answer questions, and adapt your path as your skills develop.',
   },
   {
     step: 3,
@@ -139,24 +140,24 @@ const LEARNING_MODES = [
   },
   {
     step: 4,
-    pct: '70%',
-    title: 'Learn by Doing',
-    icon: Briefcase,
-    accentColor: ACCENT,
-    accentDark: ACCENT_DARK,
-    topColor: ACCENT,
-    pctColor: ACCENT_DARK,
+    pct: '10%',
+    title: 'Self-Paced Study',
+    icon: BookOpen,
+    accentColor: '#718096',
+    accentDark: '#4A5568',
+    topColor: '#718096',
+    pctColor: '#4A5568',
     description:
-      'Apply what you learn immediately to your actual work. Each level includes hands-on projects designed around real business scenarios — not hypothetical exercises.',
+      'Build foundational knowledge at your own pace. Self-paced modules give you the theory and context that makes hands-on practice more effective.',
     bullets: [
-      'Build AI tools directly relevant to your role and function',
-      'Work with real business data and workplace challenges',
-      'Receive iterative feedback from OXYGY coaches on your output',
-      'Progressively tackle more complex projects as your skills grow',
+      'Curated reading, articles, and reference guides for each level',
+      'Short video modules explaining key concepts and techniques',
+      'Knowledge checks to test your understanding before moving on',
+      'On-demand resources you can revisit anytime as a reference',
     ],
-    exampleIcon: Lightbulb,
-    example: 'Build a custom AI agent that triages your team\'s incoming requests automatically',
-    oxygySupport: 'OXYGY coaches review your work, answer questions, and adapt your path as your skills develop.',
+    exampleIcon: Play,
+    example: 'Watch a 10-minute video on prompt engineering best practices before your next session',
+    oxygySupport: 'OXYGY curates all materials and adapts your reading list based on your progress and goals.',
   },
 ];
 
@@ -261,10 +262,10 @@ export const UserJourney: React.FC = () => {
                 <div className="md:flex-1">
                   <p className="text-[15px] text-[#4A5568] leading-[1.8] mb-4">
                     Your journey starts with the{' '}
-                    <strong className="text-[#1A202C]">Learning Pathway Generator</strong> &mdash; a personalised tool that tailors your experience to your unique role, goals, and current AI maturity.
+                    <strong className="text-[#1A202C]">Learning Pathway Generator</strong> &mdash; a personalised tool that builds your progression plan and assigns a <strong className="text-[#1A202C]">tangible, hands-on project at every level</strong> grounded in real business needs.
                   </p>
                   <p className="text-[15px] text-[#4A5568] leading-[1.8] mb-5">
-                    Whether you're a product manager exploring prompt engineering or a data leader building end-to-end AI applications, the pathway adapts to you. The structure is the same for everyone, but the content, depth, and focus areas are entirely yours.
+                    Whether you're a product manager exploring prompt engineering or a data leader building end-to-end AI applications, the pathway adapts to you. The structure is the same for everyone, but the projects, depth, and focus areas are entirely yours &mdash; so you're always building something real, not just absorbing theory.
                   </p>
                   <a
                     href="#learning-pathway"
@@ -301,7 +302,7 @@ export const UserJourney: React.FC = () => {
                         'AI experience level',
                         'Learning goals & ambitions',
                         'Time availability',
-                        'Preferred learning style',
+                        'A hands-on project at every level',
                       ].map((item) => (
                         <li key={item} className="flex items-start gap-2">
                           <span
@@ -336,7 +337,7 @@ export const UserJourney: React.FC = () => {
         {/* STEPS 2-4 — Parallel Expandable Columns */}
         <div className="rounded-2xl overflow-hidden mb-2 border border-[#E2E8F0] bg-white">
           {/* Shared top accent bar */}
-          <div className="h-[4px] w-full" style={{ background: `linear-gradient(90deg, #718096 0%, #718096 33%, #1E3A5F 33%, #1E3A5F 66%, ${ACCENT} 66%, ${ACCENT} 100%)` }} />
+          <div className="h-[4px] w-full" style={{ background: `linear-gradient(90deg, ${ACCENT} 0%, ${ACCENT} 33%, #1E3A5F 33%, #1E3A5F 66%, #718096 66%, #718096 100%)` }} />
           <div className="p-4 md:p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 md:items-start gap-0 md:divide-x md:divide-[#E2E8F0]">
             {LEARNING_MODES.map((mode) => {
