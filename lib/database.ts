@@ -2,6 +2,40 @@ import { supabase } from './supabase';
 import type { UserProfile, InsightEntry, SavedPrompt } from '../data/dashboard-types';
 import type { PathwayApiResponse, LevelDepth } from '../types';
 
+// ─── HELPER: camelCase ↔ snake_case for profiles ───
+
+function profileToDb(profile: Partial<UserProfile>): Record<string, unknown> {
+  const row: Record<string, unknown> = {};
+  if (profile.fullName !== undefined) row.full_name = profile.fullName;
+  if (profile.role !== undefined) row.role = profile.role;
+  if (profile.function !== undefined) row.function = profile.function;
+  if (profile.functionOther !== undefined) row.function_other = profile.functionOther;
+  if (profile.seniority !== undefined) row.seniority = profile.seniority;
+  if (profile.aiExperience !== undefined) row.ai_experience = profile.aiExperience;
+  if (profile.ambition !== undefined) row.ambition = profile.ambition;
+  if (profile.challenge !== undefined) row.challenge = profile.challenge;
+  if (profile.availability !== undefined) row.availability = profile.availability;
+  if (profile.experienceDescription !== undefined) row.experience_description = profile.experienceDescription;
+  if (profile.goalDescription !== undefined) row.goal_description = profile.goalDescription;
+  return row;
+}
+
+function dbToProfile(row: Record<string, unknown>): UserProfile {
+  return {
+    fullName: (row.full_name as string) || '',
+    role: (row.role as string) || '',
+    function: (row.function as string) || '',
+    functionOther: (row.function_other as string) || '',
+    seniority: (row.seniority as string) || '',
+    aiExperience: (row.ai_experience as string) || '',
+    ambition: (row.ambition as string) || '',
+    challenge: (row.challenge as string) || '',
+    availability: (row.availability as string) || '',
+    experienceDescription: (row.experience_description as string) || '',
+    goalDescription: (row.goal_description as string) || '',
+  };
+}
+
 // ─── PROFILES ───
 
 export async function getProfile(userId: string): Promise<UserProfile | null> {
@@ -12,19 +46,22 @@ export async function getProfile(userId: string): Promise<UserProfile | null> {
       .eq('id', userId)
       .single();
     if (error) { console.error('getProfile error:', error); return null; }
-    return data as UserProfile;
+    return dbToProfile(data as Record<string, unknown>);
   } catch (err) { console.error('getProfile error:', err); return null; }
 }
 
-export async function upsertProfile(userId: string, data: UserProfile): Promise<UserProfile | null> {
+export async function upsertProfile(userId: string, profile: Partial<UserProfile>): Promise<UserProfile | null> {
   try {
+    const row = profileToDb(profile);
+    row.id = userId;
+    row.updated_at = new Date().toISOString();
     const { data: result, error } = await supabase
       .from('profiles')
-      .upsert({ id: userId, ...data }, { onConflict: 'id' })
+      .upsert(row, { onConflict: 'id' })
       .select()
       .single();
     if (error) { console.error('upsertProfile error:', error); return null; }
-    return result as UserProfile;
+    return dbToProfile(result as Record<string, unknown>);
   } catch (err) { console.error('upsertProfile error:', err); return null; }
 }
 
@@ -44,8 +81,12 @@ export async function getLatestLearningPlan(userId: string): Promise<{
       .single();
     if (error) { console.error('getLatestLearningPlan error:', error); return null; }
     return {
-      plan: data.plan_data as PathwayApiResponse,
-      level_depths: data.level_depths as Record<string, LevelDepth>,
+      plan: {
+        pathwaySummary: (data.pathway_summary as string) || '',
+        totalEstimatedWeeks: (data.total_estimated_weeks as number) || 0,
+        levels: (data.levels_data as PathwayApiResponse['levels']) || {},
+      },
+      level_depths: (data.level_depths as Record<string, LevelDepth>) || {},
     };
   } catch (err) { console.error('getLatestLearningPlan error:', err); return null; }
 }
@@ -60,7 +101,9 @@ export async function saveLearningPlan(
       .from('learning_plans')
       .insert({
         user_id: userId,
-        plan_data: data,
+        pathway_summary: data.pathwaySummary,
+        total_estimated_weeks: data.totalEstimatedWeeks,
+        levels_data: data.levels,
         level_depths: levelDepths,
         generated_at: new Date().toISOString(),
       });
@@ -94,18 +137,32 @@ export async function getLevelProgress(userId: string): Promise<LevelProgressRow
 
 export async function upsertToolUsed(userId: string, level: number): Promise<boolean> {
   try {
-    const { error } = await supabase
+    // Check if a row already exists for this (user_id, level)
+    const { data: existing } = await supabase
       .from('level_progress')
-      .upsert(
-        {
+      .select('id')
+      .eq('user_id', userId)
+      .eq('level', level)
+      .limit(1)
+      .maybeSingle();
+
+    if (existing) {
+      const { error } = await supabase
+        .from('level_progress')
+        .update({ tool_used: true, tool_used_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+        .eq('id', existing.id);
+      if (error) { console.error('upsertToolUsed update error:', error); return false; }
+    } else {
+      const { error } = await supabase
+        .from('level_progress')
+        .insert({
           user_id: userId,
           level,
           tool_used: true,
           tool_used_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id,level' },
-      );
-    if (error) { console.error('upsertToolUsed error:', error); return false; }
+        });
+      if (error) { console.error('upsertToolUsed insert error:', error); return false; }
+    }
     return true;
   } catch (err) { console.error('upsertToolUsed error:', err); return false; }
 }
@@ -116,19 +173,38 @@ export async function upsertWorkshopAttended(
   code: string,
 ): Promise<boolean> {
   try {
-    const { error } = await supabase
+    // Check if a row already exists for this (user_id, level)
+    const { data: existing } = await supabase
       .from('level_progress')
-      .upsert(
-        {
+      .select('id')
+      .eq('user_id', userId)
+      .eq('level', level)
+      .limit(1)
+      .maybeSingle();
+
+    if (existing) {
+      const { error } = await supabase
+        .from('level_progress')
+        .update({
+          workshop_attended: true,
+          workshop_attended_at: new Date().toISOString(),
+          workshop_code_used: code,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id);
+      if (error) { console.error('upsertWorkshopAttended update error:', error); return false; }
+    } else {
+      const { error } = await supabase
+        .from('level_progress')
+        .insert({
           user_id: userId,
           level,
           workshop_attended: true,
           workshop_attended_at: new Date().toISOString(),
           workshop_code_used: code,
-        },
-        { onConflict: 'user_id,level' },
-      );
-    if (error) { console.error('upsertWorkshopAttended error:', error); return false; }
+        });
+      if (error) { console.error('upsertWorkshopAttended insert error:', error); return false; }
+    }
     return true;
   } catch (err) { console.error('upsertWorkshopAttended error:', err); return false; }
 }
@@ -241,10 +317,10 @@ export async function getInsights(userId: string): Promise<InsightEntry[]> {
 
 export async function saveInsight(userId: string, entry: InsightEntry): Promise<boolean> {
   try {
+    // Let the DB auto-generate the UUID id
     const { error } = await supabase
       .from('application_insights')
       .insert({
-        id: entry.id,
         user_id: userId,
         level: entry.level,
         topic: entry.topic,
@@ -253,7 +329,6 @@ export async function saveInsight(userId: string, entry: InsightEntry): Promise<
         rating: entry.rating,
         ai_feedback: entry.aiFeedback,
         ai_feedback_structured: entry.aiFeedbackStructured || null,
-        created_at: new Date(entry.createdAt).toISOString(),
       });
     if (error) { console.error('saveInsight error:', error); return false; }
     return true;
@@ -274,6 +349,7 @@ export async function updateInsight(
     if (data.rating !== undefined) updates.rating = data.rating;
     if (data.aiFeedback !== undefined) updates.ai_feedback = data.aiFeedback;
     if (data.aiFeedbackStructured !== undefined) updates.ai_feedback_structured = data.aiFeedbackStructured;
+    updates.updated_at = new Date().toISOString();
 
     const { error } = await supabase
       .from('application_insights')
@@ -289,7 +365,8 @@ export async function updateInsight(
 
 export interface UiPreferences {
   profile_nudge_dismissed: boolean;
-  [key: string]: unknown;
+  onboarding_completed?: boolean;
+  last_active_dashboard_section?: string;
 }
 
 export async function getUiPreferences(userId: string): Promise<UiPreferences | null> {
@@ -311,7 +388,7 @@ export async function upsertUiPreferences(
   try {
     const { error } = await supabase
       .from('ui_preferences')
-      .upsert({ user_id: userId, ...data }, { onConflict: 'user_id' });
+      .upsert({ user_id: userId, ...data, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
     if (error) { console.error('upsertUiPreferences error:', error); return false; }
     return true;
   } catch (err) { console.error('upsertUiPreferences error:', err); return false; }
