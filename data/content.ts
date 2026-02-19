@@ -66,7 +66,7 @@ export const LEVELS: LevelData[] = [
     darkAccentColor: "#5B6DC2", // Dark Lavender
     icon: Wrench,
     descriptionCollapsed: "Once comfortable with AI, teams learn to build with it — creating custom AI agents and reusable tools tailored to their specific workflows, roles, and challenges.",
-    descriptionExpanded: "Once people are comfortable with AI, they learn to build with it. This level empowers individuals to create custom AI agents and tools tailored to their specific workflows — reusable solutions that standardise quality, save time, and can be shared across teams. The principle: build once, share across the organisation.",
+    descriptionExpanded: "Once people are comfortable with AI, they learn to build with it. This level empowers individuals to create custom AI agents and tools tailored to their specific workflows — reusable solutions that standardize quality, save time, and can be shared across teams. The principle: build once, share across the organization.",
     previewTags: ["Custom GPTs", "Agent Design", "Human-in-the-Loop", "Templates"],
     topics: [
       "What Are AI Agents?",
@@ -89,7 +89,7 @@ export const LEVELS: LevelData[] = [
         emoji: "📚",
         title: "Agent Template Library Sprint",
         type: "workshop",
-        description: "Teams collaborate to build a shared library of agent templates that standardise quality across common workflows."
+        description: "Teams collaborate to build a shared library of agent templates that standardize quality across common workflows."
       },
       {
         emoji: "🔄",
@@ -107,8 +107,8 @@ export const LEVELS: LevelData[] = [
     accentColor: "#F7E8A4", // Pale Yellow
     darkAccentColor: "#C4A934", // Dark Yellow/Gold
     icon: Workflow,
-    descriptionCollapsed: "Individual AI tools become organisational infrastructure. Teams learn to connect AI agents into end-to-end automated workflows with built-in human oversight and continuous feedback loops.",
-    descriptionExpanded: "Individual AI tools become organisational infrastructure. Teams learn to connect AI agents into end-to-end automated workflows — with built-in human oversight, role-based logic, and feedback loops that drive continuous improvement. This is where AI stops being a side tool and becomes embedded in how work actually gets done.",
+    descriptionCollapsed: "Individual AI tools become organizational infrastructure. Teams learn to connect AI agents into end-to-end automated workflows with built-in human oversight and continuous feedback loops.",
+    descriptionExpanded: "Individual AI tools become organizational infrastructure. Teams learn to connect AI agents into end-to-end automated workflows — with built-in human oversight, role-based logic, and feedback loops that drive continuous improvement. This is where AI stops being a side tool and becomes embedded in how work actually gets done.",
     previewTags: ["Workflow Automation", "Agent Chaining", "Role-Based Logic", "Feedback Loops"],
     topics: [
       "AI Workflow Mapping",
@@ -118,7 +118,7 @@ export const LEVELS: LevelData[] = [
       "Process Use Cases",
       "Performance & Feedback Loops"
     ],
-    targetAudience: ["Digital transformation leads", "Process excellence teams", "Operations directors", "Automation specialists", "Centre of Excellence members"],
+    targetAudience: ["Digital transformation leads", "Process excellence teams", "Operations directors", "Automation specialists", "Center of Excellence members"],
     keyTools: ["Make", "Zapier", "n8n", "API integrations", "Airtable", "Google Apps Script"],
     sessionTypes: [
       {
@@ -192,11 +192,11 @@ export const LEVELS: LevelData[] = [
     darkAccentColor: "#38B2AC", // Teal (same)
     icon: Rocket,
     descriptionCollapsed: "The complete picture: full applications where every user gets a tailored experience — combining workflow automation, designed interfaces, and individual user accounts into production-ready AI products.",
-    descriptionExpanded: "The complete picture: full applications where every user gets a tailored experience. Combining workflow automation, designed interfaces, and individual user accounts, Level 5 delivers AI products where different roles see different things — personalised, scalable, and production-ready. This is where AI becomes a product, not just a feature.",
-    previewTags: ["Personalisation", "Full-Stack AI", "Knowledge Bases", "App Architecture"],
+    descriptionExpanded: "The complete picture: full applications where every user gets a tailored experience. Combining workflow automation, designed interfaces, and individual user accounts, Level 5 delivers AI products where different roles see different things — personalized, scalable, and production-ready. This is where AI becomes a product, not just a feature.",
+    previewTags: ["Personalization", "Full-Stack AI", "Knowledge Bases", "App Architecture"],
     topics: [
       "Application Architecture",
-      "Personalisation Engines",
+      "Personalization Engines",
       "Knowledge Base Applications",
       "Custom Learning Platforms",
       "Full-Stack AI Integration",

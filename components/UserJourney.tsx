@@ -132,11 +132,11 @@ const LEARNING_MODES = [
       'Facilitated workshops tackling shared business challenges with AI',
       'Peer reviews where you present your AI projects and get feedback',
       'Cross-functional problem-solving with colleagues from other teams',
-      "Best practice exchange — learn what's working across the organisation",
+      "Best practice exchange — learn what's working across the organization",
     ],
     exampleIcon: Handshake,
     example: 'Present your AI workflow to peers and redesign it together based on their feedback',
-    oxygySupport: 'OXYGY facilitates every session, provides personalised feedback, and ensures discussions translate into action.',
+    oxygySupport: 'OXYGY facilitates every session, provides personalized feedback, and ensures discussions translate into action.',
   },
   {
     step: 4,
@@ -187,6 +187,12 @@ export const UserJourney: React.FC = () => {
 
         {/* Centered Title */}
         <div className="mb-6 text-center">
+          <div
+            className="inline-block text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-1.5 rounded-full mb-6"
+            style={{ backgroundColor: '#E6FFFA', color: ACCENT_DARK, border: `1px solid ${ACCENT}` }}
+          >
+            What to Expect
+          </div>
           <h1 className="text-[36px] md:text-[48px] font-bold text-[#1A202C] leading-[1.15]">
             Your AI Learning
             <br />
@@ -201,7 +207,7 @@ export const UserJourney: React.FC = () => {
         </div>
 
         <p className="text-center text-[16px] md:text-[18px] text-[#718096] leading-[1.7] max-w-[680px] mx-auto mb-12">
-          Whether you're exploring Level 1 or mastering all five, the pathway is the same &mdash; personalised to you.
+          Whether you're exploring Level 1 or mastering all five, the pathway is the same &mdash; personalized to you.
         </p>
 
         {/* Fun Fact Card */}
@@ -262,7 +268,7 @@ export const UserJourney: React.FC = () => {
                 <div className="md:flex-1">
                   <p className="text-[15px] text-[#4A5568] leading-[1.8] mb-4">
                     Your journey starts with the{' '}
-                    <strong className="text-[#1A202C]">Learning Pathway Generator</strong> &mdash; a personalised tool that builds your progression plan and assigns a <strong className="text-[#1A202C]">tangible, hands-on project at every level</strong> grounded in real business needs.
+                    <strong className="text-[#1A202C]">Learning Pathway Generator</strong> &mdash; a personalized tool that builds your progression plan and assigns a <strong className="text-[#1A202C]">tangible, hands-on project at every level</strong> grounded in real business needs.
                   </p>
                   <p className="text-[15px] text-[#4A5568] leading-[1.8] mb-5">
                     Whether you're a product manager exploring prompt engineering or a data leader building end-to-end AI applications, the pathway adapts to you. The structure is the same for everyone, but the projects, depth, and focus areas are entirely yours &mdash; so you're always building something real, not just absorbing theory.
@@ -488,12 +494,12 @@ export const UserJourney: React.FC = () => {
                 This is where learning becomes lasting capability. The goal is to be <strong className="text-[#1A202C]">consciously aware</strong> of where, how, and why you're applying AI &mdash; not just using it, but understanding its impact on your work.
               </p>
               <p className="text-[15px] text-[#4A5568] leading-[1.8] mb-5">
-                A core part of this step is creating an <strong className="text-[#1A202C]">AI Application Log</strong> &mdash; a living record of every place you've applied AI, the outcomes, and the lessons learned. This log is shared with your cohort and leadership team, creating a <strong className="text-[#1A202C]">cyclical feedback loop</strong> that continuously improves how AI is deployed across the organisation.
+                A core part of this step is creating an <strong className="text-[#1A202C]">AI Application Log</strong> &mdash; a living record of every place you've applied AI, the outcomes, and the lessons learned. This log is shared with your cohort and leadership team, creating a <strong className="text-[#1A202C]">cyclical feedback loop</strong> that continuously improves how AI is deployed across the organization.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
                   { icon: FileText, title: 'AI Application Log', desc: 'Document every AI use case: where you applied it, what worked, and what you learned' },
-                  { icon: Share2, title: 'Cohort & leadership sharing', desc: 'Share your log with peers and leaders to create an organisation-wide feedback loop' },
+                  { icon: Share2, title: 'Cohort & leadership sharing', desc: 'Share your log with peers and leaders to create an organization-wide feedback loop' },
                   { icon: ClipboardCheck, title: 'Self-assessment & check-ins', desc: 'Evaluate your growth and discuss next steps with your manager and OXYGY coaches' },
                 ].map(({ icon: Icon, title, desc }) => (
                   <div
@@ -539,13 +545,13 @@ export const UserJourney: React.FC = () => {
                 </div>
               </div>
               <p className="text-[15px] text-[#4A5568] leading-[1.8] mb-5">
-                Your journey doesn't end &mdash; it evolves. Track your competency gains, unlock deeper levels, and become an AI champion within your organisation. OXYGY continues to support you as your skills mature and new opportunities emerge.
+                Your journey doesn't end &mdash; it evolves. Track your competency gains, unlock deeper levels, and become an AI champion within your organization. OXYGY continues to support you as your skills mature and new opportunities emerge.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
                   { icon: TrendingUp, title: 'Track competency growth', desc: 'Measure progress across AI skill dimensions' },
                   { icon: Compass, title: 'Unlock next levels', desc: 'Advance from fundamentals to full applications' },
-                  { icon: Users, title: 'Become an AI champion', desc: 'Lead AI adoption in your team and organisation' },
+                  { icon: Users, title: 'Become an AI champion', desc: 'Lead AI adoption in your team and organization' },
                 ].map(({ icon: Icon, title, desc }) => (
                   <div
                     key={title}

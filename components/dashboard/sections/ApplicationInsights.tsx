@@ -257,7 +257,7 @@ const InsightCard: React.FC<{ entry: InsightEntry; onEdit: (entry: InsightEntry)
           <LevelPill level={entry.level} />
           <button
             onClick={() => onEdit(entry)}
-            title="Edit & re-analyse"
+            title="Edit & re-analyze"
             className="dash-focus"
             style={{
               background: 'none',
@@ -709,10 +709,10 @@ export const ApplicationInsights: React.FC = () => {
           {loading ? (
             <>
               <Loader2 size={16} className="animate-dash-spinner" />
-              Analysing with AI...
+              Analyzing with AI...
             </>
           ) : editingId ? (
-            'Re-analyse Insight'
+            'Re-analyze Insight'
           ) : (
             'Log Insight'
           )}

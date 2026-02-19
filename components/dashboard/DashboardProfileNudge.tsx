@@ -62,7 +62,7 @@ export const DashboardProfileNudge: React.FC<Props> = ({ onNavigateToProfile }) 
       }}
     >
       <p style={{ flex: 1, margin: 0, fontSize: 14, color: '#2D3748', lineHeight: 1.5 }}>
-        You haven't completed your profile yet. A complete profile generates your personalised learning plan.
+        You haven't completed your profile yet. A complete profile generates your personalized learning plan.
       </p>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
         <button

@@ -63,12 +63,12 @@ Tools: Make, Zapier, n8n, API integrations, Airtable
 Objective: Scale AI usage through integrated, automated pipelines
 
 ### Level 4: Interactive Dashboards & Tailored Front-Ends
-Topics: Application Architecture, User-Centred Dashboard Design, Data Visualization, Role-Based Views, Prototype Testing, Stakeholder Feedback
+Topics: Application Architecture, User-Centered Dashboard Design, Data Visualization, Role-Based Views, Prototype Testing, Stakeholder Feedback
 Tools: Figma, V0, Google AI Studio, Cursor, dashboard prototyping tools
 Objective: Shift from data-in-a-sheet to tailored experiences built for specific end users
 
 ### Level 5: Full AI-Powered Applications
-Topics: Application Architecture, Personalisation Engines, Knowledge Base Applications, Custom Learning Platforms, Full-Stack AI Integration, User Testing & Scaling
+Topics: Application Architecture, Personalization Engines, Knowledge Base Applications, Custom Learning Platforms, Full-Stack AI Integration, User Testing & Scaling
 Tools: Google AI Studio, GitHub, Claude Code, Supabase, Vercel
 Objective: Full-stack AI applications where different users get different experiences
 

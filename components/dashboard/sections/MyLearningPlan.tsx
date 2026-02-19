@@ -71,7 +71,7 @@ export const MyLearningPlan: React.FC = () => {
         <p style={{ fontSize: 16, color: '#4A5568', margin: '0 0 8px', fontWeight: 500 }}>
           {isProfileComplete
             ? 'You haven\'t generated a learning plan yet.'
-            : 'You haven\'t generated a learning plan yet. Complete your profile to get a personalised plan.'}
+            : 'You haven\'t generated a learning plan yet. Complete your profile to get a personalized plan.'}
         </p>
         <button
           onClick={handleGeneratePlan}

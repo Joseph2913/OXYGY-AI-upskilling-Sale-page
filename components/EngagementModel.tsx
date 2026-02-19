@@ -294,20 +294,25 @@ const PageHeader: React.FC<{
 }> = ({ selectedTier, onSelectTier, onFeatureClick }) => (
   <section style={{ background: V.white, paddingTop: '120px', paddingBottom: '80px' }}>
     <div className="mx-auto" style={{ maxWidth: '1160px', padding: '0 40px' }}>
-      {/* Eyebrow */}
+      {/* Eyebrow Pill */}
       <Reveal>
-        <div
-          className="text-center"
-          style={{
-            fontSize: '12px',
-            fontWeight: 700,
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            color: V.teal,
-            marginBottom: '16px',
-          }}
-        >
-          Our Engagement Model
+        <div className="text-center" style={{ marginBottom: '16px' }}>
+          <div
+            style={{
+              display: 'inline-block',
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              color: V.teal,
+              backgroundColor: 'rgba(56, 178, 172, 0.08)',
+              border: '1px solid rgba(56, 178, 172, 0.3)',
+              padding: '6px 16px',
+              borderRadius: '9999px',
+            }}
+          >
+            Partner With OXYGY
+          </div>
         </div>
       </Reveal>
 
@@ -342,6 +347,35 @@ const PageHeader: React.FC<{
           Every organization&rsquo;s AI journey is different. Choose the scope that matches your
           ambition &mdash; from building foundational capability to full operating model transformation.
         </p>
+      </Reveal>
+
+      {/* Did You Know? Card */}
+      <Reveal delay={160}>
+        <div
+          className="relative rounded-2xl px-8 md:px-12 py-8 text-center overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, rgba(56,178,172,0.15) 0%, rgba(44,154,148,0.08) 50%, rgba(56,178,172,0.12) 100%)',
+            border: '1.5px solid rgba(56, 178, 172, 0.3)',
+            marginBottom: '56px',
+          }}
+        >
+          <div className="absolute top-3 left-4 flex gap-1.5">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#2C9A94', opacity: 0.4 }} />
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#B2F5EA', opacity: 0.6 }} />
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#2C9A94', opacity: 0.3 }} />
+          </div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.1em] mb-2" style={{ color: '#2C9A94' }}>
+            Did you know?
+          </p>
+          <p className="text-[17px] md:text-[19px] text-[#2D3748] leading-[1.6] font-medium mb-2 max-w-3xl mx-auto">
+            Companies that invest in structured AI upskilling see{' '}
+            <span className="font-bold" style={{ color: '#2C9A94' }}>3&times; faster time-to-value</span>{' '}
+            on AI initiatives compared to those who deploy tools without capability building.
+          </p>
+          <p className="text-[15px] text-[#718096] leading-[1.6] max-w-3xl mx-auto">
+            The right engagement model ensures AI adoption sticks &mdash; not just for early adopters, but across the organization.
+          </p>
+        </div>
       </Reveal>
 
       {/* Tier cards */}

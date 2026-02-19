@@ -112,7 +112,7 @@ export const PERSONAS: PersonaCardData[] = [
     accentColor: '#E6FFFA',
     front: {
       whereIAm: "I\u2019ve built workflows and prototyped dashboards \u2014 now I want to go further. I think in terms of products, not just tools.",
-      whereImGoing: "I want to ship a real AI-powered application where different users get personalised experiences.",
+      whereImGoing: "I want to ship a real AI-powered application where different users get personalized experiences.",
     },
     back: {
       pathway: [
@@ -122,8 +122,8 @@ export const PERSONAS: PersonaCardData[] = [
         { level: 'L4', depth: 'full', color: '#F5B8A0' },
         { level: 'L5', depth: 'full', color: '#38B2AC' },
       ],
-      projectTitle: 'Launch a Personalised Internal Platform',
-      projectDescription: "Build and deploy a complete AI application \u2014 with user accounts, role-based views, and personalised content \u2014 that your organisation can actually use.",
+      projectTitle: 'Launch a Personalized Internal Platform',
+      projectDescription: "Build and deploy a complete AI application \u2014 with user accounts, role-based views, and personalized content \u2014 that your organization can actually use.",
       estimatedJourney: '~8 weeks at 4\u20135 hours/week',
     },
   },

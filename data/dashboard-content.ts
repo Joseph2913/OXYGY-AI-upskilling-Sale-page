@@ -30,7 +30,7 @@ export const SECTION_META: Record<string, { heading: string; subheading: string 
   },
   insights: {
     heading: 'Application Insights',
-    subheading: 'Log how you\'ve applied AI in your work. Your insights help your organisation understand where AI is creating real impact.',
+    subheading: 'Log how you\'ve applied AI in your work. Your insights help your organization understand where AI is creating real impact.',
   },
   'prompt-library': {
     heading: 'My Prompt Library',
@@ -163,12 +163,12 @@ export const TOPIC_OPTIONS_BY_LEVEL: Record<number, string[]> = {
     'UX Design for AI Outputs',
     'Dashboard Prototyping',
     'User Journey Mapping',
-    'Data Visualisation Principles',
+    'Data Visualization Principles',
     'Role-Specific Front-Ends',
   ],
   5: [
     'Application Architecture',
-    'Personalisation Engines',
+    'Personalization Engines',
     'Knowledge Base Applications',
     'Custom Learning Platforms',
     'Full-Stack AI Integration',
@@ -309,7 +309,7 @@ export function generateInsightFeedback(entry: {
   const closers = entry.rating >= 4
     ? [
         'Consider documenting this as a reusable approach for your team.',
-        'This could become a template that others in your organisation benefit from.',
+        'This could become a template that others in your organization benefit from.',
         'Think about how this approach could be scaled or shared with colleagues.',
       ]
     : [

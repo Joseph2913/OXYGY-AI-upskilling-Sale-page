@@ -645,11 +645,17 @@ export const DashboardDesigner: React.FC = () => {
         {/* ═══════════════════════════════════════════
             SECTION A — Breadcrumb + Centered Title
         ═══════════════════════════════════════════ */}
-        <a href="#home" className="inline-flex items-center gap-1.5 text-[14px] text-[#718096] hover:text-[#D47B5A] transition-colors mb-8">
-          <ArrowLeft size={16} /> Back to Level 4
+        <a href="#" onClick={e => { e.preventDefault(); window.location.hash = ''; window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="inline-flex items-center gap-1.5 text-[14px] text-[#718096] hover:text-[#D47B5A] transition-colors mb-8">
+          <ArrowLeft size={16} /> Back to Home
         </a>
 
         <div className="mb-8 text-center">
+          <div
+            className="inline-block text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-1.5 rounded-full mb-6"
+            style={{ backgroundColor: '#FFF0EB', color: DARK_ACCENT, border: `1px solid ${ACCENT}` }}
+          >
+            Level 04 &mdash; Dashboard Design
+          </div>
           <h1 className="text-[36px] md:text-[48px] font-bold text-[#1A202C] leading-[1.15] mb-6">
             Dashboard<br />
             <span className="relative inline-block">
@@ -657,6 +663,9 @@ export const DashboardDesigner: React.FC = () => {
               <span className="absolute left-0 -bottom-1 w-full h-[4px] rounded-full opacity-80" style={{ backgroundColor: DARK_ACCENT }} />
             </span>
           </h1>
+          <p className="text-[16px] md:text-[18px] text-[#718096] leading-[1.7] max-w-[700px] mx-auto mt-2">
+            Brief in your dashboard, generate an AI-powered mockup, refine it with feedback, and export a production-ready PRD &mdash; all in one tool.
+          </p>
         </div>
 
         {/* ═══════════════════════════════════════════

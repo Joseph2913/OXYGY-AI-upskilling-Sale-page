@@ -810,12 +810,12 @@ Tools: Make, Zapier, n8n, API integrations, Airtable
 Objective: Scale AI usage through integrated, automated pipelines
 
 ### Level 4: Interactive Dashboards & Tailored Front-Ends
-Topics: Application Architecture, User-Centred Dashboard Design, Data Visualization, Role-Based Views, Prototype Testing, Stakeholder Feedback
+Topics: Application Architecture, User-Centered Dashboard Design, Data Visualization, Role-Based Views, Prototype Testing, Stakeholder Feedback
 Tools: Figma, V0, Google AI Studio, Cursor, dashboard prototyping tools
 Objective: Shift from data-in-a-sheet to tailored experiences built for specific end users
 
 ### Level 5: Full AI-Powered Applications
-Topics: Application Architecture, Personalisation Engines, Knowledge Base Applications, Custom Learning Platforms, Full-Stack AI Integration, User Testing & Scaling
+Topics: Application Architecture, Personalization Engines, Knowledge Base Applications, Custom Learning Platforms, Full-Stack AI Integration, User Testing & Scaling
 Tools: Google AI Studio, GitHub, Claude Code, Supabase, Vercel
 Objective: Full-stack AI applications where different users get different experiences
 
@@ -1437,8 +1437,8 @@ The five levels of the Oxygy AI upskilling framework are:
 - Level 1: AI Fundamentals & Awareness — Basic prompting, everyday use cases, understanding LLMs
 - Level 2: Applied Capability — Custom GPTs, AI agents, system prompt design
 - Level 3: Systemic Integration — Workflow mapping, agent chaining, automated processes
-- Level 4: Interactive Dashboards & Front-Ends — UX design for AI, dashboard prototyping, data visualisation
-- Level 5: Full AI-Powered Applications — Application architecture, personalisation engines, full-stack AI
+- Level 4: Interactive Dashboards & Front-Ends — UX design for AI, dashboard prototyping, data visualization
+- Level 5: Full AI-Powered Applications — Application architecture, personalization engines, full-stack AI
 
 RESPONSE FORMAT — Choose ONE of the two formats below:
 

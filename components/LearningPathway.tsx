@@ -50,7 +50,7 @@ const LEVEL_TOPICS: Record<number, { label: string; description: string }[]> = {
   ],
   4: [
     { label: 'Application Architecture', description: 'Design the structure of an interactive dashboard or front-end' },
-    { label: 'User-Centred Dashboard Design', description: 'Work backwards from the end user\'s needs' },
+    { label: 'User-Centered Dashboard Design', description: 'Work backwards from the end user\'s needs' },
     { label: 'Data Visualization Principles', description: 'Present AI outputs in clear, actionable visual formats' },
     { label: 'Role-Based Views', description: 'Different users see different things based on their role' },
     { label: 'Prototype Testing', description: 'Test dashboard prototypes with real users' },
@@ -111,7 +111,7 @@ const DEFAULT_LEVEL_CONTENT: Record<number, {
     learningBreakdown: {
       applied: 'Design and build the prototype using real data and test with actual end users',
       community: 'Run a stakeholder feedback session and iterate based on user needs',
-      individual: 'Study data visualization principles and user-centred design patterns',
+      individual: 'Study data visualization principles and user-centered design patterns',
     },
   },
   5: {
@@ -327,7 +327,7 @@ function generateTextExport(
       continue;
     }
     if (result) {
-      text += `LEVEL ${i}: ${level.name} \u2014 ${depth === 'full' ? 'Full Programme' : 'Fast-track'}\n`;
+      text += `LEVEL ${i}: ${level.name} \u2014 ${depth === 'full' ? 'Full Program' : 'Fast-track'}\n`;
       text += `Time: ~${getTimeEstimate(depth, formData.availability)}\n\n`;
       text += `PROJECT: ${result.projectTitle}\n`;
       text += `${result.projectDescription}\n`;
@@ -374,7 +374,7 @@ function generateMarkdownExport(
       continue;
     }
     if (result) {
-      md += `## Level ${i}: ${level.name} \u2014 ${depth === 'full' ? 'Full Programme' : 'Fast-track'}\n`;
+      md += `## Level ${i}: ${level.name} \u2014 ${depth === 'full' ? 'Full Program' : 'Fast-track'}\n`;
       md += `*~${getTimeEstimate(depth, formData.availability)}*\n\n`;
       md += `### Project: ${result.projectTitle}\n`;
       md += `${result.projectDescription}\n\n`;
@@ -1509,7 +1509,7 @@ export const LearningPathway: React.FC = () => {
                         </span>
                         {depth === 'full' ? (
                           <span className="text-xs font-bold px-3 py-1 rounded-full text-white" style={{ backgroundColor: ACCENT }}>
-                            Full Programme
+                            Full Program
                           </span>
                         ) : (
                           <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ border: `1px solid ${ACCENT}`, color: ACCENT }}>

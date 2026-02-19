@@ -141,7 +141,7 @@ export const MyProfile: React.FC<Props> = () => {
             {profile.fullName || profile.role || 'Your Profile'}
           </div>
           <p style={{ fontSize: 13, color: '#718096', margin: '4px 0 0', lineHeight: 1.4 }}>
-            This profile drives your personalised learning plan. Edit it via the Learning Plan Generator.
+            This profile drives your personalized learning plan. Edit it via the Learning Plan Generator.
           </p>
         </div>
         <a

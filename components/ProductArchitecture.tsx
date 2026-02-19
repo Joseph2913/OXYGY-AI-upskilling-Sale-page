@@ -632,11 +632,17 @@ export function ProductArchitecture() {
           onMouseEnter={e => (e.currentTarget.style.color = ACCENT_DARK)}
           onMouseLeave={e => (e.currentTarget.style.color = '#718096')}
         >
-          <ArrowLeft size={16} /> Back to Level 5
+          <ArrowLeft size={16} /> Back to Home
         </a>
 
         {/* Centered Title */}
         <div className="mb-8 text-center">
+          <div
+            className="inline-block text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-1.5 rounded-full mb-6"
+            style={{ backgroundColor: '#E6FFFA', color: ACCENT_DARK, border: `1px solid ${ACCENT}` }}
+          >
+            Level 05 &mdash; Product Architecture
+          </div>
           <h1 className="text-[36px] md:text-[48px] font-bold text-[#1A202C] leading-[1.15]">
             Build Your First AI-Powered
             <br />
@@ -648,6 +654,9 @@ export function ProductArchitecture() {
               />
             </span>
           </h1>
+          <p className="text-[16px] md:text-[18px] text-[#718096] leading-[1.7] max-w-[700px] mx-auto mt-4">
+            Describe your app idea and get a personalized build plan across five essential tools &mdash; with tips, first steps, and connections to every level of the OXYGY framework.
+          </p>
         </div>
 
         {/* Did You Know? Card */}

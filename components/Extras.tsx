@@ -122,7 +122,7 @@ export const LearningModel: React.FC = () => {
         "Apply AI tools to live projects and daily tasks",
         "Run innovation sprints that produce deployable solutions",
         "Build internal tools your team will actually use",
-        "Create proposals for AI projects that scale across the organisation",
+        "Create proposals for AI projects that scale across the organization",
         "Experiment, iterate, and refine in real working environments",
         "Develop AI solutions as part of cross-functional cohorts"
       ]

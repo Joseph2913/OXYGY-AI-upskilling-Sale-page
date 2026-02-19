@@ -194,14 +194,21 @@ export const PromptPlayground: React.FC = () => {
         {/* Breadcrumb */}
         <a
           href="#"
+          onClick={e => { e.preventDefault(); window.location.hash = ''; window.scrollTo({ top: 0, behavior: 'smooth' }); }}
           className="inline-flex items-center gap-1.5 text-[14px] text-[#718096] hover:text-[#38B2AC] transition-colors mb-8"
         >
           <ArrowLeft size={16} />
-          Back to Level 1
+          Back to Home
         </a>
 
         {/* ─── HERO: Title (centered, two-line) ─── */}
         <div ref={inputAreaRef} className="mb-8 text-center">
+          <div
+            className="inline-block text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-1.5 rounded-full mb-6"
+            style={{ backgroundColor: '#E6FFFA', color: '#2C7A6E', border: '1px solid #A8F0E0' }}
+          >
+            Level 01 &mdash; Prompt Engineering
+          </div>
           <h1 className="text-[36px] md:text-[48px] font-bold text-[#1A202C] leading-[1.15] mb-6">
             <span className="relative inline-block">
               Better Prompts
@@ -210,6 +217,9 @@ export const PromptPlayground: React.FC = () => {
             <br />
             Get Better Results
           </h1>
+          <p className="text-[16px] md:text-[18px] text-[#718096] leading-[1.7] max-w-[700px] mx-auto mt-2">
+            Learn the six building blocks of a well-engineered prompt &mdash; and watch a vague idea transform into a structured instruction that gets dramatically better AI outputs.
+          </p>
 
           {/* ─── FUN FACT CARD ─── */}
           <div className="mb-8">

@@ -717,12 +717,18 @@ export const AgentBuilder: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6">
 
         {/* ─── BREADCRUMB ─── */}
-        <a href="#home" className="inline-flex items-center gap-1.5 text-[14px] text-[#718096] hover:text-[#5B6DC2] transition-colors mb-8">
-          <ArrowLeft size={16} /> Back to Level 2
+        <a href="#" onClick={e => { e.preventDefault(); window.location.hash = ''; window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="inline-flex items-center gap-1.5 text-[14px] text-[#718096] hover:text-[#5B6DC2] transition-colors mb-8">
+          <ArrowLeft size={16} /> Back to Home
         </a>
 
         {/* ─── HERO: Title (centered, matching L1 style) ─── */}
         <div className="mb-8 text-center">
+          <div
+            className="inline-block text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-1.5 rounded-full mb-6"
+            style={{ backgroundColor: '#EBF0FE', color: '#4A5A8A', border: '1px solid #C3D0F5' }}
+          >
+            Level 02 &mdash; Agent Builder
+          </div>
           <h1 className="text-[36px] md:text-[48px] font-bold text-[#1A202C] leading-[1.15] mb-6">
             Design Your Own
             <br />
@@ -731,6 +737,9 @@ export const AgentBuilder: React.FC = () => {
               <span className="absolute left-0 -bottom-1 w-full h-[4px] bg-[#5B6DC2] opacity-80 rounded-full" />
             </span>
           </h1>
+          <p className="text-[16px] md:text-[18px] text-[#718096] leading-[1.7] max-w-[700px] mx-auto mt-2">
+            Describe a task you do regularly, and this toolkit will assess whether it warrants a custom AI agent &mdash; then design the system prompt, output format, and accountability features for you.
+          </p>
 
           {/* ─── FUN FACT CARD ─── */}
           <div className="mb-4">

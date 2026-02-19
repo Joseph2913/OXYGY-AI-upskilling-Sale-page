@@ -658,7 +658,7 @@ export const PersonaCarousel: React.FC = () => {
                 What Does Your Journey Look Like?
               </h3>
               <p className="text-sm text-white/80 leading-relaxed max-w-md">
-                Answer a few questions and get a personalised, project-based pathway designed around your role and goals.
+                Answer a few questions and get a personalized, project-based pathway designed around your role and goals.
               </p>
             </div>
             <div className="flex flex-col items-center md:items-end flex-shrink-0">

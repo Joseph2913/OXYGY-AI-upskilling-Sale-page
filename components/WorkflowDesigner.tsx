@@ -740,12 +740,18 @@ export function WorkflowDesigner() {
       <div className="max-w-7xl mx-auto px-6">
 
         {/* Breadcrumb */}
-        <a href="#home" className="inline-flex items-center gap-1.5 text-[14px] mb-8 transition-colors hover:text-[#C4A934]" style={{ color: '#718096' }}>
-          <ArrowLeft size={16} /> Back to Level 3
+        <a href="#" onClick={e => { e.preventDefault(); window.location.hash = ''; window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="inline-flex items-center gap-1.5 text-[14px] mb-8 transition-colors hover:text-[#C4A934]" style={{ color: '#718096' }}>
+          <ArrowLeft size={16} /> Back to Home
         </a>
 
         {/* Centered Title */}
         <div className="mb-8 text-center">
+          <div
+            className="inline-block text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-1.5 rounded-full mb-6"
+            style={{ backgroundColor: '#FDF6E3', color: '#C4A934', border: '1px solid #FBE8A6' }}
+          >
+            Level 03 &mdash; Workflow Design
+          </div>
           <h1 className="text-[36px] md:text-[48px] font-bold text-[#1A202C] leading-[1.15] mb-6">
             Design Your
             <br />
@@ -754,6 +760,9 @@ export function WorkflowDesigner() {
               <span className="absolute left-0 -bottom-1 w-full h-[4px] bg-[#C4A934] opacity-80 rounded-full" />
             </span>
           </h1>
+          <p className="text-[16px] md:text-[18px] text-[#718096] leading-[1.7] max-w-[700px] mx-auto mt-2">
+            Map any business process into a visual, node-based workflow &mdash; then get AI-powered feedback on how to optimize it with automation, human review, and smart integrations.
+          </p>
         </div>
 
         {/* Fun Fact Card */}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, ArrowRight, FileSearch, Globe, Users, Brain, BookOpen } from 'lucide-react';
+import { ArtifactClosing } from './ArtifactClosing';
 
 const LEVEL_COLORS: Record<number, { bg: string; text: string; label: string }> = {
   2: { bg: '#EBF0FE', text: '#5B6DC2', label: 'Level 2 — Applied Capability' },
@@ -88,17 +89,17 @@ const CASE_STUDIES: CaseStudy[] = [
     approach: [
       'Multi-Source Ingestion — Integrates meeting transcripts, uploaded documents, videos, web content, and other inputs into a unified knowledge base',
       'AI Relationship Mapping — Uses AI to identify semantic relationships, recurring themes, and conceptual links across all inputs',
-      'Neural Network Visualisation — Builds a dynamic, interconnected graph that maps how topics, projects, and ideas relate to each other',
+      'Neural Network Visualization — Builds a dynamic, interconnected graph that maps how topics, projects, and ideas relate to each other',
       'Continuous Learning — The network evolves as new inputs are added, surfacing deeper patterns over time',
     ],
     outcomes: [
       'Surfaces hidden connections between projects, ideas, and conversations',
       'Transforms fragmented knowledge into a structured, navigable intelligence layer',
       'Enables faster strategic thinking by revealing cross-domain patterns',
-      'Creates a personalised knowledge asset that grows with the user',
+      'Creates a personalized knowledge asset that grows with the user',
     ],
     levelTags: [
-      { level: 5, type: 'primary', description: 'A fully AI-powered application that autonomously processes, connects, and visualises knowledge across multiple input sources.' },
+      { level: 5, type: 'primary', description: 'A fully AI-powered application that autonomously processes, connects, and visualizes knowledge across multiple input sources.' },
     ],
   },
   {
@@ -230,7 +231,7 @@ export const CaseStudiesSection: React.FC = () => {
             </span>
           </h2>
           <p className="text-[16px] text-navy-700 font-normal leading-relaxed max-w-[640px] mx-auto">
-            Real examples of how OXYGY has helped organisations build AI capability
+            Real examples of how OXYGY has helped organizations build AI capability
             — from multi-agent research workflows to interactive dashboards and tailored front-ends.
           </p>
         </div>
@@ -442,6 +443,12 @@ export const CaseStudiesPage: React.FC = () => {
 
         {/* Centered Title */}
         <div className="text-center mb-6">
+          <div
+            className="inline-block text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-1.5 rounded-full mb-6"
+            style={{ backgroundColor: '#E6FFFA', color: '#2C9A94', border: '1px solid #38B2AC' }}
+          >
+            Real-World Impact
+          </div>
           <h1 className="text-[36px] md:text-[48px] font-bold text-[#1A202C] leading-[1.15]">
             OXYGY AI{' '}
             <span className="relative inline-block">
@@ -451,9 +458,35 @@ export const CaseStudiesPage: React.FC = () => {
           </h1>
         </div>
 
-        <p className="text-center text-[16px] md:text-[18px] text-[#718096] leading-[1.7] max-w-[680px] mx-auto mb-16">
-          See how we've partnered with organisations across industries to build real AI capability — from multi-agent research workflows to interactive dashboards and tailored front-ends.
+        <p className="text-center text-[16px] md:text-[18px] text-[#718096] leading-[1.7] max-w-[680px] mx-auto mb-10">
+          See how we've partnered with organizations across industries to build real AI capability &mdash; from multi-agent research workflows to interactive dashboards and tailored front-ends.
         </p>
+
+        {/* Did You Know? Card */}
+        <div
+          className="relative rounded-2xl px-8 md:px-12 py-8 text-center overflow-hidden mb-16"
+          style={{
+            background: 'linear-gradient(135deg, rgba(56,178,172,0.15) 0%, rgba(44,154,148,0.08) 50%, rgba(56,178,172,0.12) 100%)',
+            border: '1.5px solid #38B2AC',
+          }}
+        >
+          <div className="absolute top-3 left-4 flex gap-1.5">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#2C9A94', opacity: 0.4 }} />
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#B2F5EA', opacity: 0.6 }} />
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#2C9A94', opacity: 0.3 }} />
+          </div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.1em] mb-2" style={{ color: '#2C9A94' }}>
+            Did you know?
+          </p>
+          <p className="text-[17px] md:text-[19px] text-[#2D3748] leading-[1.6] font-medium mb-2 max-w-3xl mx-auto">
+            Organizations that combine AI training with{' '}
+            <span className="font-bold" style={{ color: '#2C9A94' }}>real project delivery</span>{' '}
+            see 4&times; higher adoption rates than those relying on classroom-only programs.
+          </p>
+          <p className="text-[15px] text-[#718096] leading-[1.6] max-w-3xl mx-auto">
+            Every case study below was built as part of a live engagement &mdash; not a hypothetical exercise.
+          </p>
+        </div>
 
         {/* 2-column card grid with inline detail after each row */}
         <div className="space-y-6">
@@ -483,7 +516,7 @@ export const CaseStudiesPage: React.FC = () => {
         {/* Contact CTA */}
         <div className="text-center mt-16 pt-10 border-t border-slate-100">
           <p className="text-[16px] text-[#4A5568] leading-[1.7]">
-            Interested in how OXYGY can help your organisation build AI capability?{' '}
+            Interested in how OXYGY can help your organization build AI capability?{' '}
             <a
               href="mailto:uk@oxygyconsulting.com"
               className="font-semibold transition-colors"
@@ -492,6 +525,12 @@ export const CaseStudiesPage: React.FC = () => {
               Get in touch
             </a>
           </p>
+        <ArtifactClosing
+          summaryText="Inspired by what you see? Start building your own AI capability with a personalized learning pathway."
+          ctaLabel="Start Your Journey"
+          ctaHref="#learning-pathway"
+          accentColor="#2C9A94"
+        />
         </div>
       </div>
     </div>
