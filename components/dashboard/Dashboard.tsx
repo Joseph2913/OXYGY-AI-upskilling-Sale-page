@@ -8,7 +8,7 @@ import { MyProgress } from './sections/MyProgress';
 import { ApplicationInsights } from './sections/ApplicationInsights';
 import { PromptLibrary } from './sections/PromptLibrary';
 import { useAuth } from '../../context/AuthContext';
-import { getProfile, upsertToolUsed } from '../../lib/database';
+import { getProfile } from '../../lib/database';
 import { SECTION_META, DEFAULT_PROFILE } from '../../data/dashboard-content';
 import type { DashboardSection, UserProfile } from '../../data/dashboard-types';
 
@@ -55,14 +55,6 @@ export const Dashboard: React.FC = () => {
     });
   }, [userId]);
 
-  // L5 = Dashboard itself; mark tool as used when visited with a complete profile
-  useEffect(() => {
-    if (!userId) return;
-    const hasProfile = !!(profile.role && profile.function && profile.seniority && profile.aiExperience && profile.ambition);
-    if (hasProfile) {
-      upsertToolUsed(userId, 5);
-    }
-  }, [profile, userId]);
 
   useEffect(() => {
     if (toast) {

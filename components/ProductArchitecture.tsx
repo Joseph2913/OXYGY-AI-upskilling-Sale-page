@@ -11,6 +11,8 @@ import {
 } from '../data/product-architecture-content';
 import { useArchitectureApi } from '../hooks/useArchitectureApi';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
+import { useAuth } from '../context/AuthContext';
+import { upsertToolUsed } from '../lib/database';
 import type { ProductArchitectureAnswers, ToolAnalysisResult } from '../types';
 
 // ---- L5 Color Constants ----
@@ -441,6 +443,9 @@ export function ProductArchitecture() {
     typeof window !== 'undefined' ? window.innerWidth < 768 : false
   );
 
+  // Auth
+  const { user } = useAuth();
+
   // API
   const { analyzeArchitecture, isLoading, error, clearError } = useArchitectureApi();
 
@@ -523,6 +528,7 @@ export function ProductArchitecture() {
     const result = await analyzeArchitecture(answers);
     if (result) {
       setAnalysis(result);
+      if (user) upsertToolUsed(user.id, 5);
       setTimeout(() => {
         toolCardsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 300);
