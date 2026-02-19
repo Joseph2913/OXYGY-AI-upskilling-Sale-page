@@ -10,6 +10,8 @@ import {
 } from '../data/agent-builder-content';
 import type { AgentDesignResult, AgentReadinessCriteria } from '../types';
 import { ArtifactClosing } from './ArtifactClosing';
+import { useAuth } from '../context/AuthContext';
+import { upsertToolUsed, savePrompt as dbSavePrompt } from '../lib/database';
 
 /* ─── HELPERS ─── */
 
@@ -240,6 +242,7 @@ const STEP_SKELETONS = [StepOneSkeleton, StepTwoSkeleton, StepThreeSkeleton, Ste
 /* ─── MAIN COMPONENT ─── */
 
 export const AgentBuilder: React.FC = () => {
+  const { user } = useAuth();
   // Input state
   const [taskDescription, setTaskDescription] = useState('');
   const [inputDataDescription, setInputDataDescription] = useState('');
@@ -325,7 +328,7 @@ export const AgentBuilder: React.FC = () => {
 
     if (data) {
       setResult(data);
-      try { localStorage.setItem('oxygy_tool_used_L2', 'true'); } catch { /* ignore */ }
+      if (user) upsertToolUsed(user.id, 2);
     }
   };
 
@@ -398,11 +401,8 @@ export const AgentBuilder: React.FC = () => {
       content,
       savedAt: Date.now(),
     };
-    try {
-      const existing = JSON.parse(localStorage.getItem('oxygy_prompts') || '[]');
-      localStorage.setItem('oxygy_prompts', JSON.stringify([newPrompt, ...existing]));
-    } catch {
-      localStorage.setItem('oxygy_prompts', JSON.stringify([newPrompt]));
+    if (user) {
+      dbSavePrompt(user.id, { level: 2, title: newPrompt.title, content: newPrompt.content, source_tool: 'agent-builder' });
     }
   };
 

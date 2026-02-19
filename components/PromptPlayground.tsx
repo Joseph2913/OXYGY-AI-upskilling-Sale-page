@@ -6,12 +6,15 @@ import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { BuildWizard } from './playground/BuildWizard';
 import type { PromptResult, WizardAnswers } from '../types';
 import { ArtifactClosing } from './ArtifactClosing';
+import { useAuth } from '../context/AuthContext';
+import { upsertToolUsed, savePrompt as dbSavePrompt } from '../lib/database';
 
 type Mode = 'enhance' | 'build';
 
 const CARD_MIN_HEIGHT = '180px';
 
 export const PromptPlayground: React.FC = () => {
+  const { user } = useAuth();
   const [activeMode, setActiveMode] = useState<Mode>('enhance');
   const [inputPrompt, setInputPrompt] = useState('');
   const [result, setResult] = useState<PromptResult | null>(null);
@@ -59,7 +62,7 @@ export const PromptPlayground: React.FC = () => {
       setResult(data);
       setResultMode('enhance');
       setShowResultsBanner(true);
-      try { localStorage.setItem('oxygy_tool_used_L1', 'true'); } catch { /* ignore */ }
+      if (user) upsertToolUsed(user.id, 1);
       setTimeout(() => {
         setShowResultsBanner(false);
         cardsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -73,7 +76,7 @@ export const PromptPlayground: React.FC = () => {
       setResult(data);
       setResultMode('build');
       setShowResultsBanner(true);
-      try { localStorage.setItem('oxygy_tool_used_L1', 'true'); } catch { /* ignore */ }
+      if (user) upsertToolUsed(user.id, 1);
       setTimeout(() => {
         setShowResultsBanner(false);
         cardsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -173,11 +176,8 @@ export const PromptPlayground: React.FC = () => {
       content: fullPrompt,
       savedAt: Date.now(),
     };
-    try {
-      const existing = JSON.parse(localStorage.getItem('oxygy_prompts') || '[]');
-      localStorage.setItem('oxygy_prompts', JSON.stringify([newPrompt, ...existing]));
-    } catch {
-      localStorage.setItem('oxygy_prompts', JSON.stringify([newPrompt]));
+    if (user) {
+      dbSavePrompt(user.id, { level: 1, title: newPrompt.title, content: newPrompt.content, source_tool: 'prompt-playground' });
     }
     setSavedToLibrary(true);
     showToastNotification('Prompt saved to your library');
