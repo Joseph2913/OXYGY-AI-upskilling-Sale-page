@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const SYSTEM_PROMPT = `You are an elite UI designer AND data strategist creating stunning, modern dashboard mockups. Your dashboards should look like they belong on Dribbble or Behance — minimal, airy, and visually refined.
+const HTML_FALLBACK_PROMPT = `You are an elite UI designer AND data strategist creating stunning, modern dashboard mockups. Your dashboards should look like they belong on Dribbble or Behance — minimal, airy, and visually refined.
 
 You will receive a description of dashboard needs, target audience, key metrics, data sources, and optionally an inspiration URL. Generate a complete HTML dashboard.
 
@@ -51,6 +51,33 @@ The html_content MUST be a complete, self-contained HTML document with a <link> 
 - Keep the layout compact: max 4-5 KPI cards in a row, max 2 charts side by side. Do not overfill the page.
 The dashboard should feel lightweight and breathable — something a designer would showcase as a clean data visualization.`;
 
+const INSPIRATION_ANALYSIS_PROMPT = `You are an expert UI/UX analyst specializing in dashboard design. Analyze the provided dashboard screenshot(s) and extract the key design patterns. Focus on:
+
+1. LAYOUT STRUCTURE: How are widgets arranged? Grid layout, column count, section grouping
+2. COLOR SCHEME: Primary colors, accent colors, background tones, card styling
+3. CHART TYPES: What visualization types are used (bar, line, donut, gauge, heatmap, sparkline, etc.)
+4. INFORMATION DENSITY: Is it data-dense or spacious? How many KPIs/widgets are visible?
+5. TYPOGRAPHY: Font style, heading sizes relative to body text, label formatting
+6. CARD DESIGN: Border radius, shadows, borders, padding style
+7. SPECIAL ELEMENTS: Any unique design patterns like progress bars, status indicators, alerts, tabs
+
+Output a concise paragraph (3-5 sentences) describing these patterns as design instructions that could guide generating a similar dashboard. Be specific about colors, layout ratios, and widget types. Do NOT describe the data — only the visual design patterns.`;
+
+const REFINEMENT_PROMPT = `You are an expert at refining image generation prompts for dashboard mockups. You will receive the original prompt that generated a dashboard image, the user's feedback about what they want changed, and optionally design patterns extracted from the user's inspiration images. Your job is to produce a NEW, complete image generation prompt that incorporates the user's feedback and the inspiration design patterns while keeping all the good parts of the original prompt. Output ONLY the refined prompt text, nothing else. Keep all formatting instructions (crisp text, 16:9 ratio, DM Sans font, etc.) from the original. If design reference patterns from inspiration images are provided, make sure they are incorporated into the new prompt.`;
+
+function parseInspirationImage(img: string): { inlineData: { mimeType: string; data: string } } | null {
+  if (!img.startsWith('data:')) return null;
+  const commaIdx = img.indexOf(',');
+  if (commaIdx === -1) return null;
+  const header = img.slice(5, commaIdx);
+  const semiIdx = header.indexOf(';');
+  if (semiIdx === -1) return null;
+  const mimeType = header.slice(0, semiIdx);
+  const data = img.slice(commaIdx + 1);
+  if (!mimeType.startsWith('image/') || !data) return null;
+  return { inlineData: { mimeType, data } };
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -64,15 +91,148 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { user_needs, target_audience, key_metrics, data_sources, dashboard_title, dashboard_subtitle, inspiration_url } = req.body;
+    const {
+      user_needs, target_audience, key_metrics, data_sources,
+      dashboard_type, visual_style, inspiration_url,
+      refinement_feedback, previous_prompt,
+      inspiration_images,
+    } = req.body;
 
+    // ─── Build style description ───
+    const styleDesc = visual_style === 'data-dense' ? 'data-dense with maximum information density'
+      : visual_style === 'executive-polished' ? 'executive and polished with large KPI cards'
+      : visual_style === 'colorful-visual' ? 'colorful and visual with bold infographic style'
+      : 'clean and minimal with lots of whitespace';
+
+    // ─── Analyze inspiration images if provided ───
+    let inspirationPatterns = '';
+    if (inspiration_images && Array.isArray(inspiration_images) && inspiration_images.length > 0) {
+      console.log(`Analyzing ${inspiration_images.length} inspiration image(s)...`);
+      try {
+        const analyzeUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        const imageParts = inspiration_images.map(parseInspirationImage).filter(Boolean);
+
+        if (imageParts.length > 0) {
+          const analyzeResponse = await fetch(analyzeUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              system_instruction: { parts: [{ text: INSPIRATION_ANALYSIS_PROMPT }] },
+              contents: [{
+                role: 'user',
+                parts: [
+                  { text: 'Analyze these dashboard screenshot(s) and extract the key design patterns:' },
+                  ...imageParts,
+                ],
+              }],
+              generationConfig: { temperature: 0.3 },
+            }),
+          });
+
+          if (analyzeResponse.ok) {
+            const analyzeData = await analyzeResponse.json();
+            const patterns = analyzeData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            if (patterns.trim()) {
+              inspirationPatterns = patterns.trim();
+              console.log('Inspiration image analysis complete');
+            }
+          } else {
+            console.log('Inspiration analysis failed, continuing without it');
+          }
+        }
+      } catch (analyzeErr) {
+        console.log('Inspiration analysis error, continuing without it:', analyzeErr);
+      }
+    }
+
+    // ─── Build image generation prompt ───
+    let imagePrompt: string;
+
+    if (refinement_feedback && previous_prompt) {
+      // Refine the previous prompt with user feedback
+      console.log('Refining image prompt based on user feedback...');
+      const refinementUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const inspirationContext = inspirationPatterns
+        ? `\n\nDESIGN REFERENCE FROM INSPIRATION IMAGES (must be maintained in the refined prompt): ${inspirationPatterns}`
+        : '';
+
+      const refinementResponse = await fetch(refinementUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: REFINEMENT_PROMPT }] },
+          contents: [{
+            role: 'user',
+            parts: [{ text: `ORIGINAL PROMPT:\n${previous_prompt}\n\nUSER FEEDBACK:\n${refinement_feedback}${inspirationContext}\n\nGenerate the refined prompt:` }],
+          }],
+          generationConfig: { temperature: 0.4 },
+        }),
+      });
+
+      if (refinementResponse.ok) {
+        const refinementData = await refinementResponse.json();
+        const refinedText = refinementData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        if (refinedText.trim()) {
+          imagePrompt = refinedText.trim();
+          console.log('Prompt refined successfully');
+        } else {
+          imagePrompt = `${previous_prompt} IMPORTANT CHANGES REQUESTED: ${refinement_feedback}${inspirationPatterns ? ` DESIGN REFERENCE: ${inspirationPatterns}` : ''}`;
+        }
+      } else {
+        imagePrompt = `${previous_prompt} IMPORTANT CHANGES REQUESTED: ${refinement_feedback}${inspirationPatterns ? ` DESIGN REFERENCE: ${inspirationPatterns}` : ''}`;
+      }
+    } else {
+      imagePrompt = `Generate a high-fidelity professional dashboard UI screenshot mockup for ${target_audience || 'business users'}. The dashboard shows: ${key_metrics || 'key business metrics'}. Purpose: ${user_needs}. Style: ${styleDesc}. ${dashboard_type ? `Type: ${dashboard_type}.` : ''} The dashboard has KPI metric cards at the top showing exact numbers with percentage change indicators, followed by line charts and bar charts below with clearly labeled axes. Modern flat design, white background with subtle gray borders, teal and navy color scheme. DM Sans font. Make ALL text, numbers, labels, and axis values crisp, sharp, and perfectly readable. 16:9 aspect ratio. This should look like a real production web application screenshot.${inspirationPatterns ? `\n\nIMPORTANT DESIGN REFERENCE — The user provided inspiration images. Match these design patterns closely: ${inspirationPatterns}` : ''}`;
+    }
+
+    console.log('Generating dashboard with Gemini 2.5 Flash Image...');
+    console.log('  → Prompt length:', imagePrompt.length, 'chars');
+
+    // ─── Strategy 1: Gemini 2.5 Flash Image (native image generation) ───
+    try {
+      const geminiImageUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`;
+      const geminiImageResponse = await fetch(geminiImageUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: imagePrompt }] }],
+          generationConfig: {
+            responseModalities: ['IMAGE', 'TEXT'],
+            imageConfig: { aspectRatio: '16:9' },
+          },
+        }),
+      });
+
+      if (geminiImageResponse.ok) {
+        const geminiImageData = await geminiImageResponse.json();
+        const parts = geminiImageData?.candidates?.[0]?.content?.parts || [];
+        const imagePart = parts.find((p: any) => p.inlineData);
+        if (imagePart?.inlineData?.data) {
+          const mimeType = imagePart.inlineData.mimeType || 'image/png';
+          const imageUrl = `data:${mimeType};base64,${imagePart.inlineData.data}`;
+          console.log('Gemini 2.5 Flash Image generation successful');
+          return res.status(200).json({
+            image_url: imageUrl,
+            image_prompt: imagePrompt,
+            generation_method: 'gemini-image',
+          });
+        }
+      }
+      const errText = await geminiImageResponse.text().catch(() => '');
+      console.log('Gemini Image not available, falling back to HTML generation:', errText.slice(0, 200));
+    } catch (geminiImageErr) {
+      console.log('Gemini Image error, falling back to HTML generation:', geminiImageErr);
+    }
+
+    // ─── Strategy 2: Fallback to Gemini HTML generation ───
+    console.log('Using Gemini HTML fallback...');
     const userMessage = [
       `DASHBOARD PURPOSE: ${user_needs}`,
       target_audience ? `TARGET AUDIENCE: ${target_audience}` : '',
       key_metrics ? `KEY METRICS: ${key_metrics}` : '',
       data_sources ? `DATA SOURCES: ${data_sources}` : '',
-      dashboard_title ? `DASHBOARD TITLE: ${dashboard_title}` : '',
-      dashboard_subtitle ? `DASHBOARD SUBTITLE: ${dashboard_subtitle}` : '',
+      dashboard_type ? `DASHBOARD TYPE: ${dashboard_type}` : '',
+      visual_style ? `VISUAL STYLE: ${visual_style}` : '',
       inspiration_url ? `INSPIRATION URL: ${inspiration_url} — Use this website's layout, style, and visual approach as design inspiration for the dashboard.` : '',
     ].filter(Boolean).join('\n');
 
@@ -81,15 +241,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system_instruction: {
-          parts: [{ text: SYSTEM_PROMPT }],
-        },
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: userMessage }],
-          },
-        ],
+        system_instruction: { parts: [{ text: HTML_FALLBACK_PROMPT }] },
+        contents: [{ role: 'user', parts: [{ text: userMessage }] }],
         generationConfig: {
           temperature: 0.7,
           responseMimeType: 'application/json',
@@ -108,6 +261,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
     const parsed = JSON.parse(cleaned);
+    parsed.generation_method = 'html';
 
     return res.status(200).json(parsed);
   } catch (err) {
