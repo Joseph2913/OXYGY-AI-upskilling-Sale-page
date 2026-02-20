@@ -65,6 +65,53 @@ Output a concise paragraph (3-5 sentences) describing these patterns as design i
 
 const REFINEMENT_PROMPT = `You are an expert at refining image generation prompts for dashboard mockups. You will receive the original prompt that generated a dashboard image, the user's feedback about what they want changed, and optionally design patterns extracted from the user's inspiration images. Your job is to produce a NEW, complete image generation prompt that incorporates the user's feedback and the inspiration design patterns while keeping all the good parts of the original prompt. Output ONLY the refined prompt text, nothing else. Keep all formatting instructions (crisp text, 16:9 ratio, DM Sans font, etc.) from the original. If design reference patterns from inspiration images are provided, make sure they are incorporated into the new prompt.`;
 
+// ─── Retry helper for Gemini API calls ───
+
+const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
+const MAX_RETRIES = 2;
+const BASE_DELAY_MS = 1500;
+
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  label: string,
+): Promise<Response> {
+  let lastError: Error | null = null;
+  let lastResponse: Response | null = null;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const response = await fetch(url, options);
+
+      if (response.ok) return response;
+
+      if (RETRYABLE_STATUS_CODES.has(response.status) && attempt < MAX_RETRIES) {
+        const retryAfter = response.headers.get('retry-after');
+        const delayMs = retryAfter
+          ? Math.min(parseInt(retryAfter, 10) * 1000, 10000)
+          : BASE_DELAY_MS * Math.pow(2, attempt);
+        console.warn(`[${label}] Gemini API returned ${response.status}, retrying in ${delayMs}ms (attempt ${attempt + 1}/${MAX_RETRIES})...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+        lastResponse = response;
+        continue;
+      }
+
+      return response;
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      if (attempt < MAX_RETRIES) {
+        const delayMs = BASE_DELAY_MS * Math.pow(2, attempt);
+        console.warn(`[${label}] Network error: ${lastError.message}, retrying in ${delayMs}ms (attempt ${attempt + 1}/${MAX_RETRIES})...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+        continue;
+      }
+    }
+  }
+
+  if (lastResponse) return lastResponse;
+  throw lastError || new Error('All retries exhausted');
+}
+
 function parseInspirationImage(img: string): { inlineData: { mimeType: string; data: string } } | null {
   if (!img.startsWith('data:')) return null;
   const commaIdx = img.indexOf(',');
@@ -113,7 +160,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const imageParts = inspiration_images.map(parseInspirationImage).filter(Boolean);
 
         if (imageParts.length > 0) {
-          const analyzeResponse = await fetch(analyzeUrl, {
+          const analyzeResponse = await fetchWithRetry(analyzeUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -127,7 +174,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               }],
               generationConfig: { temperature: 0.3 },
             }),
-          });
+          }, 'design-dashboard-inspiration-vercel');
 
           if (analyzeResponse.ok) {
             const analyzeData = await analyzeResponse.json();
@@ -156,7 +203,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ? `\n\nDESIGN REFERENCE FROM INSPIRATION IMAGES (must be maintained in the refined prompt): ${inspirationPatterns}`
         : '';
 
-      const refinementResponse = await fetch(refinementUrl, {
+      const refinementResponse = await fetchWithRetry(refinementUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -167,7 +214,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           }],
           generationConfig: { temperature: 0.4 },
         }),
-      });
+      }, 'design-dashboard-refinement-vercel');
 
       if (refinementResponse.ok) {
         const refinementData = await refinementResponse.json();
@@ -191,7 +238,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // ─── Strategy 1: Gemini 2.5 Flash Image (native image generation) ───
     try {
       const geminiImageUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`;
-      const geminiImageResponse = await fetch(geminiImageUrl, {
+      const geminiImageResponse = await fetchWithRetry(geminiImageUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -201,7 +248,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             imageConfig: { aspectRatio: '16:9' },
           },
         }),
-      });
+      }, 'design-dashboard-image-vercel');
 
       if (geminiImageResponse.ok) {
         const geminiImageData = await geminiImageResponse.json();
@@ -237,7 +284,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ].filter(Boolean).join('\n');
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-    const geminiResponse = await fetch(geminiUrl, {
+    const geminiResponse = await fetchWithRetry(geminiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -248,12 +295,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           responseMimeType: 'application/json',
         },
       }),
-    });
+    }, 'design-dashboard-html-vercel');
 
     if (!geminiResponse.ok) {
       const errText = await geminiResponse.text();
-      console.error('Gemini API error (dashboard):', errText);
-      return res.status(502).json({ error: 'AI service error', use_fallback: true });
+      console.error('Gemini API error (dashboard):', geminiResponse.status, errText);
+      const status = geminiResponse.status === 429 ? 429 : 502;
+      const message = geminiResponse.status === 429
+        ? 'The AI service is temporarily busy. Please wait a moment and try again.'
+        : 'AI service error';
+      return res.status(status).json({ error: message, use_fallback: true, retryable: true });
     }
 
     const data = await geminiResponse.json();
@@ -266,6 +317,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(parsed);
   } catch (err) {
     console.error('Serverless function error (dashboard):', err);
-    return res.status(500).json({ error: 'Internal server error', use_fallback: true });
+    return res.status(500).json({ error: 'Internal server error', use_fallback: true, retryable: true });
   }
 }

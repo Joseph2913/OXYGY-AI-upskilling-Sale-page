@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import type { WorkflowDesignPayload, WorkflowGenerateResult, WorkflowFeedbackResult } from '../types';
+import { fetchWithRetry, getErrorMessage } from '../lib/fetchWithRetry';
 
 export function useWorkflowDesignApi() {
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +27,7 @@ export function useWorkflowDesignApi() {
     const timeout = setTimeout(() => controller.abort(), 20000);
 
     try {
-      const res = await fetch('/api/design-workflow', {
+      const res = await fetchWithRetry('/api/design-workflow', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -35,13 +36,8 @@ export function useWorkflowDesignApi() {
 
       clearTimeout(timeout);
 
-      if (res.status === 503) {
-        setError('The workflow design service is temporarily unavailable. Please try again later.');
-        return null;
-      }
-
       if (!res.ok) {
-        setError('Something went wrong designing your workflow. Please try again.');
+        setError(getErrorMessage(res.status, 'workflow design'));
         return null;
       }
 
@@ -65,7 +61,7 @@ export function useWorkflowDesignApi() {
       if (err instanceof Error && err.name === 'AbortError') {
         setError('This is taking longer than expected. Please try again.');
       } else {
-        setError('Something went wrong designing your workflow. Please try again.');
+        setError('Unable to reach the workflow design service. Please check your connection and try again.');
       }
       return null;
     } finally {

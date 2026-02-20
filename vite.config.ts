@@ -4,6 +4,56 @@ import react from '@vitejs/plugin-react';
 import type { Plugin, Connect } from 'vite';
 import type { IncomingMessage, ServerResponse } from 'http';
 
+// ─── Shared retry helper for Gemini API calls ───
+
+const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
+const MAX_RETRIES = 2;
+const BASE_DELAY_MS = 1500;
+
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  label: string,
+): Promise<Response> {
+  let lastError: Error | null = null;
+  let lastResponse: Response | null = null;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const response = await fetch(url, options);
+
+      if (response.ok) return response;
+
+      // If this is a retryable status code and we have retries left, wait and retry
+      if (RETRYABLE_STATUS_CODES.has(response.status) && attempt < MAX_RETRIES) {
+        const retryAfter = response.headers.get('retry-after');
+        const delayMs = retryAfter
+          ? Math.min(parseInt(retryAfter, 10) * 1000, 10000)
+          : BASE_DELAY_MS * Math.pow(2, attempt);
+        console.warn(`[${label}] Gemini API returned ${response.status}, retrying in ${delayMs}ms (attempt ${attempt + 1}/${MAX_RETRIES})...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+        lastResponse = response;
+        continue;
+      }
+
+      // Non-retryable error or no retries left
+      return response;
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      if (attempt < MAX_RETRIES) {
+        const delayMs = BASE_DELAY_MS * Math.pow(2, attempt);
+        console.warn(`[${label}] Network error: ${lastError.message}, retrying in ${delayMs}ms (attempt ${attempt + 1}/${MAX_RETRIES})...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+        continue;
+      }
+    }
+  }
+
+  // All retries exhausted
+  if (lastResponse) return lastResponse;
+  throw lastError || new Error('All retries exhausted');
+}
+
 const GEMINI_SYSTEM_PROMPT = `You are the Oxygy Prompt Engineering Coach — an expert in transforming raw, unstructured prompts into well-engineered, structured prompts that produce dramatically better AI outputs.
 
 Your job is to take a user's input and produce an enhanced prompt structured into exactly 6 sections. These 6 sections are called "The Prompt Blueprint":
@@ -83,7 +133,7 @@ function geminiProxyPlugin(apiKey: string, model: string): Plugin {
             }
 
             const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-            const geminiResponse = await fetch(geminiUrl, {
+            const geminiResponse = await fetchWithRetry(geminiUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -101,14 +151,14 @@ function geminiProxyPlugin(apiKey: string, model: string): Plugin {
                   responseMimeType: 'application/json',
                 },
               }),
-            });
+            }, 'enhance-prompt');
 
             if (!geminiResponse.ok) {
               const errText = await geminiResponse.text();
               console.error('Gemini API error:', errText);
               res.statusCode = 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'AI service error' }));
+              res.end(JSON.stringify({ error: 'AI service error', retryable: true }));
               return;
             }
 
@@ -124,7 +174,7 @@ function geminiProxyPlugin(apiKey: string, model: string): Plugin {
               console.error('Failed to parse Gemini response:', text);
               res.statusCode = 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'Failed to parse AI response' }));
+              res.end(JSON.stringify({ error: 'Failed to parse AI response', retryable: true }));
               return;
             }
 
@@ -134,7 +184,7 @@ function geminiProxyPlugin(apiKey: string, model: string): Plugin {
             console.error('Proxy error:', err);
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: 'Internal server error' }));
+            res.end(JSON.stringify({ error: 'Internal server error', retryable: true }));
           }
         });
       });
@@ -257,7 +307,7 @@ You must respond with the following JSON structure ONLY — no markdown, no extr
             const userMessage = `Task Description: ${task_description}\n\nInput Data Description: ${input_data_description || 'Not specified'}`;
 
             const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-            const geminiResponse = await fetch(geminiUrl, {
+            const geminiResponse = await fetchWithRetry(geminiUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -275,14 +325,14 @@ You must respond with the following JSON structure ONLY — no markdown, no extr
                   responseMimeType: 'application/json',
                 },
               }),
-            });
+            }, 'agent-design');
 
             if (!geminiResponse.ok) {
               const errText = await geminiResponse.text();
               console.error('Gemini API error (agent design):', errText);
               res.statusCode = 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'AI service error' }));
+              res.end(JSON.stringify({ error: 'AI service error', retryable: true }));
               return;
             }
 
@@ -297,7 +347,7 @@ You must respond with the following JSON structure ONLY — no markdown, no extr
               console.error('Failed to parse Gemini response (agent design):', text);
               res.statusCode = 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'Failed to parse AI response' }));
+              res.end(JSON.stringify({ error: 'Failed to parse AI response', retryable: true }));
               return;
             }
 
@@ -307,7 +357,7 @@ You must respond with the following JSON structure ONLY — no markdown, no extr
             console.error('Proxy error (agent design):', err);
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: 'Internal server error' }));
+            res.end(JSON.stringify({ error: 'Internal server error', retryable: true }));
           }
         });
       });
@@ -472,7 +522,7 @@ For the user's original workflow, you will receive nodes with IDs like "user-nod
             }
 
             const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-            const geminiResponse = await fetch(geminiUrl, {
+            const geminiResponse = await fetchWithRetry(geminiUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -490,14 +540,14 @@ For the user's original workflow, you will receive nodes with IDs like "user-nod
                   responseMimeType: 'application/json',
                 },
               }),
-            });
+            }, 'workflow-design');
 
             if (!geminiResponse.ok) {
               const errText = await geminiResponse.text();
               console.error('Gemini API error (workflow design):', errText);
               res.statusCode = 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'AI service error' }));
+              res.end(JSON.stringify({ error: 'AI service error', retryable: true }));
               return;
             }
 
@@ -512,7 +562,7 @@ For the user's original workflow, you will receive nodes with IDs like "user-nod
               console.error('Failed to parse Gemini response (workflow design):', text);
               res.statusCode = 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'Failed to parse AI response' }));
+              res.end(JSON.stringify({ error: 'Failed to parse AI response', retryable: true }));
               return;
             }
 
@@ -522,7 +572,7 @@ For the user's original workflow, you will receive nodes with IDs like "user-nod
             console.error('Proxy error (workflow design):', err);
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: 'Internal server error' }));
+            res.end(JSON.stringify({ error: 'Internal server error', retryable: true }));
           }
         });
       });
@@ -666,7 +716,7 @@ Respond with ONLY this JSON structure — no markdown, no extra text:
             ].join('\n\n');
 
             const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-            const geminiResponse = await fetch(geminiUrl, {
+            const geminiResponse = await fetchWithRetry(geminiUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -684,14 +734,14 @@ Respond with ONLY this JSON structure — no markdown, no extra text:
                   responseMimeType: 'application/json',
                 },
               }),
-            });
+            }, 'architecture');
 
             if (!geminiResponse.ok) {
               const errText = await geminiResponse.text();
               console.error('Gemini API error (architecture):', errText);
               res.statusCode = 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'AI service error' }));
+              res.end(JSON.stringify({ error: 'AI service error', retryable: true }));
               return;
             }
 
@@ -706,7 +756,7 @@ Respond with ONLY this JSON structure — no markdown, no extra text:
               console.error('Failed to parse Gemini response (architecture):', text);
               res.statusCode = 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'Failed to parse AI response' }));
+              res.end(JSON.stringify({ error: 'Failed to parse AI response', retryable: true }));
               return;
             }
 
@@ -716,7 +766,7 @@ Respond with ONLY this JSON structure — no markdown, no extra text:
             console.error('Proxy error (architecture):', err);
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: 'Internal server error' }));
+            res.end(JSON.stringify({ error: 'Internal server error', retryable: true }));
           }
         });
       });
@@ -866,32 +916,38 @@ Respond ONLY with valid JSON:
 Only include levels that are "full" or "fast-track". Omit "awareness" and "skip" levels entirely.`;
 
             const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-            const geminiResponse = await fetch(geminiUrl, {
+            const requestBody = JSON.stringify({
+              system_instruction: {
+                parts: [{ text: systemPrompt }],
+              },
+              contents: [
+                {
+                  role: 'user',
+                  parts: [{ text: userMessage }],
+                },
+              ],
+              generationConfig: {
+                temperature: 0.7,
+                responseMimeType: 'application/json',
+              },
+            });
+
+            const geminiResponse = await fetchWithRetry(geminiUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                system_instruction: {
-                  parts: [{ text: systemPrompt }],
-                },
-                contents: [
-                  {
-                    role: 'user',
-                    parts: [{ text: userMessage }],
-                  },
-                ],
-                generationConfig: {
-                  temperature: 0.7,
-                  responseMimeType: 'application/json',
-                },
-              }),
-            });
+              body: requestBody,
+            }, 'pathway');
 
             if (!geminiResponse.ok) {
               const errText = await geminiResponse.text();
-              console.error('Gemini API error (pathway):', errText);
-              res.statusCode = 502;
+              console.error('Gemini API error (pathway):', geminiResponse.status, errText);
+              const status = geminiResponse.status === 429 ? 429 : 502;
+              const message = geminiResponse.status === 429
+                ? 'The AI service is temporarily busy. Please wait a moment and try again.'
+                : 'AI service error';
+              res.statusCode = status;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'AI service error' }));
+              res.end(JSON.stringify({ error: message, retryable: true }));
               return;
             }
 
@@ -906,7 +962,7 @@ Only include levels that are "full" or "fast-track". Omit "awareness" and "skip"
               console.error('Failed to parse Gemini response (pathway):', text);
               res.statusCode = 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'Failed to parse AI response' }));
+              res.end(JSON.stringify({ error: 'Failed to parse AI response', retryable: true }));
               return;
             }
 
@@ -916,7 +972,7 @@ Only include levels that are "full" or "fast-track". Omit "awareness" and "skip"
             console.error('Proxy error (pathway):', err);
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: 'Internal server error' }));
+            res.end(JSON.stringify({ error: 'Internal server error', retryable: true }));
           }
         });
       });
@@ -997,7 +1053,7 @@ The html_content MUST fit inside a 1100x700px iframe WITHOUT scrolling. Add "htm
                 }).filter(Boolean);
 
                 if (imageParts.length > 0) {
-                  const analyzeResponse = await fetch(analyzeUrl, {
+                  const analyzeResponse = await fetchWithRetry(analyzeUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1023,7 +1079,7 @@ Output a concise paragraph (3-5 sentences) describing these patterns as design i
                       }],
                       generationConfig: { temperature: 0.3 },
                     }),
-                  });
+                  }, 'dashboard-analyze');
 
                   if (analyzeResponse.ok) {
                     const analyzeData = await analyzeResponse.json();
@@ -1053,7 +1109,7 @@ Output a concise paragraph (3-5 sentences) describing these patterns as design i
                 ? `\n\nDESIGN REFERENCE FROM INSPIRATION IMAGES (must be maintained in the refined prompt): ${inspirationPatterns}`
                 : '';
 
-              const refinementResponse = await fetch(refinementUrl, {
+              const refinementResponse = await fetchWithRetry(refinementUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1066,7 +1122,7 @@ Output a concise paragraph (3-5 sentences) describing these patterns as design i
                   }],
                   generationConfig: { temperature: 0.4 },
                 }),
-              });
+              }, 'dashboard-refine');
 
               if (refinementResponse.ok) {
                 const refinementData = await refinementResponse.json();
@@ -1092,7 +1148,7 @@ Output a concise paragraph (3-5 sentences) describing these patterns as design i
             // ─── Strategy 1: Gemini 2.5 Flash Image (best text rendering) ───
             try {
               const geminiImageUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`;
-              const geminiImageResponse = await fetch(geminiImageUrl, {
+              const geminiImageResponse = await fetchWithRetry(geminiImageUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1102,7 +1158,7 @@ Output a concise paragraph (3-5 sentences) describing these patterns as design i
                     imageConfig: { aspectRatio: '16:9' },
                   },
                 }),
-              });
+              }, 'dashboard-image');
 
               if (geminiImageResponse.ok) {
                 const geminiImageData = await geminiImageResponse.json();
@@ -1140,7 +1196,7 @@ Output a concise paragraph (3-5 sentences) describing these patterns as design i
             ].filter(Boolean).join('\n');
 
             const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-            const geminiResponse = await fetch(geminiUrl, {
+            const geminiResponse = await fetchWithRetry(geminiUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -1158,14 +1214,14 @@ Output a concise paragraph (3-5 sentences) describing these patterns as design i
                   responseMimeType: 'application/json',
                 },
               }),
-            });
+            }, 'dashboard-html');
 
             if (!geminiResponse.ok) {
               const errText = await geminiResponse.text();
               console.error('Gemini API error (dashboard):', errText);
               res.statusCode = 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'AI service error', use_fallback: true }));
+              res.end(JSON.stringify({ error: 'AI service error', use_fallback: true, retryable: true }));
               return;
             }
 
@@ -1181,7 +1237,7 @@ Output a concise paragraph (3-5 sentences) describing these patterns as design i
               console.error('Failed to parse Gemini response (dashboard):', text);
               res.statusCode = 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'Failed to parse AI response', use_fallback: true }));
+              res.end(JSON.stringify({ error: 'Failed to parse AI response', use_fallback: true, retryable: true }));
               return;
             }
 
@@ -1191,7 +1247,7 @@ Output a concise paragraph (3-5 sentences) describing these patterns as design i
             console.error('Proxy error (dashboard):', err);
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: 'Internal server error', use_fallback: true }));
+            res.end(JSON.stringify({ error: 'Internal server error', use_fallback: true, retryable: true }));
           }
         });
       });
@@ -1362,7 +1418,7 @@ For each key metric, specify:
             ].filter(Boolean).join('\n');
 
             const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-            const geminiResponse = await fetch(geminiUrl, {
+            const geminiResponse = await fetchWithRetry(geminiUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -1380,14 +1436,14 @@ For each key metric, specify:
                   responseMimeType: 'application/json',
                 },
               }),
-            });
+            }, 'prd');
 
             if (!geminiResponse.ok) {
               const errText = await geminiResponse.text();
               console.error('Gemini API error (PRD):', errText);
               res.statusCode = 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'AI service error' }));
+              res.end(JSON.stringify({ error: 'AI service error', retryable: true }));
               return;
             }
 
@@ -1402,7 +1458,7 @@ For each key metric, specify:
               console.error('Failed to parse Gemini response (PRD):', text);
               res.statusCode = 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'Failed to parse AI response' }));
+              res.end(JSON.stringify({ error: 'Failed to parse AI response', retryable: true }));
               return;
             }
 
@@ -1412,7 +1468,7 @@ For each key metric, specify:
             console.error('Proxy error (PRD):', err);
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: 'Internal server error' }));
+            res.end(JSON.stringify({ error: 'Internal server error', retryable: true }));
           }
         });
       });
@@ -1506,7 +1562,7 @@ Outcome: ${outcome}
 Self-assessed Impact Rating: ${rating}/5${profileContext}`;
 
             const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-            const geminiResponse = await fetch(geminiUrl, {
+            const geminiResponse = await fetchWithRetry(geminiUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -1524,14 +1580,14 @@ Self-assessed Impact Rating: ${rating}/5${profileContext}`;
                   responseMimeType: 'application/json',
                 },
               }),
-            });
+            }, 'insight');
 
             if (!geminiResponse.ok) {
               const errText = await geminiResponse.text();
               console.error('Gemini API error (Insight):', errText);
               res.statusCode = 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'AI service error' }));
+              res.end(JSON.stringify({ error: 'AI service error', retryable: true }));
               return;
             }
 
@@ -1546,7 +1602,7 @@ Self-assessed Impact Rating: ${rating}/5${profileContext}`;
               console.error('Failed to parse Gemini response (Insight):', text);
               res.statusCode = 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'Failed to parse AI response' }));
+              res.end(JSON.stringify({ error: 'Failed to parse AI response', retryable: true }));
               return;
             }
 
@@ -1556,7 +1612,7 @@ Self-assessed Impact Rating: ${rating}/5${profileContext}`;
             console.error('Proxy error (Insight):', err);
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: 'Internal server error' }));
+            res.end(JSON.stringify({ error: 'Internal server error', retryable: true }));
           }
         });
       });

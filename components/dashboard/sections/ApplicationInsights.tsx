@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Star, Loader2, ChevronDown, Lightbulb, Info, AlertCircle, CheckCircle2, Shield, ArrowRight, Pencil } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { getProfile, getInsights as dbGetInsights, saveInsight as dbSaveInsight, updateInsight as dbUpdateInsight } from '../../../lib/database';
+import { fetchWithRetry } from '../../../lib/fetchWithRetry';
 import {
   TOPIC_OPTIONS_BY_LEVEL,
   LEVEL_PILL_STYLES,
@@ -434,7 +435,7 @@ export const ApplicationInsights: React.FC = () => {
     setApiError(null);
 
     try {
-      const response = await fetch('/api/analyze-insight', {
+      const response = await fetchWithRetry('/api/analyze-insight', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

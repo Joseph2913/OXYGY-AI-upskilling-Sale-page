@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import type { AgentDesignResult } from '../types';
+import { fetchWithRetry, getErrorMessage } from '../lib/fetchWithRetry';
 
 interface AgentDesignPayload {
   task_description: string;
@@ -29,7 +30,7 @@ export function useAgentDesignApi() {
     const timeout = setTimeout(() => controller.abort(), 60000);
 
     try {
-      const res = await fetch('/api/design-agent', {
+      const res = await fetchWithRetry('/api/design-agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -38,13 +39,8 @@ export function useAgentDesignApi() {
 
       clearTimeout(timeout);
 
-      if (res.status === 503) {
-        setError('The agent design service is temporarily unavailable. Please try again later.');
-        return null;
-      }
-
       if (!res.ok) {
-        setError('Something went wrong designing your agent. Please try again.');
+        setError(getErrorMessage(res.status, 'agent design'));
         return null;
       }
 
@@ -69,7 +65,7 @@ export function useAgentDesignApi() {
       if (err instanceof Error && err.name === 'AbortError') {
         setError('This is taking longer than expected. Please try again.');
       } else {
-        setError('Something went wrong designing your agent. Please try again.');
+        setError('Unable to reach the agent design service. Please check your connection and try again.');
       }
       return null;
     } finally {

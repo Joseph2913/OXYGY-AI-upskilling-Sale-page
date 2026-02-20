@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import type { ProductArchitectureAnswers, ToolAnalysisResult } from '../types';
+import { fetchWithRetry, getErrorMessage } from '../lib/fetchWithRetry';
 
 export function useArchitectureApi() {
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +27,7 @@ export function useArchitectureApi() {
     const timeout = setTimeout(() => controller.abort(), 60000);
 
     try {
-      const res = await fetch('/api/analyze-architecture', {
+      const res = await fetchWithRetry('/api/analyze-architecture', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(answers),
@@ -35,13 +36,8 @@ export function useArchitectureApi() {
 
       clearTimeout(timeout);
 
-      if (res.status === 503) {
-        setError('The build plan service is temporarily unavailable. Please try again later.');
-        return null;
-      }
-
       if (!res.ok) {
-        setError('Something went wrong generating your build plan. Please try again.');
+        setError(getErrorMessage(res.status, 'build plan'));
         return null;
       }
 
@@ -62,7 +58,7 @@ export function useArchitectureApi() {
       if (err instanceof Error && err.name === 'AbortError') {
         setError('This is taking longer than expected. Please try again.');
       } else {
-        setError('Something went wrong generating your build plan. Please try again.');
+        setError('Unable to reach the build plan service. Please check your connection and try again.');
       }
       return null;
     } finally {

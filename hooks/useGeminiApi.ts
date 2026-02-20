@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import type { PromptResult, WizardAnswers } from '../types';
+import { fetchWithRetry, getErrorMessage } from '../lib/fetchWithRetry';
 
 interface ApiPayload {
   mode: 'enhance' | 'build';
@@ -28,7 +29,7 @@ export function useGeminiApi() {
     const timeout = setTimeout(() => controller.abort(), 15000);
 
     try {
-      const res = await fetch('/api/enhance-prompt', {
+      const res = await fetchWithRetry('/api/enhance-prompt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -37,12 +38,7 @@ export function useGeminiApi() {
       clearTimeout(timeout);
 
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        if (res.status === 503) {
-          setError('The prompt enhancement service is temporarily unavailable.');
-        } else {
-          setError('Something went wrong generating your prompt. Please try again.');
-        }
+        setError(getErrorMessage(res.status, 'prompt enhancement'));
         return null;
       }
 
@@ -52,17 +48,17 @@ export function useGeminiApi() {
       const requiredKeys = ['role', 'context', 'task', 'format', 'steps', 'quality'] as const;
       const hasAllKeys = requiredKeys.every((key) => typeof data[key] === 'string' && data[key].length > 0);
       if (!hasAllKeys) {
-        setError('Something went wrong generating your prompt. Please try again.');
+        setError('Received an unexpected response format. Please try again.');
         return null;
       }
 
       return data;
-    } catch (err: any) {
+    } catch (err: unknown) {
       clearTimeout(timeout);
-      if (err.name === 'AbortError') {
+      if (err instanceof Error && err.name === 'AbortError') {
         setError('This is taking longer than expected. Please try again.');
       } else {
-        setError('Something went wrong generating your prompt. Please try again.');
+        setError('Unable to reach the prompt service. Please check your connection and try again.');
       }
       return null;
     } finally {

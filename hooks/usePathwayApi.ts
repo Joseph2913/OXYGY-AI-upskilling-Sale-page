@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import type { PathwayFormData, PathwayApiResponse } from '../types';
+import { fetchWithRetry, getErrorMessage } from '../lib/fetchWithRetry';
 
 export function usePathwayApi() {
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +27,7 @@ export function usePathwayApi() {
     const timeout = setTimeout(() => controller.abort(), 60000);
 
     try {
-      const res = await fetch('/api/generate-pathway', {
+      const res = await fetchWithRetry('/api/generate-pathway', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ formData, levelDepths }),
@@ -35,13 +36,8 @@ export function usePathwayApi() {
 
       clearTimeout(timeout);
 
-      if (res.status === 503) {
-        setError('The pathway service is temporarily unavailable. Please try again later.');
-        return null;
-      }
-
       if (!res.ok) {
-        setError('Something went wrong generating your pathway. Please try again.');
+        setError(getErrorMessage(res.status, 'pathway'));
         return null;
       }
 
@@ -56,9 +52,9 @@ export function usePathwayApi() {
     } catch (err: unknown) {
       clearTimeout(timeout);
       if (err instanceof Error && err.name === 'AbortError') {
-        setError('This is taking longer than expected. Please try again.');
+        setError('This is taking longer than expected. The AI service may be under heavy load — please try again in a moment.');
       } else {
-        setError('Something went wrong generating your pathway. Please try again.');
+        setError('Unable to reach the pathway service. Please check your connection and try again.');
       }
       return null;
     } finally {

@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import type { DashboardBrief, NewPRDResult } from '../types';
+import { fetchWithRetry, getErrorMessage } from '../lib/fetchWithRetry';
 
 export interface DashboardImageResult {
   image_url: string;
@@ -95,7 +96,7 @@ export function useDashboardDesignApi() {
 
     try {
       const payload = buildPayload(brief, feedback, previousPrompt, inspirationImages);
-      const res = await fetch('/api/design-dashboard', {
+      const res = await fetchWithRetry('/api/design-dashboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -108,6 +109,8 @@ export function useDashboardDesignApi() {
         console.error('Dashboard API error:', res.status, errData);
         if (errData.error === 'API key not configured') {
           setError('Gemini API key not configured. Please add GEMINI_API_KEY to .env.local and restart the server.');
+        } else {
+          setError(getErrorMessage(res.status, 'dashboard design'));
         }
         return null;
       }
@@ -116,12 +119,12 @@ export function useDashboardDesignApi() {
 
       setRegenerationCount(prev => prev + 1);
       return data;
-    } catch (err: any) {
+    } catch (err: unknown) {
       clearTimeout(timeout);
-      if (err.name === 'AbortError') {
+      if (err instanceof Error && err.name === 'AbortError') {
         setError('This is taking longer than expected. Please try again.');
       } else {
-        setError('Something went wrong generating your dashboard. Please try again.');
+        setError('Unable to reach the dashboard design service. Please check your connection and try again.');
       }
       return null;
     } finally {
@@ -155,7 +158,7 @@ export function useDashboardDesignApi() {
         visual_style: brief.q7_visualStyle || undefined,
       };
 
-      const res = await fetch('/api/generate-prd', {
+      const res = await fetchWithRetry('/api/generate-prd', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -169,7 +172,7 @@ export function useDashboardDesignApi() {
         if (errData.error === 'API key not configured') {
           setError('Gemini API key not configured. Please add GEMINI_API_KEY to .env.local and restart the server.');
         } else {
-          setError('Something went wrong generating your PRD. Please try again.');
+          setError(getErrorMessage(res.status, 'PRD generation'));
         }
         return null;
       }
@@ -177,12 +180,12 @@ export function useDashboardDesignApi() {
       const data: PRDResult = await res.json();
       setPrdGenerationCount(prev => prev + 1);
       return data;
-    } catch (err: any) {
+    } catch (err: unknown) {
       clearTimeout(timeout);
-      if (err.name === 'AbortError') {
+      if (err instanceof Error && err.name === 'AbortError') {
         setError('PRD generation timed out. Please try again.');
       } else {
-        setError('Something went wrong generating your PRD. Please try again.');
+        setError('Unable to reach the PRD service. Please check your connection and try again.');
       }
       return null;
     } finally {
