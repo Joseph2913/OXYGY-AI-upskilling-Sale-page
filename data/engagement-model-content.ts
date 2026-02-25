@@ -148,7 +148,7 @@ export const PHASE_SECTIONS: PhaseSection[] = [
         title: 'Leadership Alignment Workshops',
         summary:
           'Define your firm\u2019s strategic AI ambition, map pain points and opportunities, and establish the enabler framework \u2014 the strategic outcomes you\u2019re pursuing and the capabilities required to get there.',
-        involves: 'C-suite, senior leadership, Oxygy strategy team',
+        involves: 'C-suite, senior leadership, OXYGY strategy team',
         iconName: 'Users',
         approach: [
           'What does AI success look like for this organization in 12\u201324 months?',
@@ -163,7 +163,7 @@ export const PHASE_SECTIONS: PhaseSection[] = [
         title: 'Organizational Intelligence Gathering',
         summary:
           'We ingest your existing data infrastructure \u2014 LMS records, project data, active initiatives, HR and capability data \u2014 and layer our diagnostic on top. No new data burden.',
-        involves: 'IT, HR/L&D, functional leads, Oxygy data team',
+        involves: 'IT, HR/L&D, functional leads, OXYGY data team',
         iconName: 'Database',
         approach: [
           'LMS data \u2014 training history, completion rates, engagement patterns',
@@ -179,7 +179,7 @@ export const PHASE_SECTIONS: PhaseSection[] = [
         title: 'Individual Pathway Calibration',
         summary:
           'Combining organizational data with a lightweight self-assessment, each participant is assigned to the right track \u2014 Essentials, Applied, or Mastery. Calibration considers role, function, and proximity to strategic priorities.',
-        involves: 'All participants, HR/L&D leads, Oxygy calibration team',
+        involves: 'All participants, HR/L&D leads, OXYGY calibration team',
         iconName: 'Target',
         approach: [
           'Role and function analysis \u2014 a consultant needs different exercises than an ops lead',
@@ -195,7 +195,7 @@ export const PHASE_SECTIONS: PhaseSection[] = [
         title: 'AI Champions Identification',
         summary:
           'Identify individuals who will play an elevated role throughout the engagement \u2014 not just as learners, but as embedded catalysts who coach peers, bridge functions, and sustain capability long after the engagement ends.',
-        involves: 'HR, functional leads, Oxygy strategy team',
+        involves: 'HR, functional leads, OXYGY strategy team',
         iconName: 'Award',
         approach: [
           'Existing AI fluency or demonstrated enthusiasm for AI tools',
@@ -224,7 +224,7 @@ export const PHASE_SECTIONS: PhaseSection[] = [
         title: 'Define Learning Tracks',
         summary:
           'Each participant is assigned to one of three tracks based on their role, experience, and proximity to strategic priorities \u2014 ensuring the right depth for the right people.',
-        involves: 'All participants, HR/L&D leads, Oxygy calibration team',
+        involves: 'All participants, HR/L&D leads, OXYGY calibration team',
         iconName: 'GitBranch',
         cardType: 'learning-tracks',
         approach: [
@@ -313,7 +313,7 @@ export const PHASE_SECTIONS: PhaseSection[] = [
         title: 'Innovation Framework & Brief Design',
         summary:
           'A structured innovation brief template aligned to your strategic priorities. Not \u201csubmit any idea\u201d \u2014 it\u2019s targeted: given strategic priority X, propose an AI-enabled solution that addresses enabler Y.',
-        involves: 'Innovation leads, functional heads, Oxygy strategy team',
+        involves: 'Innovation leads, functional heads, OXYGY strategy team',
         iconName: 'FileText',
         approach: [
           'Problem statement clearly articulated',
@@ -330,7 +330,7 @@ export const PHASE_SECTIONS: PhaseSection[] = [
         title: 'Sandbox Environment',
         summary:
           'A protected workspace where teams prototype automated workflows and AI solutions with real data structures but no production risk.',
-        involves: 'Client IT team, Oxygy technical advisors',
+        involves: 'Client IT team, OXYGY technical advisors',
         iconName: 'Box',
         approach: [
           'Pre-approved AI tools available for experimentation',
@@ -345,8 +345,8 @@ export const PHASE_SECTIONS: PhaseSection[] = [
         id: 'p2-steering',
         title: 'Steering Committee Facilitation',
         summary:
-          'A joint evaluation body \u2014 Oxygy advisors, client leadership, and functional representatives. The committee decides what advances \u2014 not Oxygy alone.',
-        involves: 'Leadership, functional reps, Oxygy advisors',
+          'A joint evaluation body \u2014 OXYGY advisors, client leadership, and functional representatives. The committee decides what advances \u2014 not OXYGY alone.',
+        involves: 'Leadership, functional reps, OXYGY advisors',
         iconName: 'BarChart2',
         approach: [
           'Strategic alignment to enablers defined in Phase 0',
@@ -363,7 +363,7 @@ export const PHASE_SECTIONS: PhaseSection[] = [
         title: 'Technical Validation of Top Ideas',
         summary:
           'Your engineering and IT teams assess the top-scoring ideas for data requirements, security implications, integration feasibility, and scalability potential.',
-        involves: 'Client tech team, Oxygy technical advisors',
+        involves: 'Client tech team, OXYGY technical advisors',
         iconName: 'ShieldCheck',
         approach: [
           'Data availability and quality assessment',
@@ -392,7 +392,7 @@ export const PHASE_SECTIONS: PhaseSection[] = [
         title: 'Wave 3 \u2014 Advanced Applications',
         summary:
           'Levels 4 and 5 training for your most capable practitioners. Participants design production-grade AI architectures, build executive dashboards, and develop repeatable frameworks for their functions.',
-        involves: 'Applied and Mastery track participants, functional leads, Oxygy technical team',
+        involves: 'Applied and Mastery track participants, functional leads, OXYGY technical team',
         iconName: 'Zap',
         cardType: 'wave',
         approach: [
@@ -425,7 +425,7 @@ export const PHASE_SECTIONS: PhaseSection[] = [
         title: 'Operating Model Integration',
         summary:
           'Embed validated AI solutions from Phase 2 into your daily operations. This isn\u2019t a pilot \u2014 it\u2019s structured deployment with change management, training, and performance tracking built in.',
-        involves: 'Leadership, IT, functional leads, Oxygy integration team',
+        involves: 'Leadership, IT, functional leads, OXYGY integration team',
         iconName: 'Layers',
         approach: [
           'Deployment roadmap for each validated solution from Phase 2',
@@ -441,7 +441,7 @@ export const PHASE_SECTIONS: PhaseSection[] = [
         title: 'Governance Framework Design',
         summary:
           'Establish the policies, review processes, and accountability structures that ensure AI is used responsibly, consistently, and in alignment with organizational values.',
-        involves: 'Legal, compliance, leadership, Oxygy governance advisors',
+        involves: 'Legal, compliance, leadership, OXYGY governance advisors',
         iconName: 'ShieldCheck',
         approach: [
           'AI usage policies and ethical guidelines',
@@ -456,8 +456,8 @@ export const PHASE_SECTIONS: PhaseSection[] = [
         id: 'p3-champions',
         title: 'Champions Network Activation',
         summary:
-          'Formally activate the Champions identified in Phase 0 as an ongoing internal capability network. They become the bridge between Oxygy\u2019s engagement and your organization\u2019s long-term AI maturity.',
-        involves: 'Identified AI Champions, HR, leadership, Oxygy Champions team',
+          'Formally activate the Champions identified in Phase 0 as an ongoing internal capability network. They become the bridge between OXYGY\u2019s engagement and your organization\u2019s long-term AI maturity.',
+        involves: 'Identified AI Champions, HR, leadership, OXYGY Champions team',
         iconName: 'Award',
         approach: [
           'Formal recognition and role definition for Champions',
@@ -473,7 +473,7 @@ export const PHASE_SECTIONS: PhaseSection[] = [
         title: 'ROI Impact Report',
         summary:
           'A comprehensive baseline-to-close measurement of the engagement\u2019s impact \u2014 tying capability gains, innovation pipeline output, and operational improvements back to the strategic outcomes defined in Phase 0.',
-        involves: 'Leadership, Oxygy analytics team',
+        involves: 'Leadership, OXYGY analytics team',
         iconName: 'BarChart2',
         approach: [
           'Baseline metrics established in Phase 0 compared to close-of-engagement state',

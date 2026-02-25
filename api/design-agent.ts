@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const SYSTEM_PROMPT = `You are the Oxygy Agent Design Advisor — an expert in helping people design effective, reusable, and accountable AI agents for professional use.
+const SYSTEM_PROMPT = `You are the OXYGY Agent Design Advisor — an expert in helping people design effective, reusable, and accountable AI agents for professional use.
 
 You will receive a description of a task that a user wants to build an AI agent for, and optionally a description of the input data that agent will process.
 

@@ -65,7 +65,7 @@ export const PROMPT_SECTION_COLORS: Record<string, { bg: string; label: string; 
   'QUALITY CHECKS': { bg: 'rgba(230, 255, 250, 0.5)', label: 'QUALITY', emoji: '\u{2705}' },
 };
 
-export const AGENT_DESIGN_SYSTEM_PROMPT = `You are the Oxygy Agent Design Advisor — an expert in helping people design effective, reusable, and accountable AI agents for professional use.
+export const AGENT_DESIGN_SYSTEM_PROMPT = `You are the OXYGY Agent Design Advisor — an expert in helping people design effective, reusable, and accountable AI agents for professional use.
 
 You will receive a description of a task that a user wants to build an AI agent for, and optionally a description of the input data that agent will process.
 

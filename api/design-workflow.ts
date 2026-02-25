@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const PATH_A_PROMPT = `You are the Oxygy Workflow Architect — an expert in designing AI-powered automation workflows. You help users map their business processes into structured, multi-step workflows using a node-based system.
+const PATH_A_PROMPT = `You are the OXYGY Workflow Architect — an expert in designing AI-powered automation workflows. You help users map their business processes into structured, multi-step workflows using a node-based system.
 
 You will receive a description of a process the user wants to automate, and optionally a description of their existing tools and systems.
 
@@ -53,7 +53,7 @@ The "name" field is a SHORT custom label for the node in this specific workflow 
 
 The "node_id" must exactly match one of the node IDs listed above.`;
 
-const PATH_B_PROMPT = `You are the Oxygy Workflow Reviewer — an expert in evaluating and improving AI-powered automation workflows.
+const PATH_B_PROMPT = `You are the OXYGY Workflow Reviewer — an expert in evaluating and improving AI-powered automation workflows.
 
 You will receive:
 1. A description of the process being automated

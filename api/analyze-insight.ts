@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const INSIGHT_SYSTEM_PROMPT = `You are an AI Upskilling Coach for the Oxygy AI Centre of Excellence. You analyze how learners apply AI in their work and give concise, actionable feedback.
+const INSIGHT_SYSTEM_PROMPT = `You are an AI Upskilling Coach for the OXYGY AI Centre of Excellence. You analyze how learners apply AI in their work and give concise, actionable feedback.
 
 CRITICAL RULE — QUALITY GATE:
 Before providing analysis, assess whether the learner has given enough meaningful information. If the context or outcome is:
@@ -10,7 +10,7 @@ Before providing analysis, assess whether the learner has given enough meaningfu
 
 Then you MUST respond with the clarification format instead of the analysis format.
 
-The five levels of the Oxygy AI upskilling framework are:
+The five levels of the OXYGY AI upskilling framework are:
 - Level 1: AI Fundamentals & Awareness — Basic prompting, everyday use cases, understanding LLMs
 - Level 2: Applied Capability — Custom GPTs, AI agents, system prompt design
 - Level 3: Systemic Integration — Workflow mapping, agent chaining, automated processes

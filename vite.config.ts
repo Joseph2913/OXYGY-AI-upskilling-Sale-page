@@ -54,7 +54,7 @@ async function fetchWithRetry(
   throw lastError || new Error('All retries exhausted');
 }
 
-const GEMINI_SYSTEM_PROMPT = `You are the Oxygy Prompt Engineering Coach — an expert in transforming raw, unstructured prompts into well-engineered, structured prompts that produce dramatically better AI outputs.
+const GEMINI_SYSTEM_PROMPT = `You are the OXYGY Prompt Engineering Coach — an expert in transforming raw, unstructured prompts into well-engineered, structured prompts that produce dramatically better AI outputs.
 
 Your job is to take a user's input and produce an enhanced prompt structured into exactly 6 sections. These 6 sections are called "The Prompt Blueprint":
 
@@ -193,7 +193,7 @@ function geminiProxyPlugin(apiKey: string, model: string): Plugin {
 }
 
 function agentDesignProxyPlugin(apiKey: string, model: string): Plugin {
-  const systemPrompt = `You are the Oxygy Agent Design Advisor — an expert in helping people design effective, reusable, and accountable AI agents for professional use.
+  const systemPrompt = `You are the OXYGY Agent Design Advisor — an expert in helping people design effective, reusable, and accountable AI agents for professional use.
 
 You will receive a description of a task that a user wants to build an AI agent for, and optionally a description of the input data that agent will process.
 
@@ -366,7 +366,7 @@ You must respond with the following JSON structure ONLY — no markdown, no extr
 }
 
 function workflowDesignProxyPlugin(apiKey: string, model: string): Plugin {
-  const pathAPrompt = `You are the Oxygy Workflow Architect — an expert in designing AI-powered automation workflows. You help users map their business processes into structured, multi-step workflows using a node-based system.
+  const pathAPrompt = `You are the OXYGY Workflow Architect — an expert in designing AI-powered automation workflows. You help users map their business processes into structured, multi-step workflows using a node-based system.
 
 You will receive a description of a process the user wants to automate, and optionally a description of their existing tools and systems.
 
@@ -419,7 +419,7 @@ The "name" field is a SHORT custom label for the node in this specific workflow 
 
 The "node_id" must exactly match one of the node IDs listed above.`;
 
-  const pathBPrompt = `You are the Oxygy Workflow Reviewer — an expert in evaluating and improving AI-powered automation workflows.
+  const pathBPrompt = `You are the OXYGY Workflow Reviewer — an expert in evaluating and improving AI-powered automation workflows.
 
 You will receive:
 1. A description of the process being automated
@@ -581,7 +581,7 @@ For the user's original workflow, you will receive nodes with IDs like "user-nod
 }
 
 function architectureProxyPlugin(apiKey: string, model: string): Plugin {
-  const systemPrompt = `You are the Oxygy AI Build Plan Advisor — an expert in helping business professionals plan AI-powered applications using a 5-tool development pipeline.
+  const systemPrompt = `You are the OXYGY AI Build Plan Advisor — an expert in helping business professionals plan AI-powered applications using a 5-tool development pipeline.
 
 You will receive a user's project details including their app description, target users and problem, data/feature needs, and technical comfort level. Generate a personalized build plan for their specific project.
 
@@ -775,7 +775,7 @@ Respond with ONLY this JSON structure — no markdown, no extra text:
 }
 
 function pathwayProxyPlugin(apiKey: string, model: string): Plugin {
-  const systemPrompt = `You are a learning pathway designer for Oxygy's AI Centre of Excellence. You generate personalized, project-based learning pathways for professionals who want to develop AI skills.
+  const systemPrompt = `You are a learning pathway designer for OXYGY's AI Centre of Excellence. You generate personalized, project-based learning pathways for professionals who want to develop AI skills.
 
 Your outputs must be:
 - Practical and actionable — every project should be something the learner can start within a week
@@ -1479,7 +1479,7 @@ For each key metric, specify:
 // ─── Insight Analysis Proxy ───
 
 function insightAnalysisProxyPlugin(apiKey: string, model: string): Plugin {
-  const systemPrompt = `You are an AI Upskilling Coach for the Oxygy AI Centre of Excellence. You analyze how learners apply AI in their work and give concise, actionable feedback.
+  const systemPrompt = `You are an AI Upskilling Coach for the OXYGY AI Centre of Excellence. You analyze how learners apply AI in their work and give concise, actionable feedback.
 
 CRITICAL RULE — QUALITY GATE:
 Before providing analysis, assess whether the learner has given enough meaningful information. If the context or outcome is:
@@ -1489,7 +1489,7 @@ Before providing analysis, assess whether the learner has given enough meaningfu
 
 Then you MUST respond with the clarification format instead of the analysis format.
 
-The five levels of the Oxygy AI upskilling framework are:
+The five levels of the OXYGY AI upskilling framework are:
 - Level 1: AI Fundamentals & Awareness — Basic prompting, everyday use cases, understanding LLMs
 - Level 2: Applied Capability — Custom GPTs, AI agents, system prompt design
 - Level 3: Systemic Integration — Workflow mapping, agent chaining, automated processes

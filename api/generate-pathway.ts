@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const SYSTEM_PROMPT = `You are a learning pathway designer for Oxygy's AI Centre of Excellence. You generate personalized, project-based learning pathways for professionals who want to develop AI skills.
+const SYSTEM_PROMPT = `You are a learning pathway designer for OXYGY's AI Centre of Excellence. You generate personalized, project-based learning pathways for professionals who want to develop AI skills.
 
 Your outputs must be:
 - Practical and actionable — every project should be something the learner can start within a week
@@ -143,7 +143,7 @@ For each applicable level, generate:
 3. A deliverable — one concrete, tangible output they'll have at the end
 4. A challengeConnection — 2-3 sentences that DIRECTLY reference the learner's stated challenge from Q6. Quote or paraphrase their exact words. Explain how this level's project connects to solving that specific challenge. This should feel unmistakably personalized.
 5. A recommended session format — based on their seniority level
-6. 2-4 suggested resources — real tools, platforms, guides, or Oxygy references relevant to the project
+6. 2-4 suggested resources — real tools, platforms, guides, or OXYGY references relevant to the project
 
 For "fast-track" levels, the project should be a lighter, assessment-style activity that proves existing competency while filling gaps. Frame it as "validate and sharpen" rather than "learn from scratch."
 
