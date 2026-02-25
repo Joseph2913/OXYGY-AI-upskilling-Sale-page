@@ -386,3 +386,27 @@ body {
     max-height: none !important;
   }
 }
+
+/* ─── Recommended Card — Animated Gradient Border + Glow ─── */
+
+@keyframes em-gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes em-glow-pulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(56, 178, 172, 0.25), 0 4px 20px rgba(56, 178, 172, 0.1); }
+  50% { box-shadow: 0 0 24px rgba(56, 178, 172, 0.45), 0 4px 32px rgba(56, 178, 172, 0.2); }
+}
+
+.em-recommended-border {
+  background-size: 300% 300%;
+  animation: em-gradient-shift 4s ease infinite, em-glow-pulse 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .em-recommended-border {
+    animation: none !important;
+  }
+}

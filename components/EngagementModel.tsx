@@ -149,29 +149,102 @@ const TierCard: React.FC<{
 }> = ({ tier, isSelected, onSelect, onFeatureClick }) => {
   const [hovered, setHovered] = useState(false);
 
+  /* Recommended card — animated gradient border, visually larger via scale */
+  if (tier.isRecommended) {
+    return (
+      <div className="flex flex-col" style={{ transform: 'scale(1.08)', zIndex: 10, transformOrigin: 'center center' }}>
+        {/* Animated gradient border wrapper with glow */}
+        <div
+          className="em-recommended-border relative rounded-2xl p-[2.5px] flex flex-col flex-1"
+          style={{ background: 'linear-gradient(135deg, #38B2AC, #4FD1C5, #38B2AC, #2C9A94)' }}
+        >
+          {/* Badge */}
+          <div
+            className="flex items-center justify-center gap-2"
+            style={{
+              fontSize: '11px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              color: V.white,
+              padding: '8px 0',
+            }}
+          >
+            Recommended
+          </div>
+
+          {/* Inner card */}
+          <button
+            onClick={onSelect}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            className="text-left w-full cursor-pointer flex flex-col flex-1"
+            style={{
+              background: V.white,
+              borderRadius: '14px',
+              padding: '28px 28px 32px',
+              outline: 'none',
+            }}
+          >
+            {/* Phases badge */}
+            <span
+              style={{
+                display: 'inline-block',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: tier.accentColor,
+                background: V.sectionBg,
+                padding: '4px 12px',
+                borderRadius: '20px',
+                marginBottom: '14px',
+                alignSelf: 'flex-start',
+              }}
+            >
+              {tier.phasesBadge}
+            </span>
+
+            <h3 style={{ fontSize: '24px', fontWeight: 800, color: V.navy, marginBottom: '4px' }}>
+              {tier.name}
+            </h3>
+            <p style={{ fontSize: '14px', color: V.body, marginBottom: '20px', lineHeight: 1.5 }}>
+              {tier.tagline}
+            </p>
+
+            <div style={{ marginBottom: '24px', flex: 1 }}>
+              <TierFeatureList
+                features={tier.features}
+                inheritsFrom={tier.inheritsFrom}
+                accentColor={tier.accentColor}
+                onFeatureClick={onFeatureClick}
+              />
+            </div>
+
+            <span
+              className="inline-flex items-center justify-center gap-2"
+              style={{
+                background: hovered ? tier.accentColor : 'transparent',
+                color: hovered ? V.white : tier.accentColor,
+                border: `1.5px solid ${tier.accentColor}`,
+                borderRadius: '28px',
+                padding: '11px 24px',
+                fontSize: '14px',
+                fontWeight: 600,
+                transition: 'background-color 200ms ease, color 200ms ease',
+                alignSelf: 'flex-start',
+              }}
+            >
+              {tier.ctaText}
+              <ArrowRight size={14} />
+            </span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  /* Standard (non-recommended) card */
   return (
     <div className="flex flex-col">
-      {/* Recommended badge — outside card, above */}
-      {tier.isRecommended ? (
-        <div
-          className="text-center"
-          style={{
-            fontSize: '11px',
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-            color: V.white,
-            background: tier.accentColor,
-            padding: '6px 0',
-            borderRadius: '8px 8px 0 0',
-          }}
-        >
-          Recommended
-        </div>
-      ) : (
-        <div style={{ height: '29px' }} />
-      )}
-
       <button
         onClick={onSelect}
         onMouseEnter={() => setHovered(true)}
@@ -179,8 +252,8 @@ const TierCard: React.FC<{
         className="text-left w-full cursor-pointer flex flex-col flex-1"
         style={{
           background: V.white,
-          border: `2px solid ${isSelected || tier.isRecommended ? tier.accentColor : V.border}`,
-          borderRadius: tier.isRecommended ? '0 0 16px 16px' : '16px',
+          border: `2px solid ${isSelected ? tier.accentColor : V.border}`,
+          borderRadius: '16px',
           padding: '24px 24px 28px',
           transition: 'border-color 200ms ease',
           outline: 'none',
@@ -210,7 +283,6 @@ const TierCard: React.FC<{
           {tier.tagline}
         </p>
 
-        {/* Feature list */}
         <div style={{ marginBottom: '24px', flex: 1 }}>
           <TierFeatureList
             features={tier.features}
@@ -220,7 +292,6 @@ const TierCard: React.FC<{
           />
         </div>
 
-        {/* CTA */}
         <span
           className="inline-flex items-center justify-center gap-2"
           style={{
@@ -243,95 +314,45 @@ const TierCard: React.FC<{
   );
 };
 
-// ─── Page Header ───
+// ─── Page Header (unified: hero text + tier cards) ───
 
 const PageHeader: React.FC<{
   selectedTier: TierId;
   onSelectTier: (id: TierId) => void;
   onFeatureClick: (targetId: string) => void;
 }> = ({ selectedTier, onSelectTier, onFeatureClick }) => (
-  <section style={{ background: V.white, paddingTop: '144px', paddingBottom: '80px' }}>
-    <div className="mx-auto" style={{ maxWidth: '1160px', padding: '0 40px' }}>
-      {/* Eyebrow Pill */}
-      <div className="text-center" style={{ marginBottom: '24px' }}>
+  <section style={{ background: V.white, paddingTop: '96px', paddingBottom: '80px' }}>
+    <div className="max-w-7xl mx-auto px-6 pt-12">
+      {/* Centered Title — matching UserJourney format */}
+      <div className="mb-10 text-center">
         <div
-          style={{
-            display: 'inline-block',
-            fontSize: '11px',
-            fontWeight: 700,
-            letterSpacing: '0.15em',
-            textTransform: 'uppercase',
-            color: V.teal,
-            backgroundColor: 'rgba(56, 178, 172, 0.08)',
-            border: '1px solid rgba(56, 178, 172, 0.3)',
-            padding: '6px 16px',
-            borderRadius: '9999px',
-          }}
+          className="inline-block text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-1.5 rounded-full mb-6"
+          style={{ backgroundColor: '#E6FFFA', color: '#2C9A94', border: '1px solid #38B2AC' }}
         >
-          Partner With OXYGY
+          Our Engagement Model
         </div>
+        <h1 className="text-[36px] md:text-[48px] font-bold text-[#1A202C] leading-[1.15]">
+          Your Transformation{' '}
+          <span className="relative inline-block">
+            Partner
+            <span
+              className="absolute left-0 -bottom-1 w-full h-[4px] rounded-full"
+              style={{ backgroundColor: '#38B2AC', opacity: 0.8 }}
+            />
+          </span>
+          <br />
+          in the AI Era
+        </h1>
+        <p className="text-[16px] md:text-[18px] text-[#718096] leading-[1.7] max-w-[700px] mx-auto mt-2">
+          At OXYGY, we believe in building AI capability in your people &mdash; so your
+          organisation adopts new tools faster and discovers opportunities others miss.
+        </p>
       </div>
 
-      {/* Headline */}
-      <h1
-        className="text-center"
-        style={{
-          fontSize: 'clamp(36px, 4.5vw, 48px)',
-          fontWeight: 800,
-          color: V.navy,
-          lineHeight: 1.15,
-          marginBottom: '20px',
-        }}
-      >
-        Three Ways to <AccentUnderline>Transform</AccentUnderline> Your Organization
-      </h1>
-
-      {/* Intro */}
-      <p
-        className="text-center mx-auto"
-        style={{
-          fontSize: '16px',
-          color: V.body,
-          lineHeight: 1.7,
-          maxWidth: '700px',
-          marginBottom: '32px',
-        }}
-      >
-        Every organization&rsquo;s AI journey is different. Choose the scope that matches your
-        ambition &mdash; from building foundational capability to full operating model transformation.
-      </p>
-
-      {/* Did You Know? Card */}
+      {/* Tier cards — Accelerator (recommended) is visually larger */}
       <div
-          className="relative rounded-2xl px-8 md:px-12 py-8 text-center overflow-hidden"
-          style={{
-            background: 'linear-gradient(135deg, rgba(56,178,172,0.15) 0%, rgba(44,154,148,0.08) 50%, rgba(56,178,172,0.12) 100%)',
-            border: '1.5px solid rgba(56, 178, 172, 0.3)',
-            marginBottom: '32px',
-          }}
-        >
-          <div className="absolute top-3 left-4 flex gap-1.5">
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#2C9A94', opacity: 0.4 }} />
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#B2F5EA', opacity: 0.6 }} />
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#2C9A94', opacity: 0.3 }} />
-          </div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.1em] mb-2" style={{ color: '#2C9A94' }}>
-            Did you know?
-          </p>
-          <p className="text-[17px] md:text-[19px] text-[#2D3748] leading-[1.6] font-medium mb-2 max-w-3xl mx-auto">
-            Companies that invest in structured AI upskilling see{' '}
-            <span className="font-bold" style={{ color: '#2C9A94' }}>3&times; faster time-to-value</span>{' '}
-            on AI initiatives compared to those who deploy tools without capability building.
-          </p>
-          <p className="text-[15px] text-[#718096] leading-[1.6] max-w-3xl mx-auto">
-            The right engagement model ensures AI adoption sticks &mdash; not just for early adopters, but across the organization.
-          </p>
-        </div>
-
-      {/* Tier cards */}
-      <div
-        className="grid grid-cols-1 md:grid-cols-3"
-        style={{ gap: '24px', alignItems: 'stretch' }}
+        className="grid grid-cols-1 md:grid-cols-3 items-center"
+        style={{ gap: '24px', padding: '12px 0' }}
       >
         {TIER_CONFIGS.map((tier) => (
           <TierCard
