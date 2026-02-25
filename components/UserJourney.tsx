@@ -7,7 +7,6 @@ import {
   BookOpen,
   MessageSquare,
   ClipboardCheck,
-  TrendingUp,
   RefreshCw,
   ChevronDown,
   Lightbulb,
@@ -15,79 +14,56 @@ import {
   Play,
   FileText,
   Share2,
+  Rocket,
+  Target,
+  Wrench,
 } from 'lucide-react';
 import { ArtifactClosing } from './ArtifactClosing';
 
 const ACCENT = '#38B2AC';
 const ACCENT_DARK = '#2C9A94';
 
-/* Step-specific colors (from brand palette) */
+/* Stage-specific colors (from brand palette) */
 const STEP1_COLOR = '#D47B5A';   // Peach / Terracotta (L4 accent)
 const STEP1_LIGHT = '#D47B5A';   // Peach
 const STEP5_COLOR = '#5B6DC2';   // Lavender / Indigo (L2 accent)
 const STEP6_COLOR = '#C4A934';   // Gold (L3 accent)
 
-/* ─── Step number circle ─── */
-function StepCircle({ number, color }: { number: number; color?: string }) {
+/* ─── Stage icon circle ─── */
+function StepCircle({ number, color, icon: Icon }: {
+  number?: number;
+  color?: string;
+  icon?: React.ComponentType<{ size?: number; className?: string }>;
+}) {
   return (
     <div
       className="shrink-0 w-[40px] h-[40px] rounded-full flex items-center justify-center text-white font-bold text-[16px]"
       style={{ backgroundColor: color || ACCENT_DARK }}
     >
-      {number}
+      {Icon ? <Icon size={16} className="text-white" /> : number}
     </div>
   );
 }
 
-/* ─── Vertical connector line ─── */
-function Connector({ className = '' }: { className?: string }) {
+/* ─── Dotted connector between stages ─── */
+function Connector({ color = '#E2E8F0' }: { color?: string }) {
   return (
-    <div className={`hidden md:flex justify-center ${className}`}>
-      <div className="w-[2px] h-10" style={{ backgroundColor: '#E2E8F0' }} />
-    </div>
-  );
-}
-
-/* ─── Branching / converging connector for the parallel section ─── */
-function BranchConnector({ direction }: { direction: 'split' | 'merge' }) {
-  return (
-    <div className="hidden md:block relative" style={{ height: '40px' }}>
-      {/* Center vertical stub */}
+    <div className="hidden md:flex flex-col items-center py-1">
       <div
-        className="absolute left-1/2 -translate-x-1/2"
+        className="w-[3px] rounded-full"
         style={{
-          width: '2px',
-          height: '16px',
-          backgroundColor: '#E2E8F0',
-          top: direction === 'split' ? 0 : 'auto',
-          bottom: direction === 'merge' ? 0 : 'auto',
+          height: '40px',
+          backgroundImage: `repeating-linear-gradient(to bottom, ${color} 0px, ${color} 5px, transparent 5px, transparent 11px)`,
         }}
       />
-      {/* Horizontal bar */}
       <div
-        className="absolute left-[16.67%] right-[16.67%]"
+        className="w-0 h-0"
         style={{
-          height: '2px',
-          backgroundColor: '#E2E8F0',
-          top: direction === 'split' ? '16px' : '22px',
+          borderLeft: '5px solid transparent',
+          borderRight: '5px solid transparent',
+          borderTop: `6px solid ${color}`,
         }}
       />
-      {/* Three vertical stubs down (split) or up (merge) */}
-      {[16.67, 50, 83.33].map((pct) => (
-        <div
-          key={pct}
-          className="absolute"
-          style={{
-            left: `${pct}%`,
-            transform: 'translateX(-50%)',
-            width: '2px',
-            height: '16px',
-            backgroundColor: '#E2E8F0',
-            top: direction === 'split' ? '16px' : undefined,
-            bottom: direction === 'merge' ? '16px' : undefined,
-          }}
-        />
-      ))}
     </div>
   );
 }
@@ -95,28 +71,29 @@ function BranchConnector({ direction }: { direction: 'split' | 'merge' }) {
 /* ─── Data for the 70/20/10 cards ─── */
 const LEARNING_MODES = [
   {
-    step: 2,
-    pct: '70%',
-    title: 'Learn by Doing',
-    icon: Briefcase,
-    accentColor: ACCENT,
-    accentDark: ACCENT_DARK,
-    topColor: ACCENT,
-    pctColor: ACCENT_DARK,
+    sequence: '01',
+    step: 4,
+    pct: '10%',
+    title: 'Self-Paced Study',
+    icon: BookOpen,
+    accentColor: '#718096',
+    accentDark: '#4A5568',
+    topColor: '#718096',
+    pctColor: '#4A5568',
     description:
-      'Every level gives you a tangible project — something you build, deliver, and can point to. From a personal prompt library at Level 1 to a deployed AI application at Level 5, you\'re always working towards a real deliverable grounded in your actual work.',
+      'Build foundational knowledge at your own pace. Self-paced modules give you the theory and context that makes hands-on practice more effective.',
     bullets: [
-      'Complete a hands-on project at every level with a clear deliverable',
-      'Build AI tools directly relevant to your role and function',
-      'Work with real business data and workplace challenges — not hypothetical exercises',
-      'Receive iterative feedback from OXYGY coaches as you build',
-      'Each project builds on the last, growing in complexity and impact',
+      'Curated reading, articles, and reference guides for each level',
+      'Short video modules explaining key concepts and techniques',
+      'Knowledge checks to test your understanding before moving on',
+      'On-demand resources you can revisit anytime as a reference',
     ],
-    exampleIcon: Lightbulb,
-    example: 'At Level 2, your project might be building a custom AI agent that triages your team\'s incoming requests — a tool you deliver and your team actually uses',
-    oxygySupport: 'OXYGY coaches review your project work, answer questions, and adapt your path as your skills develop.',
+    exampleIcon: Play,
+    example: 'Watch a 10-minute video on prompt engineering best practices before your next session',
+    oxygySupport: 'OXYGY curates all materials and adapts your reading list based on your progress and goals.',
   },
   {
+    sequence: '02',
     step: 3,
     pct: '20%',
     title: 'Collaborative Sessions',
@@ -138,27 +115,30 @@ const LEARNING_MODES = [
     oxygySupport: 'OXYGY facilitates every session, provides personalized feedback, and ensures discussions translate into action.',
   },
   {
-    step: 4,
-    pct: '10%',
-    title: 'Self-Paced Study',
-    icon: BookOpen,
-    accentColor: '#718096',
-    accentDark: '#4A5568',
-    topColor: '#718096',
-    pctColor: '#4A5568',
+    sequence: '03',
+    step: 2,
+    pct: '70%',
+    title: 'Learn by Doing',
+    icon: Briefcase,
+    accentColor: ACCENT,
+    accentDark: ACCENT_DARK,
+    topColor: ACCENT,
+    pctColor: ACCENT_DARK,
     description:
-      'Build foundational knowledge at your own pace. Self-paced modules give you the theory and context that makes hands-on practice more effective.',
+      'Every level gives you a tangible project — something you build, deliver, and can point to. From a personal prompt library at Level 1 to a deployed AI application at Level 5, you\'re always working towards a real deliverable grounded in your actual work.',
     bullets: [
-      'Curated reading, articles, and reference guides for each level',
-      'Short video modules explaining key concepts and techniques',
-      'Knowledge checks to test your understanding before moving on',
-      'On-demand resources you can revisit anytime as a reference',
+      'Complete a hands-on project at every level with a clear deliverable',
+      'Build AI tools directly relevant to your role and function',
+      'Work with real business data and workplace challenges — not hypothetical exercises',
+      'Receive iterative feedback from OXYGY coaches as you build',
+      'Each project builds on the last, growing in complexity and impact',
     ],
-    exampleIcon: Play,
-    example: 'Watch a 10-minute video on prompt engineering best practices before your next session',
-    oxygySupport: 'OXYGY curates all materials and adapts your reading list based on your progress and goals.',
+    exampleIcon: Lightbulb,
+    example: 'At Level 2, your project might be building a custom AI agent that triages your team\'s incoming requests — a tool you deliver and your team actually uses',
+    oxygySupport: 'OXYGY coaches review your project work, answer questions, and adapt your path as your skills develop.',
   },
 ];
+
 
 export const UserJourney: React.FC = () => {
   const [expandedStep, setExpandedStep] = useState<number | null>(null);
@@ -194,38 +174,9 @@ export const UserJourney: React.FC = () => {
           </p>
         </div>
 
-        {/* Fun Fact Card */}
-        <div
-          className="rounded-2xl px-8 md:px-12 py-8 mb-8 text-center relative overflow-hidden"
-          style={{
-            background: `linear-gradient(135deg, ${ACCENT}18 0%, ${ACCENT_DARK}12 50%, ${ACCENT}1A 100%)`,
-            border: `1.5px solid ${ACCENT}`,
-          }}
-        >
-          {/* Decorative dots */}
-          <div className="absolute top-3 left-4 flex gap-1.5">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: `${ACCENT_DARK}66` }} />
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: `${ACCENT}99` }} />
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: `${ACCENT_DARK}4D` }} />
-          </div>
-          <span
-            className="text-[11px] font-bold uppercase tracking-[0.1em] block mb-3"
-            style={{ color: ACCENT_DARK }}
-          >
-            Did you know?
-          </span>
-          <p className="text-[17px] md:text-[19px] font-medium text-[#2D3748] leading-[1.6] max-w-[640px] mx-auto mb-2">
-            Research shows that learners who follow a structured, blended pathway retain{' '}
-            <strong style={{ color: ACCENT_DARK }}>up to 75% more</strong> than those using a single learning mode alone.
-          </p>
-          <p className="text-[15px] text-[#718096] leading-[1.6] max-w-[560px] mx-auto">
-            That's why every OXYGY journey combines hands-on practice, collaboration, and self-study &mdash; no matter which levels you pursue.
-          </p>
-        </div>
-
         {/* ─── JOURNEY TIMELINE ─── */}
 
-        {/* STEP 1 — Discover & Personalise */}
+        {/* STAGE 1 — Discover & Personalise */}
         <div className="mb-2">
           <div
             className="bg-white border rounded-2xl overflow-hidden"
@@ -234,13 +185,13 @@ export const UserJourney: React.FC = () => {
             <div className="h-[4px] w-full" style={{ backgroundColor: STEP1_LIGHT }} />
             <div className="p-6 md:p-8">
               <div className="flex items-start gap-4 mb-4">
-                <StepCircle number={1} color={STEP1_COLOR} />
+                <StepCircle icon={Compass} color={STEP1_COLOR} />
                 <div>
                   <span
                     className="text-[11px] font-bold uppercase tracking-[0.1em] block mb-1"
                     style={{ color: STEP1_COLOR }}
                   >
-                    Step 1
+                    Discover &amp; Personalise
                   </span>
                   <h2 className="text-[22px] md:text-[26px] font-bold text-[#1A202C] leading-tight">
                     Discover &amp; Personalise
@@ -310,164 +261,177 @@ export const UserJourney: React.FC = () => {
           </div>
         </div>
 
-        {/* Branching connector — split */}
-        <BranchConnector direction="split" />
+        <Connector color={STEP1_COLOR} />
 
-        {/* Parallel label */}
-        <div className="text-center my-4 md:my-2">
-          <span
-            className="inline-flex items-center gap-2 text-[13px] font-semibold uppercase tracking-[0.08em] px-4 py-2 rounded-full"
-            style={{ backgroundColor: `${ACCENT}12`, color: ACCENT_DARK, border: `1px solid ${ACCENT}30` }}
+        {/* STAGE 2 — Learn */}
+        <div className="mb-2">
+          <div
+            className="bg-white border rounded-2xl overflow-hidden"
+            style={{ borderColor: '#E2E8F0' }}
           >
-            <RefreshCw size={14} />
-            Steps 2&ndash;4 happen simultaneously
-          </span>
-        </div>
-
-        {/* STEPS 2-4 — Parallel Expandable Columns */}
-        <div className="rounded-2xl overflow-hidden mb-2 border border-[#E2E8F0] bg-white">
-          {/* Shared top accent bar */}
-          <div className="h-[4px] w-full" style={{ background: `linear-gradient(90deg, ${ACCENT} 0%, ${ACCENT} 33%, #1E3A5F 33%, #1E3A5F 66%, #718096 66%, #718096 100%)` }} />
-          <div className="p-4 md:p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 md:items-start gap-0 md:divide-x md:divide-[#E2E8F0]">
-            {LEARNING_MODES.map((mode) => {
-              const isOpen = expandedStep === mode.step;
-              const Icon = mode.icon;
-              return (
-                <div
-                  key={mode.step}
-                  className="md:px-5 first:md:pl-0 last:md:pr-0 py-4 md:py-0 border-b md:border-b-0 border-[#E2E8F0] last:border-b-0"
-                  style={{ minHeight: isOpen ? undefined : '260px' }}
-                >
-                  <div>
-                    {/* Always visible: header */}
-                    <div className="flex items-center gap-3 mb-3">
-                      <StepCircle number={mode.step} color={mode.accentDark} />
-                      <h3 className="text-[18px] font-bold text-[#1A202C]">{mode.title}</h3>
-                    </div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <Icon size={18} style={{ color: mode.accentDark }} />
-                      <div className="text-[24px] font-bold" style={{ color: mode.pctColor }}>
-                        {mode.pct}
-                      </div>
-                    </div>
-                    <p className="text-[14px] text-[#4A5568] leading-[1.6] mb-4">
-                      {mode.description}
-                    </p>
-
-                    {/* Toggle button */}
-                    <button
-                      onClick={() => toggleCard(mode.step)}
-                      className="flex items-center gap-1.5 text-[13px] font-semibold cursor-pointer transition-colors mb-1"
-                      style={{ color: mode.accentDark, background: 'none', border: 'none', padding: 0 }}
-                    >
-                      {isOpen ? 'Show less' : 'See more'}
-                      <ChevronDown
-                        size={14}
-                        className="transition-transform duration-200"
-                        style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                      />
-                    </button>
-
-                    {/* Expandable content */}
-                    <div
-                      className="overflow-hidden transition-all duration-300"
-                      style={{
-                        maxHeight: isOpen ? '600px' : '0px',
-                        opacity: isOpen ? 1 : 0,
-                        marginTop: isOpen ? '12px' : '0px',
-                      }}
-                    >
-                      <ul className="space-y-2.5 mb-4">
-                        {mode.bullets.map((item) => (
-                          <li key={item} className="flex items-start gap-2.5">
-                            <span
-                              className="w-[6px] h-[6px] rounded-full mt-[7px] shrink-0"
-                              style={{ backgroundColor: mode.accentColor }}
-                            />
-                            <span className="text-[13px] text-[#4A5568] leading-[1.6]">{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      {/* Example — single line with icon */}
-                      <div
-                        className="rounded-lg px-3 py-2.5 flex items-start gap-2.5 mb-3"
-                        style={{
-                          backgroundColor: `${mode.accentColor}0D`,
-                          border: `1px solid ${mode.accentColor}20`,
-                        }}
-                      >
-                        <mode.exampleIcon
-                          size={15}
-                          className="shrink-0 mt-[2px]"
-                          style={{ color: mode.accentDark }}
-                        />
-                        <div>
-                          <span
-                            className="text-[11px] font-bold uppercase tracking-[0.06em] mr-1.5"
-                            style={{ color: mode.accentDark }}
-                          >
-                            Example:
-                          </span>
-                          <span className="text-[12px] text-[#4A5568] leading-[1.5]">
-                            {mode.example}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* OXYGY support note */}
-                      <div
-                        className="rounded-lg px-3 py-3 flex items-start gap-2.5"
-                        style={{
-                          backgroundColor: `${ACCENT}12`,
-                          border: `1px solid ${ACCENT}30`,
-                        }}
-                      >
-                        <MessageSquare
-                          size={14}
-                          className="shrink-0 mt-[2px]"
-                          style={{ color: ACCENT_DARK }}
-                        />
-                        <div>
-                          <span
-                            className="text-[11px] font-bold uppercase tracking-[0.06em] block mb-1"
-                            style={{ color: ACCENT_DARK }}
-                          >
-                            OXYGY's Role
-                          </span>
-                          <span className="text-[12px] text-[#4A5568] leading-[1.5]">
-                            {mode.oxygySupport}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+            <div className="h-[4px] w-full" style={{ backgroundColor: ACCENT }} />
+            <div className="p-6 md:p-8">
+              <div className="flex items-start gap-4 mb-4">
+                <StepCircle icon={BookOpen} color={ACCENT_DARK} />
+                <div>
+                  <span
+                    className="text-[11px] font-bold uppercase tracking-[0.1em] block mb-1"
+                    style={{ color: ACCENT }}
+                  >
+                    Learn
+                  </span>
+                  <h2 className="text-[22px] md:text-[26px] font-bold text-[#1A202C] leading-tight">
+                    Build Your Capability
+                  </h2>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+
+              <p className="text-[15px] text-[#4A5568] leading-[1.8] mb-6">
+                Your learning unfolds across three complementary modes &mdash; each reinforcing the others. Everyone moves through all three, in this sequence.
+              </p>
+
+              {/* Stacked accordion cards */}
+              <div className="border border-[#E2E8F0] rounded-xl overflow-hidden">
+                {LEARNING_MODES.map((mode, index) => {
+                  const isOpen = expandedStep === mode.step;
+                  const ModeIcon = mode.icon;
+                  const isLast = index === LEARNING_MODES.length - 1;
+                  return (
+                    <div
+                      key={mode.step}
+                      className={!isLast ? 'border-b border-[#E2E8F0]' : ''}
+                    >
+                      <div className="p-5">
+                        {/* Header row with sequence label */}
+                        <div className="flex items-center gap-3 mb-3">
+                          <span
+                            className="text-[11px] font-semibold shrink-0"
+                            style={{ color: '#A0AEC0', marginRight: '4px' }}
+                          >
+                            {mode.sequence}
+                          </span>
+                          <ModeIcon size={18} style={{ color: mode.accentDark }} />
+                          <h3 className="text-[18px] font-bold text-[#1A202C]">{mode.title}</h3>
+                          <div className="text-[16px] font-bold ml-auto shrink-0" style={{ color: mode.pctColor }}>
+                            {mode.pct}
+                          </div>
+                        </div>
+
+                        <p className="text-[14px] text-[#4A5568] leading-[1.6] mb-4">
+                          {mode.description}
+                        </p>
+
+                        {/* Toggle button */}
+                        <button
+                          onClick={() => toggleCard(mode.step)}
+                          className="flex items-center gap-1.5 text-[13px] font-semibold cursor-pointer transition-colors mb-1"
+                          style={{ color: mode.accentDark, background: 'none', border: 'none', padding: 0 }}
+                        >
+                          {isOpen ? 'Show less' : 'See more'}
+                          <ChevronDown
+                            size={14}
+                            className="transition-transform duration-200"
+                            style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                          />
+                        </button>
+
+                        {/* Expandable content */}
+                        <div
+                          className="overflow-hidden transition-all duration-300"
+                          style={{
+                            maxHeight: isOpen ? '600px' : '0px',
+                            opacity: isOpen ? 1 : 0,
+                            marginTop: isOpen ? '12px' : '0px',
+                          }}
+                        >
+                          <ul className="space-y-2.5 mb-4">
+                            {mode.bullets.map((item) => (
+                              <li key={item} className="flex items-start gap-2.5">
+                                <span
+                                  className="w-[6px] h-[6px] rounded-full mt-[7px] shrink-0"
+                                  style={{ backgroundColor: mode.accentColor }}
+                                />
+                                <span className="text-[13px] text-[#4A5568] leading-[1.6]">{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+
+                          {/* Example — single line with icon */}
+                          <div
+                            className="rounded-lg px-3 py-2.5 flex items-start gap-2.5 mb-3"
+                            style={{
+                              backgroundColor: `${mode.accentColor}0D`,
+                              border: `1px solid ${mode.accentColor}20`,
+                            }}
+                          >
+                            <mode.exampleIcon
+                              size={15}
+                              className="shrink-0 mt-[2px]"
+                              style={{ color: mode.accentDark }}
+                            />
+                            <div>
+                              <span
+                                className="text-[11px] font-bold uppercase tracking-[0.06em] mr-1.5"
+                                style={{ color: mode.accentDark }}
+                              >
+                                Example:
+                              </span>
+                              <span className="text-[12px] text-[#4A5568] leading-[1.5]">
+                                {mode.example}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* OXYGY support note */}
+                          <div
+                            className="rounded-lg px-3 py-3 flex items-start gap-2.5"
+                            style={{
+                              backgroundColor: `${ACCENT}12`,
+                              border: `1px solid ${ACCENT}30`,
+                            }}
+                          >
+                            <MessageSquare
+                              size={14}
+                              className="shrink-0 mt-[2px]"
+                              style={{ color: ACCENT_DARK }}
+                            />
+                            <div>
+                              <span
+                                className="text-[11px] font-bold uppercase tracking-[0.06em] block mb-1"
+                                style={{ color: ACCENT_DARK }}
+                              >
+                                OXYGY's Role
+                              </span>
+                              <span className="text-[12px] text-[#4A5568] leading-[1.5]">
+                                {mode.oxygySupport}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Converging connector — merge */}
-        <BranchConnector direction="merge" />
+        <Connector color={ACCENT} />
 
-        <Connector />
-
-        {/* STEP 5 — Reflect & Apply */}
+        {/* STAGE 3 — Reflect & Apply */}
         <div className="mb-2">
           <div className="bg-white border border-[#E2E8F0] rounded-2xl overflow-hidden">
             <div className="h-[4px] w-full" style={{ backgroundColor: STEP5_COLOR }} />
             <div className="p-6 md:p-8">
               <div className="flex items-start gap-4 mb-4">
-                <StepCircle number={5} color={STEP5_COLOR} />
+                <StepCircle icon={RefreshCw} color={STEP5_COLOR} />
                 <div>
                   <span
                     className="text-[11px] font-bold uppercase tracking-[0.1em] block mb-1"
                     style={{ color: STEP5_COLOR }}
                   >
-                    Step 5
+                    Reflect &amp; Apply
                   </span>
                   <h2 className="text-[22px] md:text-[26px] font-bold text-[#1A202C] leading-tight">
                     Reflect &amp; Apply
@@ -485,7 +449,7 @@ export const UserJourney: React.FC = () => {
                   { icon: FileText, title: 'AI Application Log', desc: 'Document every AI use case: where you applied it, what worked, and what you learned' },
                   { icon: Share2, title: 'Cohort & leadership sharing', desc: 'Share your log with peers and leaders to create an organization-wide feedback loop' },
                   { icon: ClipboardCheck, title: 'Self-assessment & check-ins', desc: 'Evaluate your growth and discuss next steps with your manager and OXYGY coaches' },
-                ].map(({ icon: Icon, title, desc }) => (
+                ].map(({ icon: SubIcon, title, desc }) => (
                   <div
                     key={title}
                     className="flex items-start gap-3 p-4 rounded-xl bg-white border border-[#E2E8F0]"
@@ -494,7 +458,7 @@ export const UserJourney: React.FC = () => {
                       className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
                       style={{ backgroundColor: `${STEP5_COLOR}14` }}
                     >
-                      <Icon size={18} style={{ color: STEP5_COLOR }} />
+                      <SubIcon size={18} style={{ color: STEP5_COLOR }} />
                     </div>
                     <div>
                       <p className="text-[14px] font-semibold text-[#1A202C] leading-tight mb-1">{title}</p>
@@ -507,39 +471,39 @@ export const UserJourney: React.FC = () => {
           </div>
         </div>
 
-        <Connector />
+        <Connector color={STEP5_COLOR} />
 
-        {/* STEP 6 — Progress & Grow */}
+        {/* STAGE 4 — Build & Deploy */}
         <div className="mb-10">
           <div className="bg-white border border-[#E2E8F0] rounded-2xl overflow-hidden">
             <div className="h-[4px] w-full" style={{ backgroundColor: STEP6_COLOR }} />
             <div className="p-6 md:p-8">
               <div className="flex items-start gap-4 mb-4">
-                <StepCircle number={6} color={STEP6_COLOR} />
+                <StepCircle icon={Rocket} color={STEP6_COLOR} />
                 <div>
                   <span
                     className="text-[11px] font-bold uppercase tracking-[0.1em] block mb-1"
                     style={{ color: STEP6_COLOR }}
                   >
-                    Step 6
+                    Build &amp; Deploy
                   </span>
                   <h2 className="text-[22px] md:text-[26px] font-bold text-[#1A202C] leading-tight">
-                    Progress &amp; Grow
+                    Put Your Skills to Work
                   </h2>
                 </div>
               </div>
               <p className="text-[15px] text-[#4A5568] leading-[1.8] mb-3">
-                Your journey doesn't end &mdash; it evolves. Every project you complete is designed to be <strong className="text-[#1A202C]">directly relevant to your role</strong> and immediately applicable to your day-to-day work. These aren't classroom exercises that get filed away &mdash; they're real tools, workflows, and applications that you take with you.
+                Every learning journey culminates in a project &mdash; something real, scoped to your level and your organisation's transformation goals. This isn't a classroom exercise. It's a live deliverable that demonstrates what you've built.
               </p>
               <p className="text-[15px] text-[#4A5568] leading-[1.8] mb-5">
-                The AI capabilities you build here are <strong className="text-[#1A202C]">yours to keep</strong>. A prompt library you create at Level 1, a custom agent at Level 2, an automated workflow at Level 3 &mdash; these live beyond the upskilling programme and become part of how you work. As your skills grow, so does your portfolio of AI-powered solutions that travel with you throughout your career.
+                The scope of your project is shaped during the Discover &amp; Personalise stage and refined with your manager and OXYGY coach as you progress. It grows with you.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
-                  { icon: Briefcase, title: 'Projects built for your role', desc: 'Every deliverable is grounded in your actual work — not hypotheticals. You solve real problems in your function from day one.' },
-                  { icon: TrendingUp, title: 'Skills that travel with you', desc: 'The tools, agents, and workflows you build are yours to keep and use beyond this programme — in any role or organization.' },
-                  { icon: Users, title: 'Become an AI champion', desc: 'Lead AI adoption in your team, share what you\'ve built, and help others start their own journeys.' },
-                ].map(({ icon: Icon, title, desc }) => (
+                  { icon: Target, title: 'Scoped to Your Level', desc: 'Projects are calibrated to the levels you\'ve completed — a Level 2 participant builds an agent; a Level 5 participant ships a full application' },
+                  { icon: Wrench, title: 'Built With Support', desc: 'Your OXYGY coach and manager provide checkpoints throughout the build phase — this isn\'t solo work' },
+                  { icon: Share2, title: 'Embedded and Shared', desc: 'Finished projects are presented to your cohort and, where relevant, deployed into your team\'s actual workflow' },
+                ].map(({ icon: SubIcon, title, desc }) => (
                   <div
                     key={title}
                     className="flex items-start gap-3 p-4 rounded-xl bg-white border border-[#E2E8F0]"
@@ -548,7 +512,7 @@ export const UserJourney: React.FC = () => {
                       className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
                       style={{ backgroundColor: `${STEP6_COLOR}14` }}
                     >
-                      <Icon size={18} style={{ color: STEP6_COLOR }} />
+                      <SubIcon size={18} style={{ color: STEP6_COLOR }} />
                     </div>
                     <div>
                       <p className="text-[14px] font-semibold text-[#1A202C] leading-tight mb-1">{title}</p>
