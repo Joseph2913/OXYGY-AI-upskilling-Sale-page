@@ -45,46 +45,46 @@ const F = { h: "'DM Sans', system-ui, sans-serif", b: "'Plus Jakarta Sans', syst
 
 /* ── Data: Phases ── */
 const PHASES = [
-  { id: "elearn", label: "E-Learning", icon: "\u25B6", time: "~20 min", desc: "13-slide interactive module" },
-  { id: "read", label: "Read", icon: "\u25CE", time: "~15 min", desc: "2 articles + reflection" },
-  { id: "watch", label: "Watch", icon: "\u25B7", time: "~12 min", desc: "2 videos + knowledge check" },
-  { id: "practice", label: "Practice", icon: "\u25C8", time: "~15 min", desc: "Prompt Playground \u2192", external: true },
+  { id: "elearn", label: "E-Learning", icon: "▶", time: "~20 min", desc: "13-slide interactive module" },
+  { id: "read", label: "Read", icon: "◎", time: "~15 min", desc: "2 articles + reflection" },
+  { id: "watch", label: "Watch", icon: "▷", time: "~12 min", desc: "2 videos + knowledge check" },
+  { id: "practice", label: "Practice", icon: "◈", time: "~15 min", desc: "Prompt Playground →", external: true },
 ];
 
 /* ── Data: Slides ── */
 const SLIDES: any[] = [
-  { id: 1, section: "FOUNDATIONS", type: "title", heading: "Prompt Engineering Essentials", subheading: "Why some people get dramatically better results from the same tools you're already using", meta: ["13 slides", "~20 minutes", "Interactive", "Quiz included"], body: "You\u2019re probably already using AI. But there\u2019s a good chance you\u2019re getting a fraction of what it\u2019s capable of \u2014 not because the tool is limited, but because of what you\u2019re giving it to work with. This module will change how you think about AI communication from the ground up." },
-  { id: 2, section: "FOUNDATIONS", type: "concept", heading: "Your AI outputs are a mirror", tealWord: "mirror", body: "When you get a disappointing response from an AI, the instinct is to blame the tool. Almost every time, the real issue is something else: the AI was working with incomplete information about you, your situation, your constraints, and what \u2018good\u2019 actually looks like.\n\nAI has no memory of previous conversations, no knowledge of your organisation, no idea who your audience is, or what you\u2019ve already tried. Every time you start a new chat, it starts completely blank.", pullQuote: "The AI is not underperforming. It\u2019s performing perfectly on incomplete information. The information is your job to provide.", visualKey: "comparison" },
-  { id: 3, section: "FOUNDATIONS", type: "spectrum", heading: "There\u2019s no single right way to prompt", tealWord: "prompt", body: "Effective prompting isn\u2019t about following one formula. The approach that works depends on what you\u2019re trying to do, how much time you have, and how clearly you\u2019ve formed your own thinking. Think of it as a spectrum.", positions: [
-    { label: "Brain Dump", desc: "Best when your thinking is unstructured", example: "We\u2019ve just finished a difficult client workshop. There was tension around the change management timeline, the sponsor seemed disengaged, and three team members gave conflicting views on scope. I\u2019m not sure how to frame the debrief. What should I be thinking about and what would you suggest I do next?" },
-    { label: "Conversational", desc: "Best for iterative, exploratory tasks", example: "Turn 1: Help me structure the key messages for a pitch to a pharma L&D team. Turn 2: The audience will be the L&D director, not commercial. Adjust for that. Turn 3: Make the opening more direct \u2014 they\u2019re time-poor and need the business case upfront." },
+  { id: 1, section: "FOUNDATIONS", type: "title", heading: "Prompt Engineering Essentials", subheading: "Why some people get dramatically better results from the same tools you're already using", meta: ["13 slides", "~20 minutes", "Interactive", "Quiz included"], body: "You’re probably already using AI. But there’s a good chance you’re getting a fraction of what it’s capable of — not because the tool is limited, but because of what you’re giving it to work with. This module will change how you think about AI communication from the ground up." },
+  { id: 2, section: "FOUNDATIONS", type: "concept", heading: "Your AI outputs are a mirror", tealWord: "mirror", body: "When you get a disappointing response from an AI, the instinct is to blame the tool. Almost every time, the real issue is something else: the AI was working with incomplete information about you, your situation, your constraints, and what ‘good’ actually looks like.\n\nAI has no memory of previous conversations, no knowledge of your organisation, no idea who your audience is, or what you’ve already tried. Every time you start a new chat, it starts completely blank.", pullQuote: "The AI is not underperforming. It’s performing perfectly on incomplete information. The information is your job to provide.", visualKey: "comparison" },
+  { id: 3, section: "FOUNDATIONS", type: "spectrum", heading: "There’s no single right way to prompt", tealWord: "prompt", body: "Effective prompting isn’t about following one formula. The approach that works depends on what you’re trying to do, how much time you have, and how clearly you’ve formed your own thinking. Think of it as a spectrum.", positions: [
+    { label: "Brain Dump", desc: "Best when your thinking is unstructured", example: "We’ve just finished a difficult client workshop. There was tension around the change management timeline, the sponsor seemed disengaged, and three team members gave conflicting views on scope. I’m not sure how to frame the debrief. What should I be thinking about and what would you suggest I do next?" },
+    { label: "Conversational", desc: "Best for iterative, exploratory tasks", example: "Turn 1: Help me structure the key messages for a pitch to a pharma L&D team. Turn 2: The audience will be the L&D director, not commercial. Adjust for that. Turn 3: Make the opening more direct — they’re time-poor and need the business case upfront." },
     { label: "Structured (RCTF)", desc: "Best for repeatable, consistent outputs", example: "Role: Senior L&D consultant. Context: Designing a capability framework for a 500-person pharma organisation post-merger. Task: Draft the 5 core competency areas. Format: Table with competency name, 2-sentence description, and one example behaviour per competency." },
   ]},
-  { id: 4, section: "THE BIGGER PICTURE", type: "concept", heading: "Prompting is one layer of a bigger skill", tealWord: "bigger skill", body: "Context engineering is the practice of giving AI everything it needs to perform at its best \u2014 through your prompt, through the documents you provide, and through how you organise your working environment.\n\nPrompting is Layer 1. It\u2019s essential and it\u2019s where everyone starts. But the people getting the most from AI at work have gone further \u2014 and in this module, you\u2019ll see exactly what that looks like.", visualKey: "layers" },
-  { id: 5, section: "LAYER 1 \u2014 IN YOUR PROMPT", type: "rctf", heading: "The RCTF Framework", tealWord: "RCTF", subheading: "The most practical structured approach \u2014 and the one your whole team can standardise on", elements: [
+  { id: 4, section: "THE BIGGER PICTURE", type: "concept", heading: "Prompting is one layer of a bigger skill", tealWord: "bigger skill", body: "Context engineering is the practice of giving AI everything it needs to perform at its best — through your prompt, through the documents you provide, and through how you organise your working environment.\n\nPrompting is Layer 1. It’s essential and it’s where everyone starts. But the people getting the most from AI at work have gone further — and in this module, you’ll see exactly what that looks like.", visualKey: "layers" },
+  { id: 5, section: "LAYER 1 — IN YOUR PROMPT", type: "rctf", heading: "The RCTF Framework", tealWord: "RCTF", subheading: "The most practical structured approach — and the one your whole team can standardise on", elements: [
     { key: "ROLE", color: "#667EEA", light: "#EBF4FF", desc: "Tell the AI who to be. A specific persona unlocks a specific style of thinking and a specific type of expertise.", example: "You are a senior change management consultant with 15 years of experience in large-scale digital transformations within pharmaceutical companies." },
-    { key: "CONTEXT", color: "#38B2AC", light: "#E6FFFA", desc: "Tell the AI about your situation \u2014 who\u2019s involved, what\u2019s happened so far, what the constraints are.", example: "We are 6 weeks into an ERP rollout. Commercial teams are showing resistance. A failed IT project 3 years ago has damaged trust in tech initiatives." },
-    { key: "TASK", color: "#ED8936", light: "#FFFBEB", desc: "Tell the AI exactly what to produce. Vague tasks produce vague outputs \u2014 every time.", example: "Create a 10-question stakeholder survey to identify the root causes of commercial team resistance to the ERP rollout." },
-    { key: "FORMAT", color: "#48BB78", light: "#F0FFF4", desc: "Tell the AI how to structure the output \u2014 length, layout, tone, what to include and what to leave out.", example: "Output as a numbered list. Max 15 words per question. Professional tone. No preamble or explanation \u2014 just the questions." },
+    { key: "CONTEXT", color: "#38B2AC", light: "#E6FFFA", desc: "Tell the AI about your situation — who’s involved, what’s happened so far, what the constraints are.", example: "We are 6 weeks into an ERP rollout. Commercial teams are showing resistance. A failed IT project 3 years ago has damaged trust in tech initiatives." },
+    { key: "TASK", color: "#ED8936", light: "#FFFBEB", desc: "Tell the AI exactly what to produce. Vague tasks produce vague outputs — every time.", example: "Create a 10-question stakeholder survey to identify the root causes of commercial team resistance to the ERP rollout." },
+    { key: "FORMAT", color: "#48BB78", light: "#F0FFF4", desc: "Tell the AI how to structure the output — length, layout, tone, what to include and what to leave out.", example: "Output as a numbered list. Max 15 words per question. Professional tone. No preamble or explanation — just the questions." },
   ]},
-  { id: 6, section: "LAYER 1 \u2014 PRACTICE", type: "dragdrop", heading: "Build an RCTF prompt", tealWord: "RCTF prompt", instruction: "Below is a prompt someone wrote before they knew about RCTF. Drag each fragment into the correct category. Some fragments are deliberately missing \u2014 that\u2019s part of the exercise.", scenario: "You work in the Learning & Development team at a large consulting firm. You need to brief AI on creating an onboarding plan for new graduate hires." },
-  { id: 7, section: "LAYER 1 \u2014 ADVANCED MOVES", type: "flipcard", heading: "Beyond RCTF \u2014 when to go further", tealWord: "go further", bodyAboveCards: "RCTF covers most situations. Two additional techniques unlock significantly better results for specific types of task. They take 30 seconds to learn." },
-  { id: 8, section: "LAYER 2 \u2014 THROUGH DOCUMENTS", type: "concept", heading: "Stop describing your work. Start showing it.", tealWord: "showing it", body: "Everything in Layer 1 \u2014 the role, the context, the format \u2014 you\u2019ve been writing by hand. That works. But there\u2019s a faster, more powerful approach for anything that involves real documents: attach them directly.\n\nWhen you give an AI a meeting transcript, a strategy document, a client brief, or a previous output, you\u2019re not just saving time. You\u2019re giving it access to specificity that no prompt description could replicate.", pullQuote: "Uploading a 30-page strategy document takes 10 seconds. Describing its contents accurately in a prompt would take 30 minutes \u2014 and you\u2019d still lose most of the nuance.", visualKey: "documents" },
-  { id: 9, section: "LAYER 2 \u2014 SEE THE DIFFERENCE", type: "flipcard", heading: "The same prompt. A document changes everything.", tealWord: "document changes everything", instruction: "Both cards start with the same request. Flip each to see what the AI produced." },
-  { id: 10, section: "LAYER 3 \u2014 THROUGH ORGANISATION", type: "concept", heading: "When your AI knows your world", tealWord: "knows your world", body: "Layers 1 and 2 work session by session. Each time you start a new chat, you start from zero \u2014 re-write the role, re-upload the documents, re-explain the constraints.\n\nLayer 3 changes that. By organising your AI work into Projects \u2014 with a system prompt, shared documents, and context that builds across conversations \u2014 you move from prompting to partnership. The AI stops being a tool you instruct and starts being a collaborator that understands your work.", visualKey: "project" },
-  { id: 11, section: "APPLY IT", type: "branching", heading: "One scenario. You choose the approach.", tealWord: "you choose", bodyAboveScenario: "You\u2019ve just finished a 90-minute client discovery session. Your notes are scattered. The partner wants a debrief summary by end of day. You have 30 minutes. Which context strategy do you use?" },
-  { id: 12, section: "CHECK YOUR INSTINCTS", type: "quiz", heading: "One question. Think it through.", question: "A colleague asks you to review a 15-page client proposal they\u2019ve written and give feedback on clarity and structure. You want AI\u2019s help. What\u2019s the most effective approach?", options: [
+  { id: 6, section: "LAYER 1 — PRACTICE", type: "dragdrop", heading: "Build an RCTF prompt", tealWord: "RCTF prompt", instruction: "Below is a prompt someone wrote before they knew about RCTF. Drag each fragment into the correct category. Some fragments are deliberately missing — that’s part of the exercise.", scenario: "You work in the Learning & Development team at a large consulting firm. You need to brief AI on creating an onboarding plan for new graduate hires." },
+  { id: 7, section: "LAYER 1 — ADVANCED MOVES", type: "flipcard", heading: "Beyond RCTF — when to go further", tealWord: "go further", bodyAboveCards: "RCTF covers most situations. Two additional techniques unlock significantly better results for specific types of task. They take 30 seconds to learn." },
+  { id: 8, section: "LAYER 2 — THROUGH DOCUMENTS", type: "concept", heading: "Stop describing your work. Start showing it.", tealWord: "showing it", body: "Everything in Layer 1 — the role, the context, the format — you’ve been writing by hand. That works. But there’s a faster, more powerful approach for anything that involves real documents: attach them directly.\n\nWhen you give an AI a meeting transcript, a strategy document, a client brief, or a previous output, you’re not just saving time. You’re giving it access to specificity that no prompt description could replicate.", pullQuote: "Uploading a 30-page strategy document takes 10 seconds. Describing its contents accurately in a prompt would take 30 minutes — and you’d still lose most of the nuance.", visualKey: "documents" },
+  { id: 9, section: "LAYER 2 — SEE THE DIFFERENCE", type: "flipcard", heading: "The same prompt. A document changes everything.", tealWord: "document changes everything", instruction: "Both cards start with the same request. Flip each to see what the AI produced." },
+  { id: 10, section: "LAYER 3 — THROUGH ORGANISATION", type: "concept", heading: "When your AI knows your world", tealWord: "knows your world", body: "Layers 1 and 2 work session by session. Each time you start a new chat, you start from zero — re-write the role, re-upload the documents, re-explain the constraints.\n\nLayer 3 changes that. By organising your AI work into Projects — with a system prompt, shared documents, and context that builds across conversations — you move from prompting to partnership. The AI stops being a tool you instruct and starts being a collaborator that understands your work.", visualKey: "project" },
+  { id: 11, section: "APPLY IT", type: "branching", heading: "One scenario. You choose the approach.", tealWord: "you choose", bodyAboveScenario: "You’ve just finished a 90-minute client discovery session. Your notes are scattered. The partner wants a debrief summary by end of day. You have 30 minutes. Which context strategy do you use?" },
+  { id: 12, section: "CHECK YOUR INSTINCTS", type: "quiz", heading: "One question. Think it through.", question: "A colleague asks you to review a 15-page client proposal they’ve written and give feedback on clarity and structure. You want AI’s help. What’s the most effective approach?", options: [
     "Write a detailed RCTF prompt describing what a good proposal looks like and asking for feedback criteria",
-    "Attach the proposal and write: \u2018Review this for clarity and structure. Flag the three weakest sections and suggest specific improvements for each.\u2019",
-    "Ask the AI: \u2018What makes a great consulting proposal?\u2019 and use its answer as a checklist to review the document yourself",
+    "Attach the proposal and write: ‘Review this for clarity and structure. Flag the three weakest sections and suggest specific improvements for each.’",
+    "Ask the AI: ‘What makes a great consulting proposal?’ and use its answer as a checklist to review the document yourself",
     "Brain dump your initial impressions of the proposal and ask the AI to help you structure your feedback",
   ], correct: 1, explanations: [
-    "Partially correct, but inefficient. You could describe what a good proposal looks like \u2014 but why describe it when you can show it? RCTF shines when you don\u2019t have a document to provide. Here, the document exists. Attach it.",
-    "Layer 2 in action. The proposal carries all the context the AI needs. Your prompt is precise \u2014 specific task, specific format, specific depth. The combination of document plus structured prompt produces feedback grounded in the actual content, not generic best practices.",
-    "Misses the point. This uses the AI to generate abstract criteria rather than apply them to the specific document. You\u2019d get a useful general framework \u2014 but you\u2019d still be doing all the document analysis yourself.",
-    "Not wrong, but not optimal. Brain dumping your impressions could produce useful structured feedback \u2014 but it relies on your memory of a 15-page document, which is exactly where humans are unreliable.",
+    "Partially correct, but inefficient. You could describe what a good proposal looks like — but why describe it when you can show it? RCTF shines when you don’t have a document to provide. Here, the document exists. Attach it.",
+    "Layer 2 in action. The proposal carries all the context the AI needs. Your prompt is precise — specific task, specific format, specific depth. The combination of document plus structured prompt produces feedback grounded in the actual content, not generic best practices.",
+    "Misses the point. This uses the AI to generate abstract criteria rather than apply them to the specific document. You’d get a useful general framework — but you’d still be doing all the document analysis yourself.",
+    "Not wrong, but not optimal. Brain dumping your impressions could produce useful structured feedback — but it relies on your memory of a 15-page document, which is exactly where humans are unreliable.",
   ]},
-  { id: 13, section: "YOUR STARTER KIT", type: "templates", heading: "Five templates you can use tomorrow", tealWord: "use tomorrow", body: "Each template is structured using RCTF and ready to use. Customise the bracketed fields for your situation. The \u2018What to attach\u2019 note tells you what document context will make each one significantly more powerful." },
+  { id: 13, section: "YOUR STARTER KIT", type: "templates", heading: "Five templates you can use tomorrow", tealWord: "use tomorrow", body: "Each template is structured using RCTF and ready to use. Customise the bracketed fields for your situation. The ‘What to attach’ note tells you what document context will make each one significantly more powerful." },
 ];
 
 /* ── Data: Drag & Drop (Slide 6) ── */
@@ -95,7 +95,7 @@ const DRAG_CHIPS = [
   { id: "c4", text: "Our graduate cohort joins in September. They have no prior consulting experience. We want them client-ready within 30 days.", correctZone: "CONTEXT" },
   { id: "c5", text: "Professional tone. No jargon.", correctZone: "FORMAT" },
   { id: "c6", text: "For a professional services firm", correctZone: "CONTEXT" },
-  { id: "c7", text: "Make it detailed and useful", correctZone: "TASK", isDistractor: true, feedback: "This is too vague to be a useful task instruction. Specific tasks produce specific outputs. Try: \u2018Create a 4-week onboarding plan\u2019 instead." },
+  { id: "c7", text: "Make it detailed and useful", correctZone: "TASK", isDistractor: true, feedback: "This is too vague to be a useful task instruction. Specific tasks produce specific outputs. Try: ‘Create a 4-week onboarding plan’ instead." },
 ];
 const DROP_ZONES = [
   { id: "ROLE", label: "Role", color: "#667EEA", light: "#EBF4FF" },
@@ -106,43 +106,43 @@ const DROP_ZONES = [
 
 /* ── Data: Technique Flip Cards (Slide 7) ── */
 const TECHNIQUE_CARDS = [
-  { frontLabel: "Chain of Thought", frontOneLiner: "When you need the AI to reason, not just respond", frontExcerpt: "Think through this step by step before giving your final answer\u2026", backWhen: "Complex decisions, multi-variable analysis, anything where you\u2019d want to see the working \u2014 not just the conclusion.", backExample: "Analyse the risks of launching our new service in EMEA before the US. Think through this step by step: consider market readiness, regulatory environment, resource requirements, and competitive timing. Then give your recommendation.", backWhy: "Asking the AI to reason out loud catches errors in its logic \u2014 and yours. It produces outputs that are easier to challenge and refine." },
-  { frontLabel: "Few-Shot Prompting", frontOneLiner: "When you want consistent style \u2014 show, don\u2019t tell", frontExcerpt: "Here are two examples of what I\u2019m looking for. Follow this pattern exactly\u2026", backWhen: "Recurring outputs where format and tone matter \u2014 status updates, client emails, meeting summaries. Anything your team produces repeatedly.", backExample: "Here are two examples of how we write project status updates: [Example 1] [Example 2]. Now write a status update for this week using the same structure and tone.", backWhy: "Showing is more precise than describing. A good example eliminates ambiguity about format, tone, and depth in a way that written instructions alone cannot." },
+  { frontLabel: "Chain of Thought", frontOneLiner: "When you need the AI to reason, not just respond", frontExcerpt: "Think through this step by step before giving your final answer…", backWhen: "Complex decisions, multi-variable analysis, anything where you’d want to see the working — not just the conclusion.", backExample: "Analyse the risks of launching our new service in EMEA before the US. Think through this step by step: consider market readiness, regulatory environment, resource requirements, and competitive timing. Then give your recommendation.", backWhy: "Asking the AI to reason out loud catches errors in its logic — and yours. It produces outputs that are easier to challenge and refine." },
+  { frontLabel: "Few-Shot Prompting", frontOneLiner: "When you want consistent style — show, don’t tell", frontExcerpt: "Here are two examples of what I’m looking for. Follow this pattern exactly…", backWhen: "Recurring outputs where format and tone matter — status updates, client emails, meeting summaries. Anything your team produces repeatedly.", backExample: "Here are two examples of how we write project status updates: [Example 1] [Example 2]. Now write a status update for this week using the same structure and tone.", backWhy: "Showing is more precise than describing. A good example eliminates ambiguity about format, tone, and depth in a way that written instructions alone cannot." },
 ];
 
 /* ── Data: Document Flip Cards (Slide 9) ── */
 const DOC_FLIP_CARDS = [
-  { frontBadge: "PROMPT \u2014 NO ATTACHMENT", badgeStyle: "error" as const, frontLabel: "Summarise the key decisions from our last leadership meeting", frontNote: "No document attached", backBadge: "AI RESPONSE", backResponse: "I\u2019d be happy to help summarise your leadership meeting decisions, but I don\u2019t have access to the content of your meeting. Could you share the key discussion points, agenda items, or notes from the meeting so I can help organise and summarise them for you?", backInsight: "The AI can\u2019t help. It has nothing to work with.", insightBg: C.errorLight, insightBorder: C.errorBorder },
-  { frontBadge: "PROMPT + MEETING TRANSCRIPT", badgeStyle: "success" as const, frontLabel: "Summarise the key decisions from our last leadership meeting", frontNote: "Circleback transcript attached (47 min meeting)", backBadge: "AI RESPONSE", backResponse: "Key decisions from the 14 Feb leadership meeting:\n\n1. APPROVED: Q2 hiring plan \u2014 3 additional consultants, start dates staggered April\u2013June\n\n2. DEFERRED: New client pricing structure \u2014 CFO requested revised modelling before sign-off (deadline: 28 Feb)\n\n3. ASSIGNED: Sarah to lead the Frankfurt office proposal \u2014 first draft due 21 Feb for review\n\n4. ESCALATED: Capacity concern on Project Delta flagged to MD \u2014 decision expected by EOW", backInsight: "Same prompt. The document turned a dead-end into a complete, actionable output.", insightBg: C.successLight, insightBorder: C.successBorder },
+  { frontBadge: "PROMPT — NO ATTACHMENT", badgeStyle: "error" as const, frontLabel: "Summarise the key decisions from our last leadership meeting", frontNote: "No document attached", backBadge: "AI RESPONSE", backResponse: "I’d be happy to help summarise your leadership meeting decisions, but I don’t have access to the content of your meeting. Could you share the key discussion points, agenda items, or notes from the meeting so I can help organise and summarise them for you?", backInsight: "The AI can’t help. It has nothing to work with.", insightBg: C.errorLight, insightBorder: C.errorBorder },
+  { frontBadge: "PROMPT + MEETING TRANSCRIPT", badgeStyle: "success" as const, frontLabel: "Summarise the key decisions from our last leadership meeting", frontNote: "Circleback transcript attached (47 min meeting)", backBadge: "AI RESPONSE", backResponse: "Key decisions from the 14 Feb leadership meeting:\n\n1. APPROVED: Q2 hiring plan — 3 additional consultants, start dates staggered April–June\n\n2. DEFERRED: New client pricing structure — CFO requested revised modelling before sign-off (deadline: 28 Feb)\n\n3. ASSIGNED: Sarah to lead the Frankfurt office proposal — first draft due 21 Feb for review\n\n4. ESCALATED: Capacity concern on Project Delta flagged to MD — decision expected by EOW", backInsight: "Same prompt. The document turned a dead-end into a complete, actionable output.", insightBg: C.successLight, insightBorder: C.successBorder },
 ];
 
 /* ── Data: Branching Options (Slide 11) ── */
 const BRANCH_OPTS = [
-  { cardLabel: "LAYER 1 \u2014 PROMPT ONLY", whatYouDo: "Paste your rough notes into a brain dump prompt. Let the AI find structure in your unorganised thinking.", promptPreview: "Here are my raw notes from the discovery session: [paste everything]. The partner needs a debrief summary by EOD. Help me structure the key findings, tensions we observed, and recommended next steps.", qualityBadge: "GOOD \u2014 Fast and usable", qualityColor: C.task, outputSnippet: "Key findings from discovery session:\n\n1. Strategic fit uncertain \u2014 client sees outsourcing as cost reduction but hasn\u2019t defined what \u2018good\u2019 looks like for medical affairs\n\n2. Internal tension flagged \u2014 Medical Director supportive; VP Commercial resistant (perceived loss of control)\n\n3. Decision timeline unclear \u2014 Board wants a recommendation in 6 weeks but due diligence scope isn\u2019t agreed", reflection: "Brain dump works well here \u2014 your rough notes had enough substance for the AI to find structure. The output is solid but generic. It doesn\u2019t reflect your firm\u2019s methodology or specific framing. Good first draft. Needs editing for client delivery.", tradingOff: "Fast \u00B7 Generic \u00B7 Good first draft" },
-  { cardLabel: "LAYER 2 \u2014 DOCUMENT + PROMPT", whatYouDo: "Upload the Circleback transcript and write a structured RCTF prompt. Let the document carry the context.", promptPreview: "[Transcript attached] You are a senior management consultant. Using this discovery session transcript, produce a debrief summary covering: key themes, stakeholder concerns, open questions, and recommended next steps. Format as a structured brief, max 400 words.", qualityBadge: "STRONG \u2014 Specific and grounded", qualityColor: C.success, outputSnippet: "Discovery Debrief \u2014 Medical Affairs Outsourcing\n[Client], 18 Feb 2026\n\nKEY THEMES\n\u2192 Strategic ambiguity: Client hasn\u2019t defined the \u2018make vs buy\u2019 criteria.\n\n\u2192 Stakeholder misalignment: Medical Director aligned; VP Commercial concerned about loss of KOL relationship ownership.\n\n\u2192 Regulatory risk underweighted: No discussion of pharmacovigilance handover.\n\nRECOMMENDED NEXT STEPS\n1. Workshop: Define outsourcing success criteria with ExCo (Wk 2)\n2. Stakeholder map: KOL relationship ownership\n3. Regulatory review: Bring in PV lead for risk assessment", reflection: "The transcript gave the AI specificity no prompt description could replicate \u2014 names, specific concerns, exact tensions. This is near client-ready with minimal editing. Layer 2 at work.", tradingOff: "Specific \u00B7 Grounded \u00B7 Near client-ready" },
-  { cardLabel: "LAYER 3 \u2014 ORGANISED CONTEXT", whatYouDo: "Open your existing client project where the client brief and methodology are already loaded. Ask directly \u2014 the AI already knows the context.", promptPreview: "[In client project \u2014 brief and methodology already loaded] Summarise the key findings from today\u2019s discovery session transcript [attached]. Flag any tensions with the original brief and suggest 3 next steps.", qualityBadge: "POWERFUL \u2014 Contextually aware", qualityColor: C.teal, outputSnippet: "[Same quality as Option B output, plus:]\n\nALIGNMENT WITH ENGAGEMENT BRIEF\nFindings broadly consistent with original scope. However, the regulatory risk gap identified represents a material scope addition. Recommend flagging to the partner before submitting.\n\nSuggested framing: \u2018We\u2019ve identified a PV risk dimension not in original scope but significant for the recommendation. Suggest a 30-min call before we submit findings.\u2019", reflection: "Because the project contained the original brief and your methodology, the AI cross-referenced what it heard against what was expected \u2014 and proactively flagged the gap.\n\nYou didn\u2019t build this project today \u2014 that\u2019s Level 2. But now you know exactly why you will.", tradingOff: "Contextually aware \u00B7 Proactive \u00B7 Level 2 skill" },
+  { cardLabel: "LAYER 1 — PROMPT ONLY", whatYouDo: "Paste your rough notes into a brain dump prompt. Let the AI find structure in your unorganised thinking.", promptPreview: "Here are my raw notes from the discovery session: [paste everything]. The partner needs a debrief summary by EOD. Help me structure the key findings, tensions we observed, and recommended next steps.", qualityBadge: "GOOD — Fast and usable", qualityColor: C.task, outputSnippet: "Key findings from discovery session:\n\n1. Strategic fit uncertain — client sees outsourcing as cost reduction but hasn’t defined what ‘good’ looks like for medical affairs\n\n2. Internal tension flagged — Medical Director supportive; VP Commercial resistant (perceived loss of control)\n\n3. Decision timeline unclear — Board wants a recommendation in 6 weeks but due diligence scope isn’t agreed", reflection: "Brain dump works well here — your rough notes had enough substance for the AI to find structure. The output is solid but generic. It doesn’t reflect your firm’s methodology or specific framing. Good first draft. Needs editing for client delivery.", tradingOff: "Fast · Generic · Good first draft" },
+  { cardLabel: "LAYER 2 — DOCUMENT + PROMPT", whatYouDo: "Upload the Circleback transcript and write a structured RCTF prompt. Let the document carry the context.", promptPreview: "[Transcript attached] You are a senior management consultant. Using this discovery session transcript, produce a debrief summary covering: key themes, stakeholder concerns, open questions, and recommended next steps. Format as a structured brief, max 400 words.", qualityBadge: "STRONG — Specific and grounded", qualityColor: C.success, outputSnippet: "Discovery Debrief — Medical Affairs Outsourcing\n[Client], 18 Feb 2026\n\nKEY THEMES\n→ Strategic ambiguity: Client hasn’t defined the ‘make vs buy’ criteria.\n\n→ Stakeholder misalignment: Medical Director aligned; VP Commercial concerned about loss of KOL relationship ownership.\n\n→ Regulatory risk underweighted: No discussion of pharmacovigilance handover.\n\nRECOMMENDED NEXT STEPS\n1. Workshop: Define outsourcing success criteria with ExCo (Wk 2)\n2. Stakeholder map: KOL relationship ownership\n3. Regulatory review: Bring in PV lead for risk assessment", reflection: "The transcript gave the AI specificity no prompt description could replicate — names, specific concerns, exact tensions. This is near client-ready with minimal editing. Layer 2 at work.", tradingOff: "Specific · Grounded · Near client-ready" },
+  { cardLabel: "LAYER 3 — ORGANISED CONTEXT", whatYouDo: "Open your existing client project where the client brief and methodology are already loaded. Ask directly — the AI already knows the context.", promptPreview: "[In client project — brief and methodology already loaded] Summarise the key findings from today’s discovery session transcript [attached]. Flag any tensions with the original brief and suggest 3 next steps.", qualityBadge: "POWERFUL — Contextually aware", qualityColor: C.teal, outputSnippet: "[Same quality as Option B output, plus:]\n\nALIGNMENT WITH ENGAGEMENT BRIEF\nFindings broadly consistent with original scope. However, the regulatory risk gap identified represents a material scope addition. Recommend flagging to the partner before submitting.\n\nSuggested framing: ‘We’ve identified a PV risk dimension not in original scope but significant for the recommendation. Suggest a 30-min call before we submit findings.’", reflection: "Because the project contained the original brief and your methodology, the AI cross-referenced what it heard against what was expected — and proactively flagged the gap.\n\nYou didn’t build this project today — that’s Level 2. But now you know exactly why you will.", tradingOff: "Contextually aware · Proactive · Level 2 skill" },
 ];
 
 /* ── Data: Templates (Slide 13) ── */
 const TEMPLATES = [
-  { id: "t1", name: "Meeting Debrief", tag: "CONSULTING \u00B7 L&D \u00B7 BD", tagColor: C.teal, prompt: "You are a senior [role] at a professional services firm. Review the attached meeting transcript and produce a structured debrief covering:\n\u2022 Key decisions made (with owners)\n\u2022 Open questions and unresolved tensions\n\u2022 Action items (owner + deadline)\n\u2022 What I should flag to my manager before next steps\n\nFormat: Structured bullet points. Max 300 words. Direct tone \u2014 no filler.", whatToAttach: "Your Circleback or Otter.ai transcript from the meeting", proTip: "No transcript? Paste your rough notes instead \u2014 brain dump them directly above this prompt." },
-  { id: "t2", name: "Document Analysis", tag: "STRATEGY \u00B7 CONSULTING \u00B7 ANY FUNCTION", tagColor: "#667EEA", prompt: "You are a [role] with expertise in [domain]. Review the attached document and identify:\n\u2022 The 3 most important insights or findings\n\u2022 The key assumptions being made (and whether they hold up)\n\u2022 The single most important question this document leaves unanswered\n\u2022 What I should do with this information\n\nFormat: Numbered list for each section. Analytical tone. Flag uncertainty explicitly \u2014 don\u2019t guess.", whatToAttach: "The document, report, or strategy deck you want analysed", proTip: "Works especially well for long documents you don\u2019t have time to read in full." },
-  { id: "t3", name: "First Draft Generator", tag: "BD \u00B7 COMMS \u00B7 ANY WRITTEN OUTPUT", tagColor: "#ED8936", prompt: "You are an experienced [consultant / writer / analyst] specialising in [domain or sector]. Draft a [document type \u2014 email / proposal section / briefing note] for the following situation:\n\n[Describe your situation here \u2014 or attach the brief]\n\nAudience: [Who will read this]\nTone: [Professional / direct / warm / technical]\nLength: [Max word count or format]\n\nDo not add preamble or sign-off unless specified.", whatToAttach: "A previous example of a similar document written in your team\u2019s voice \u2014 or the brief you\u2019re working from", proTip: "Attaching a previous example is often more powerful than describing tone in text. Show it what \u2018good\u2019 looks like." },
-  { id: "t4", name: "Stakeholder Preparation", tag: "CONSULTING \u00B7 BD \u00B7 LEADERSHIP", tagColor: "#48BB78", prompt: "You are a senior advisor helping me prepare for an important meeting. Based on the attached context, help me:\n\n\u2022 Anticipate the 3 most likely objections or concerns this stakeholder will raise\n\u2022 Prepare a response or position for each\n\u2022 Identify the one thing I must NOT say or do in this meeting\n\u2022 Suggest the ideal opening 2 minutes\n\nFormat: Structured by section. Practical and specific \u2014 no generic advice.", whatToAttach: "Stakeholder profile, LinkedIn background, previous meeting notes, or the document they will have reviewed", proTip: "More specific context = more specific preparation. Generic background produces generic prep." },
-  { id: "t5", name: "Learning & Synthesis", tag: "L&D \u00B7 RESEARCH \u00B7 PERSONAL DEVELOPMENT", tagColor: C.navyMid, prompt: "You are a knowledgeable [subject matter expert]. I have just [read / attended / completed] [resource name or type].\n\nHelp me:\n\u2022 Summarise the 3 most important ideas in plain language\n\u2022 Connect these ideas to [my role / current project / specific challenge]\n\u2022 Give me 2 questions I should now be asking myself\n\u2022 Suggest one immediate action I can take\n\nFormat: Short paragraphs per section. Practical and specific.", whatToAttach: "The article, transcript, or notes from whatever you just consumed", proTip: "Use after every significant piece of learning \u2014 articles, podcasts, workshops. Turns passive consumption into active synthesis." },
+  { id: "t1", name: "Meeting Debrief", tag: "CONSULTING · L&D · BD", tagColor: C.teal, prompt: "You are a senior [role] at a professional services firm. Review the attached meeting transcript and produce a structured debrief covering:\n• Key decisions made (with owners)\n• Open questions and unresolved tensions\n• Action items (owner + deadline)\n• What I should flag to my manager before next steps\n\nFormat: Structured bullet points. Max 300 words. Direct tone — no filler.", whatToAttach: "Your Circleback or Otter.ai transcript from the meeting", proTip: "No transcript? Paste your rough notes instead — brain dump them directly above this prompt." },
+  { id: "t2", name: "Document Analysis", tag: "STRATEGY · CONSULTING · ANY FUNCTION", tagColor: "#667EEA", prompt: "You are a [role] with expertise in [domain]. Review the attached document and identify:\n• The 3 most important insights or findings\n• The key assumptions being made (and whether they hold up)\n• The single most important question this document leaves unanswered\n• What I should do with this information\n\nFormat: Numbered list for each section. Analytical tone. Flag uncertainty explicitly — don’t guess.", whatToAttach: "The document, report, or strategy deck you want analysed", proTip: "Works especially well for long documents you don’t have time to read in full." },
+  { id: "t3", name: "First Draft Generator", tag: "BD · COMMS · ANY WRITTEN OUTPUT", tagColor: "#ED8936", prompt: "You are an experienced [consultant / writer / analyst] specialising in [domain or sector]. Draft a [document type — email / proposal section / briefing note] for the following situation:\n\n[Describe your situation here — or attach the brief]\n\nAudience: [Who will read this]\nTone: [Professional / direct / warm / technical]\nLength: [Max word count or format]\n\nDo not add preamble or sign-off unless specified.", whatToAttach: "A previous example of a similar document written in your team’s voice — or the brief you’re working from", proTip: "Attaching a previous example is often more powerful than describing tone in text. Show it what ‘good’ looks like." },
+  { id: "t4", name: "Stakeholder Preparation", tag: "CONSULTING · BD · LEADERSHIP", tagColor: "#48BB78", prompt: "You are a senior advisor helping me prepare for an important meeting. Based on the attached context, help me:\n\n• Anticipate the 3 most likely objections or concerns this stakeholder will raise\n• Prepare a response or position for each\n• Identify the one thing I must NOT say or do in this meeting\n• Suggest the ideal opening 2 minutes\n\nFormat: Structured by section. Practical and specific — no generic advice.", whatToAttach: "Stakeholder profile, LinkedIn background, previous meeting notes, or the document they will have reviewed", proTip: "More specific context = more specific preparation. Generic background produces generic prep." },
+  { id: "t5", name: "Learning & Synthesis", tag: "L&D · RESEARCH · PERSONAL DEVELOPMENT", tagColor: C.navyMid, prompt: "You are a knowledgeable [subject matter expert]. I have just [read / attended / completed] [resource name or type].\n\nHelp me:\n• Summarise the 3 most important ideas in plain language\n• Connect these ideas to [my role / current project / specific challenge]\n• Give me 2 questions I should now be asking myself\n• Suggest one immediate action I can take\n\nFormat: Short paragraphs per section. Practical and specific.", whatToAttach: "The article, transcript, or notes from whatever you just consumed", proTip: "Use after every significant piece of learning — articles, podcasts, workshops. Turns passive consumption into active synthesis." },
 ];
 
 /* ── Data: Articles ── */
 const ARTICLES = [
-  { id: "a1", title: "The Prompt Engineering Playbook: What Separates Power Users from Everyone Else", source: "Harvard Business Review", readTime: "7 min read", desc: "How structured prompting is changing the way knowledge workers interact with AI tools \u2014 and what consistently separates professionals who get great outputs from those who get generic ones.", url: "https://hbr.org", reflection: "In one sentence, what was the single most useful idea from this article for your day-to-day work at Oxygy?" },
-  { id: "a2", title: "Why Context Is the Most Underrated Variable in AI Prompting", source: "MIT Technology Review", readTime: "8 min read", desc: "A deep-dive into why the Context element of a prompt has more impact on output quality than any other variable \u2014 with real examples from professional knowledge work.", url: "https://technologyreview.com", reflection: "Describe one specific situation from your own work where adding more context to a prompt could have meaningfully improved the output you received." },
+  { id: "a1", title: "The Prompt Engineering Playbook: What Separates Power Users from Everyone Else", source: "Harvard Business Review", readTime: "7 min read", desc: "How structured prompting is changing the way knowledge workers interact with AI tools — and what consistently separates professionals who get great outputs from those who get generic ones.", url: "https://hbr.org", reflection: "In one sentence, what was the single most useful idea from this article for your day-to-day work at Oxygy?" },
+  { id: "a2", title: "Why Context Is the Most Underrated Variable in AI Prompting", source: "MIT Technology Review", readTime: "8 min read", desc: "A deep-dive into why the Context element of a prompt has more impact on output quality than any other variable — with real examples from professional knowledge work.", url: "https://technologyreview.com", reflection: "Describe one specific situation from your own work where adding more context to a prompt could have meaningfully improved the output you received." },
 ];
 
 /* ── Data: Videos ── */
 const VIDEOS = [
-  { id: "v1", title: "Context Engineering in Practice", channel: "Oxygy Learning", duration: "12 min", desc: "A live walkthrough of all three context engineering layers applied to real consulting and pharma scenarios \u2014 including before/after comparisons at each layer.", url: "https://youtube.com", quiz: [
-    { q: "In the video, what was identified as the most commonly skipped element of the RCTF framework?", options: ["Role \u2014 people feel unnatural assigning a persona to AI", "Context \u2014 people assume the AI already knows their situation", "Task \u2014 people think their ask is obvious from the prompt", "Format \u2014 people let the AI decide the output structure"], correct: 1 },
-    { q: "According to the video, when does attaching a document add the most value over a detailed prompt?", options: ["When the document is under 5 pages and easy to summarise", "When the content contains specific names, quotes, and details that would be lost in a text description", "When you don\u2019t have time to write a proper RCTF prompt", "When the AI model has a large context window"], correct: 1 },
+  { id: "v1", title: "Context Engineering in Practice", channel: "Oxygy Learning", duration: "12 min", desc: "A live walkthrough of all three context engineering layers applied to real consulting and pharma scenarios — including before/after comparisons at each layer.", url: "https://youtube.com", quiz: [
+    { q: "In the video, what was identified as the most commonly skipped element of the RCTF framework?", options: ["Role — people feel unnatural assigning a persona to AI", "Context — people assume the AI already knows their situation", "Task — people think their ask is obvious from the prompt", "Format — people let the AI decide the output structure"], correct: 1 },
+    { q: "According to the video, when does attaching a document add the most value over a detailed prompt?", options: ["When the document is under 5 pages and easy to summarise", "When the content contains specific names, quotes, and details that would be lost in a text description", "When you don’t have time to write a proper RCTF prompt", "When the AI model has a large context window"], correct: 1 },
   ]},
   { id: "v2", title: "Building a Team Prompt Library", channel: "Oxygy Learning", duration: "9 min", desc: "How to move from individual prompting habits to a shared, standardised library that scales context engineering capability across your entire team.", url: "https://youtube.com", quiz: [
     { q: "What is the primary benefit of a shared prompt library over individual prompting habits?", options: ["It saves individuals time writing prompts from scratch", "It standardises inputs to produce consistent, comparable outputs across the team", "It prevents people from making mistakes in their prompts", "It allows managers to monitor what questions employees are asking AI"], correct: 1 },
@@ -167,7 +167,7 @@ function PhaseLabel({ label, time, done }: { label: string; time: string; done: 
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ width: 8, height: 8, borderRadius: "50%", background: done ? C.success : "#ED8936" }} />
-        <span style={{ fontSize: 12, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 1, fontFamily: F.b }}>{done ? `${label} \u2014 Complete \u2713` : `${label} \u2014 In Progress`}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 1, fontFamily: F.b }}>{done ? `${label} — Complete ✓` : `${label} — In Progress`}</span>
       </div>
       <span style={{ fontSize: 12, color: C.muted, fontFamily: F.b }}>{time}</span>
     </div>
@@ -284,7 +284,7 @@ export default function Level1Page() {
       /* ── TITLE ── */
       case "title": return (
         <div>
-          <Eyebrow t="OXYGY AI UPSKILLING \u2014 LEVEL 1" />
+          <Eyebrow t="OXYGY AI UPSKILLING — LEVEL 1" />
           <h1 style={{ fontFamily: F.h, fontSize: 28, fontWeight: 800, color: C.navy, lineHeight: 1.2, margin: "0 0 8px" }}>
             <TU>Prompt Engineering</TU> Essentials
           </h1>
@@ -294,7 +294,7 @@ export default function Level1Page() {
           </div>
           <p style={{ fontSize: 14, color: C.body, fontFamily: F.b, lineHeight: 1.7, maxWidth: 560, margin: "0 0 20px" }}>{s.body}</p>
           <div style={{ background: C.tealLight, border: `1px solid ${C.mint}`, borderRadius: 12, padding: "16px 20px" }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: C.navy, fontFamily: F.b, margin: "0 0 12px" }}>Before we start \u2014 how confident do you feel about getting great outputs from AI tools?</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: C.navy, fontFamily: F.b, margin: "0 0 12px" }}>Before we start — how confident do you feel about getting great outputs from AI tools?</p>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <span style={{ fontSize: 11, color: C.muted, fontFamily: F.b, whiteSpace: "nowrap" }}>Not confident</span>
               <input type="range" min={1} max={10} value={confSliderBefore} onChange={e => setConfSliderBefore(Number(e.target.value))} className="l1-slider" style={{ flex: 1 }} />
@@ -317,11 +317,11 @@ export default function Level1Page() {
               <div style={{ display: "flex", gap: 10 }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ background: C.errorLight, borderRadius: 6, padding: "6px 10px", marginBottom: 10 }}><span style={{ fontSize: 11, fontWeight: 700, color: C.error }}>What AI starts with</span></div>
-                  {["Your role or function", "Your organisation\u2019s context", "Who your audience is", "What \u2018good\u2019 looks like for you", "Your constraints or timeline", "Your previous work on this"].map(t => <p key={t} style={{ fontSize: 12, color: C.body, margin: "4px 0", fontFamily: F.b }}><span style={{ color: C.error, fontWeight: 700 }}>\u2717 </span>{t}</p>)}
+                  {["Your role or function", "Your organisation’s context", "Who your audience is", "What ‘good’ looks like for you", "Your constraints or timeline", "Your previous work on this"].map(t => <p key={t} style={{ fontSize: 12, color: C.body, margin: "4px 0", fontFamily: F.b }}><span style={{ color: C.error, fontWeight: 700 }}>✗ </span>{t}</p>)}
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ background: C.successLight, borderRadius: 6, padding: "6px 10px", marginBottom: 10 }}><span style={{ fontSize: 11, fontWeight: 700, color: C.success }}>What it needs from you</span></div>
-                  {["Who you are and your expertise", "The situation and background", "The exact task and deliverable", "The format and length required", "Any constraints or priorities", "Examples of what you want"].map(t => <p key={t} style={{ fontSize: 12, color: C.body, margin: "4px 0", fontFamily: F.b }}><span style={{ color: C.success, fontWeight: 700 }}>\u2713 </span>{t}</p>)}
+                  {["Who you are and your expertise", "The situation and background", "The exact task and deliverable", "The format and length required", "Any constraints or priorities", "Examples of what you want"].map(t => <p key={t} style={{ fontSize: 12, color: C.body, margin: "4px 0", fontFamily: F.b }}><span style={{ color: C.success, fontWeight: 700 }}>✓ </span>{t}</p>)}
                 </div>
               </div>
             </div>
@@ -329,12 +329,12 @@ export default function Level1Page() {
           if (s.visualKey === "layers") return (
             <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 12, padding: 20 }}>
               {[
-                { bg: C.teal, label: "LAYER 1 \u2014 IN YOUR PROMPT", desc: "What you write in the message box", pill: "Slides 5\u20137 \u2192", items: "Role \u00B7 Context \u00B7 Task \u00B7 Format \u00B7 Chain of Thought" },
-                { bg: C.navyMid, label: "LAYER 2 \u2014 THROUGH DOCUMENTS", desc: "Files, transcripts, reports, and briefs you attach", pill: "Slides 8\u20139 \u2192", items: "Meeting transcripts \u00B7 Strategy docs \u00B7 Previous outputs \u00B7 Briefs" },
-                { bg: C.navy, label: "LAYER 3 \u2014 THROUGH ORGANISATION", desc: "Projects, system prompts, cross-chat memory", pill: "Level 2 Preview \u2192", items: "System prompts \u00B7 Shared projects \u00B7 Persistent context", pillBg: C.teal },
+                { bg: C.teal, label: "LAYER 1 — IN YOUR PROMPT", desc: "What you write in the message box", pill: "Slides 5–7 →", items: "Role · Context · Task · Format · Chain of Thought" },
+                { bg: C.navyMid, label: "LAYER 2 — THROUGH DOCUMENTS", desc: "Files, transcripts, reports, and briefs you attach", pill: "Slides 8–9 →", items: "Meeting transcripts · Strategy docs · Previous outputs · Briefs" },
+                { bg: C.navy, label: "LAYER 3 — THROUGH ORGANISATION", desc: "Projects, system prompts, cross-chat memory", pill: "Level 2 Preview →", items: "System prompts · Shared projects · Persistent context", pillBg: C.teal },
               ].map((layer, i) => (
                 <React.Fragment key={i}>
-                  {i > 0 && <div style={{ textAlign: "center", color: i === 1 ? C.navyMid : C.navy, fontSize: 14, margin: "4px 0" }}>\u2193</div>}
+                  {i > 0 && <div style={{ textAlign: "center", color: i === 1 ? C.navyMid : C.navy, fontSize: 14, margin: "4px 0" }}>↓</div>}
                   <div style={{ background: layer.bg, borderRadius: 10, padding: "12px 16px", color: "#fff" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
                       <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" as const, opacity: 0.9 }}>{layer.label}</span>
@@ -345,15 +345,15 @@ export default function Level1Page() {
                   </div>
                 </React.Fragment>
               ))}
-              <p style={{ fontSize: 12, color: C.muted, fontStyle: "italic", marginTop: 12, marginBottom: 0, fontFamily: F.b }}>You don\u2019t need to master all three layers today. By the end of this module you\u2019ll understand how they connect \u2014 and you\u2019ll be practising Layers 1 and 2 immediately.</p>
+              <p style={{ fontSize: 12, color: C.muted, fontStyle: "italic", marginTop: 12, marginBottom: 0, fontFamily: F.b }}>You don’t need to master all three layers today. By the end of this module you’ll understand how they connect — and you’ll be practising Layers 1 and 2 immediately.</p>
             </div>
           );
           if (s.visualKey === "documents") return (
             <div>
               {[
                 { eye: "CONSULTING / ANY FUNCTION", doc: "Post-workshop transcript (Circleback, Otter.ai)", prompt: "Identify the three unresolved tensions from this workshop and suggest how to address each one in the next session.", without: "Generic facilitation advice", withDoc: "Specific points grounded in what was actually said" },
-                { eye: "STRATEGY / LEADERSHIP", doc: "Company strategy deck or annual report (PDF)", prompt: "Based on this strategy document, identify the top 3 capability gaps that would prevent us from achieving the Year 3 targets.", without: "Theoretical gap analysis", withDoc: "Gaps mapped to the organisation\u2019s own stated priorities" },
-                { eye: "BD / COMMS / ANY WRITTEN OUTPUT", doc: "Last quarter\u2019s proposal, report, or email thread", prompt: "Using this previous proposal as a style and structure reference, draft a new proposal for [new client]. Match the tone exactly.", without: "Generic proposal structure", withDoc: "Output that matches your team\u2019s actual voice and standards" },
+                { eye: "STRATEGY / LEADERSHIP", doc: "Company strategy deck or annual report (PDF)", prompt: "Based on this strategy document, identify the top 3 capability gaps that would prevent us from achieving the Year 3 targets.", without: "Theoretical gap analysis", withDoc: "Gaps mapped to the organisation’s own stated priorities" },
+                { eye: "BD / COMMS / ANY WRITTEN OUTPUT", doc: "Last quarter’s proposal, report, or email thread", prompt: "Using this previous proposal as a style and structure reference, draft a new proposal for [new client]. Match the tone exactly.", without: "Generic proposal structure", withDoc: "Output that matches your team’s actual voice and standards" },
               ].map((card, i) => (
                 <div key={i} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 8, padding: 14, marginBottom: 10 }}>
                   <p style={{ fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: 1.5, textTransform: "uppercase" as const, margin: "0 0 4px", fontFamily: F.b }}>{card.eye}</p>
@@ -380,9 +380,9 @@ export default function Level1Page() {
               </div>
               <div style={{ padding: 14 }}>
                 {[
-                  { label: "SYSTEM PROMPT", content: "You are a senior Oxygy consultant supporting client delivery teams. Always be direct. Prioritise practical recommendations over theory\u2026", note: "Defines who the AI is and how it behaves across every conversation in this project." },
-                  { label: "FILES", content: null, files: ["\uD83D\uDCC4 Oxygy_Methodology.pdf", "\uD83D\uDCC4 Client_Brief_Q1.docx", "\uD83D\uDCC4 Engagement_Tracker.xlsx"], note: "Documents always available \u2014 no re-uploading each session." },
-                  { label: "CONVERSATIONS", content: null, files: ["\u25CE Workshop prep \u2014 Feb 12", "\u25CE Stakeholder mapping \u2014 Feb 14", "\u25CE Risk register review \u2014 Feb 18"], note: "Previous conversations are accessible. The AI builds understanding over time." },
+                  { label: "SYSTEM PROMPT", content: "You are a senior Oxygy consultant supporting client delivery teams. Always be direct. Prioritise practical recommendations over theory…", note: "Defines who the AI is and how it behaves across every conversation in this project." },
+                  { label: "FILES", content: null, files: ["📄 Oxygy_Methodology.pdf", "📄 Client_Brief_Q1.docx", "📄 Engagement_Tracker.xlsx"], note: "Documents always available — no re-uploading each session." },
+                  { label: "CONVERSATIONS", content: null, files: ["◎ Workshop prep — Feb 12", "◎ Stakeholder mapping — Feb 14", "◎ Risk register review — Feb 18"], note: "Previous conversations are accessible. The AI builds understanding over time." },
                 ].map((section, i) => (
                   <div key={i} style={{ borderBottom: i < 2 ? `1px dashed ${C.border}` : "none", paddingBottom: i < 2 ? 10 : 0, marginBottom: i < 2 ? 10 : 0 }}>
                     <p style={{ fontSize: 10, fontWeight: 700, color: C.teal, margin: "0 0 6px", fontFamily: F.b }}>{section.label}</p>
@@ -393,10 +393,10 @@ export default function Level1Page() {
                 ))}
               </div>
               <div style={{ borderLeft: `4px solid ${C.teal}`, background: C.tealLight, borderRadius: "0 10px 10px 0", padding: "16px 20px", margin: "0 14px 14px" }}>
-                <span style={{ background: C.teal, color: "#fff", fontSize: 10, fontWeight: 700, borderRadius: 20, padding: "3px 10px", display: "inline-block", marginBottom: 8 }}>\u2192 LEVEL 2 PREVIEW</span>
+                <span style={{ background: C.teal, color: "#fff", fontSize: 10, fontWeight: 700, borderRadius: 20, padding: "3px 10px", display: "inline-block", marginBottom: 8 }}>→ LEVEL 2 PREVIEW</span>
                 <p style={{ fontSize: 15, fontWeight: 700, color: C.navy, margin: "0 0 8px", fontFamily: F.h }}>Setting this up is a Level 2 skill</p>
                 <p style={{ fontSize: 13, color: C.body, lineHeight: 1.7, margin: "0 0 8px", fontFamily: F.b }}>Designing a system prompt, structuring a project, and building shared context across your team is exactly what Level 2: Applied Capability covers.</p>
-                <span style={{ fontSize: 13, fontWeight: 700, color: C.teal, fontFamily: F.b, cursor: "pointer" }}>Preview Level 2 \u2192</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: C.teal, fontFamily: F.b, cursor: "pointer" }}>Preview Level 2 →</span>
               </div>
             </div>
           );
@@ -457,10 +457,10 @@ export default function Level1Page() {
           <div style={{ borderLeft: `4px solid ${C.navy}`, background: C.bg, borderRadius: "0 8px 8px 0", padding: "16px 20px" }}>
             <p style={{ fontSize: 10, fontWeight: 700, color: C.error, letterSpacing: 2, margin: "0 0 4px", fontFamily: F.b }}>BUT HERE&apos;S THE LIMIT</p>
             <p style={{ fontSize: 15, fontWeight: 700, color: C.navy, margin: "0 0 8px", fontFamily: F.h }}>Prompting alone has a ceiling</p>
-            <p style={{ fontSize: 14, color: C.body, lineHeight: 1.7, margin: "0 0 8px", fontFamily: F.b }}>All three approaches share the same constraint: the AI only knows what you type. If your project has 40 pages of background documents, a team methodology, or weeks of shared context \u2014 none of that exists inside a single prompt, no matter how well-crafted.</p>
+            <p style={{ fontSize: 14, color: C.body, lineHeight: 1.7, margin: "0 0 8px", fontFamily: F.b }}>All three approaches share the same constraint: the AI only knows what you type. If your project has 40 pages of background documents, a team methodology, or weeks of shared context — none of that exists inside a single prompt, no matter how well-crafted.</p>
             <p style={{ fontSize: 14, color: C.body, lineHeight: 1.7, margin: "0 0 8px", fontFamily: F.b }}>That&apos;s where context engineering comes in.</p>
             <div style={{ textAlign: "right" }}>
-              <span style={{ background: C.tealLight, color: C.teal, fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: 20, fontFamily: F.b }}>Continue to see what this means \u2192</span>
+              <span style={{ background: C.tealLight, color: C.teal, fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: 20, fontFamily: F.b }}>Continue to see what this means →</span>
             </div>
           </div>
         </div>
@@ -548,7 +548,7 @@ export default function Level1Page() {
                               cursor: dragChecked ? "default" : "pointer",
                             }}>
                             {chip.text}
-                            {dragChecked && !isCorrect && !showDistractor && <span style={{ display: "block", fontSize: 10, color: C.error, marginTop: 2 }}>\u2192 Belongs in {chip.correctZone}</span>}
+                            {dragChecked && !isCorrect && !showDistractor && <span style={{ display: "block", fontSize: 10, color: C.error, marginTop: 2 }}>→ Belongs in {chip.correctZone}</span>}
                             {showDistractor && <span style={{ display: "block", fontSize: 10, color: C.error, marginTop: 2 }}>{(chip as any).feedback}</span>}
                           </div>
                         );
@@ -561,11 +561,11 @@ export default function Level1Page() {
             {/* Actions */}
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
               <Btn onClick={() => setDragChecked(true)} disabled={!allChipsPlaced || dragChecked}>Check Answers</Btn>
-              <Btn onClick={resetDrag} secondary>Start again \u21BA</Btn>
+              <Btn onClick={resetDrag} secondary>Start again ↺</Btn>
             </div>
             {dragChecked && allChipsPlaced && DRAG_CHIPS.filter(c => chipPlacements[c.id] !== c.correctZone || c.isDistractor).length === 0 && (
               <div style={{ background: C.successLight, border: `1px solid ${C.successBorder}`, borderRadius: 10, padding: "14px 16px", marginTop: 12 }}>
-                <p style={{ fontSize: 13, color: C.navyMid, fontFamily: F.b, margin: 0, lineHeight: 1.6 }}>Well built. Notice how each element is doing a specific job. The assembled prompt is dramatically more powerful than &apos;create an onboarding plan for graduates&apos; \u2014 which is what most people actually send.</p>
+                <p style={{ fontSize: 13, color: C.navyMid, fontFamily: F.b, margin: 0, lineHeight: 1.6 }}>Well built. Notice how each element is doing a specific job. The assembled prompt is dramatically more powerful than &apos;create an onboarding plan for graduates&apos; — which is what most people actually send.</p>
               </div>
             )}
           </div>
@@ -588,7 +588,7 @@ export default function Level1Page() {
                 const key = `${s.id}-${i}`;
                 const isFlipped = flippedCards[key];
                 return (
-                  <div key={i} className="l1-flip-card" style={{ width: "50%", minHeight: isSlide7 ? 260 : 220 }} onClick={() => setFlippedCards(prev => ({ ...prev, [key]: !prev[key] }))}>
+                  <div key={i} className="l1-flip-card" style={{ width: "50%", minHeight: isSlide7 ? 340 : 360 }} onClick={() => setFlippedCards(prev => ({ ...prev, [key]: !prev[key] }))}>
                     <div className={`l1-flip-inner ${isFlipped ? "flipped" : ""}`} style={{ height: "100%" }}>
                       {/* Front */}
                       <div className="l1-flip-front" style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: "16px 20px", height: "100%", boxSizing: "border-box" as const }}>
@@ -606,7 +606,7 @@ export default function Level1Page() {
                             <p style={{ fontSize: 12, color: C.muted, margin: "0 0 0", fontFamily: F.b }}>{card.frontNote}</p>
                           </>
                         )}
-                        <p style={{ fontSize: 11, color: C.muted, margin: "auto 0 0", paddingTop: 8, fontFamily: F.b }}>Click to flip \u21BA</p>
+                        <p style={{ fontSize: 11, color: C.muted, margin: "auto 0 0", paddingTop: 8, fontFamily: F.b }}>Click to flip ↺</p>
                       </div>
                       {/* Back */}
                       <div className="l1-flip-back" style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: "16px 20px", height: "100%", boxSizing: "border-box" as const, overflowY: "auto" as const }}>
@@ -627,7 +627,7 @@ export default function Level1Page() {
                             </div>
                           </>
                         )}
-                        <p style={{ fontSize: 11, color: C.muted, marginTop: 8, fontFamily: F.b }}>Click to flip back \u21BA</p>
+                        <p style={{ fontSize: 11, color: C.muted, marginTop: 8, fontFamily: F.b }}>Click to flip back ↺</p>
                       </div>
                     </div>
                   </div>
@@ -638,8 +638,8 @@ export default function Level1Page() {
               <div style={{ background: C.tealLight, border: `1px solid ${C.mint}`, borderRadius: 10, padding: "14px 16px", marginTop: 16 }}>
                 <p style={{ fontSize: 13, color: C.navyMid, fontFamily: F.b, margin: 0, lineHeight: 1.6 }}>
                   {isSlide7
-                    ? "These techniques stack \u2014 they don\u2019t replace each other. A Few-Shot prompt can also be RCTF-structured. Chain of Thought works even better when you\u2019ve defined the Role and Context first. Think of them as additions to your toolkit, not alternatives."
-                    : "The prompt didn\u2019t change. The effort didn\u2019t change. What changed was the context available to the AI \u2014 and the output quality changed completely as a result. More context, better output. Every time."
+                    ? "These techniques stack — they don’t replace each other. A Few-Shot prompt can also be RCTF-structured. Chain of Thought works even better when you’ve defined the Role and Context first. Think of them as additions to your toolkit, not alternatives."
+                    : "The prompt didn’t change. The effort didn’t change. What changed was the context available to the AI — and the output quality changed completely as a result. More context, better output. Every time."
                   }
                 </p>
               </div>
@@ -680,7 +680,7 @@ export default function Level1Page() {
           )}
           {scenarioChoice !== null && !scenarioConfirmed && (
             <div style={{ textAlign: "right" }}>
-              <Btn onClick={() => setScenarioConfirmed(true)}>Confirm this approach \u2192</Btn>
+              <Btn onClick={() => setScenarioConfirmed(true)}>Confirm this approach →</Btn>
             </div>
           )}
           {/* Consequence */}
@@ -698,7 +698,7 @@ export default function Level1Page() {
             <>
               <Btn onClick={() => { setScenarioChoice(null); setScenarioConfirmed(false); }} secondary>Try a different approach</Btn>
               <div style={{ background: C.tealLight, border: `1px solid ${C.mint}`, borderRadius: 10, padding: "14px 16px", marginTop: 12 }}>
-                <p style={{ fontSize: 13, color: C.navyMid, fontFamily: F.b, margin: 0, lineHeight: 1.6 }}>All three approaches produced something useful. The difference isn&apos;t right vs. wrong \u2014 it&apos;s depth of context vs. speed. As your practice matures, you\u2019ll move naturally up the layers. Most people start at A, build habits around B, and eventually live in C.</p>
+                <p style={{ fontSize: 13, color: C.navyMid, fontFamily: F.b, margin: 0, lineHeight: 1.6 }}>All three approaches produced something useful. The difference isn&apos;t right vs. wrong — it&apos;s depth of context vs. speed. As your practice matures, you’ll move naturally up the layers. Most people start at A, build habits around B, and eventually live in C.</p>
               </div>
             </>
           )}
@@ -708,7 +708,7 @@ export default function Level1Page() {
       /* ── QUIZ ── */
       case "quiz": return (
         <div>
-          <Eyebrow t="PRACTICE \u2014 QUESTION 1 OF 1" />
+          <Eyebrow t="PRACTICE — QUESTION 1 OF 1" />
           {renderH2(s.heading, "")}
           <p style={{ fontSize: 18, color: C.navy, fontFamily: F.h, lineHeight: 1.5, maxWidth: 560, margin: "0 0 20px" }}>{s.question}</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -735,7 +735,7 @@ export default function Level1Page() {
             <div style={{ background: selectedAnswer === s.correct ? C.successLight : C.errorLight, border: `1px solid ${selectedAnswer === s.correct ? C.successBorder : C.errorBorder}`, borderRadius: 10, padding: "14px 16px", marginTop: 12 }}>
               <p style={{ fontSize: 12, fontWeight: 700, color: selectedAnswer === s.correct ? C.success : C.error, margin: "0 0 6px", fontFamily: F.b }}>{selectedAnswer === s.correct ? "Correct" : "Not quite"}</p>
               <p style={{ fontSize: 13, color: C.body, fontFamily: F.b, lineHeight: 1.6, margin: "0 0 8px" }}>{s.explanations[selectedAnswer!]}</p>
-              <p style={{ fontSize: 13, color: C.navyMid, fontFamily: F.b, lineHeight: 1.6, margin: 0, fontStyle: "italic" }}>The pattern is consistent: when you have a document, attach it. Your prompt can then be shorter and more precise \u2014 because the document is doing the heavy lifting on context.</p>
+              <p style={{ fontSize: 13, color: C.navyMid, fontFamily: F.b, lineHeight: 1.6, margin: 0, fontStyle: "italic" }}>The pattern is consistent: when you have a document, attach it. Your prompt can then be shorter and more precise — because the document is doing the heavy lifting on context.</p>
             </div>
           )}
         </div>
@@ -757,7 +757,7 @@ export default function Level1Page() {
                 <button onClick={() => copyTemplate(tmpl.id, tmpl.prompt)} style={{
                   background: "none", border: `1px solid ${C.teal}`, borderRadius: 20, padding: "4px 14px",
                   fontSize: 12, fontWeight: 600, color: C.teal, cursor: "pointer", fontFamily: F.b, minHeight: 32,
-                }}>{copiedTemplate === tmpl.id ? "Copied \u2713" : "Copy"}</button>
+                }}>{copiedTemplate === tmpl.id ? "Copied ✓" : "Copy"}</button>
               </div>
               <div style={{ padding: 16 }}>
                 <PromptBox>{tmpl.prompt}</PromptBox>
@@ -800,10 +800,10 @@ export default function Level1Page() {
                 <p style={{ fontSize: 13, color: C.navyMid, fontFamily: F.b, margin: 0, lineHeight: 1.6 }}>
                   {confidenceBefore !== null && confidenceAfter !== null ? (
                     confidenceAfter > confidenceBefore
-                      ? `\u2191 +${confidenceAfter - confidenceBefore} points \u2014 A meaningful shift. Lock it in: use one of these templates on a real piece of work today.`
+                      ? `↑ +${confidenceAfter - confidenceBefore} points — A meaningful shift. Lock it in: use one of these templates on a real piece of work today.`
                       : confidenceAfter === confidenceBefore
                       ? `Your rating stayed at ${confidenceAfter}. Confidence comes from practice, not learning. Pick one template and use it today. Come back and re-rate after.`
-                      : `Your rating went down \u2014 that\u2019s a healthy sign. You now know more about what you don\u2019t know yet. That\u2019s the foundation of genuine skill development. Level 2 will fill the gaps.`
+                      : `Your rating went down — that’s a healthy sign. You now know more about what you don’t know yet. That’s the foundation of genuine skill development. Level 2 will fill the gaps.`
                   ) : "Rating saved. Use one of these templates on a real piece of work today."}
                 </p>
               </div>
@@ -830,10 +830,10 @@ export default function Level1Page() {
               {/* Header */}
               <div style={{ background: st.submitted ? C.successLight : C.bg, padding: "12px 16px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div>
-                  <p style={{ fontSize: 11, color: C.muted, margin: "0 0 4px", fontFamily: F.b }}>Article {idx + 1} \u00B7 {article.readTime} \u00B7 {article.source}</p>
+                  <p style={{ fontSize: 11, color: C.muted, margin: "0 0 4px", fontFamily: F.b }}>Article {idx + 1} · {article.readTime} · {article.source}</p>
                   <p style={{ fontSize: 14, fontWeight: 700, color: st.submitted ? C.light : C.navy, fontFamily: F.h, margin: 0, textDecoration: st.submitted ? "line-through" : "none" }}>{article.title}</p>
                 </div>
-                {st.submitted && <span style={{ color: C.success, fontSize: 18, fontWeight: 700 }}>\u2713</span>}
+                {st.submitted && <span style={{ color: C.success, fontSize: 18, fontWeight: 700 }}>✓</span>}
               </div>
               {/* Body */}
               <div style={{ padding: 16 }}>
@@ -841,7 +841,7 @@ export default function Level1Page() {
                 <a href={article.url} target="_blank" rel="noopener noreferrer"
                   onClick={() => setArticleState(prev => ({ ...prev, [article.id]: { ...st, clicked: true } }))}
                   style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 24, border: `1px solid ${C.teal}`, color: C.teal, fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: F.b }}>
-                  Read article \u2197
+                  Read article ↗
                 </a>
                 {st.clicked && !st.submitted && (
                   <div style={{ marginTop: 16, borderTop: `1px dashed ${C.border}`, paddingTop: 16 }}>
@@ -852,13 +852,13 @@ export default function Level1Page() {
                       style={{ width: "100%", minHeight: 80, padding: 12, borderRadius: 8, border: `1px solid ${C.border}`, background: C.bg, fontSize: 13, fontFamily: F.b, resize: "vertical", boxSizing: "border-box" as const }}
                       placeholder="Write your reflection here..." />
                     <div style={{ marginTop: 8, textAlign: "right" }}>
-                      <Btn onClick={() => setArticleState(prev => ({ ...prev, [article.id]: { ...st, submitted: true } }))} disabled={!st.reflectionText.trim()}>Submit reflection \u2192</Btn>
+                      <Btn onClick={() => setArticleState(prev => ({ ...prev, [article.id]: { ...st, submitted: true } }))} disabled={!st.reflectionText.trim()}>Submit reflection →</Btn>
                     </div>
                   </div>
                 )}
                 {st.submitted && (
                   <div style={{ marginTop: 12, background: C.successLight, borderRadius: 8, padding: "8px 12px" }}>
-                    <p style={{ fontSize: 12, color: C.success, fontWeight: 600, margin: 0, fontFamily: F.b }}>Reflection submitted \u2713</p>
+                    <p style={{ fontSize: 12, color: C.success, fontWeight: 600, margin: 0, fontFamily: F.b }}>Reflection submitted ✓</p>
                   </div>
                 )}
               </div>
@@ -868,7 +868,7 @@ export default function Level1Page() {
       </div>
       {readDone && (
         <div style={{ textAlign: "right" }}>
-          <Btn onClick={() => { markPhaseDone("read"); setActivePhase("watch"); }}>Continue to Watch \u2192</Btn>
+          <Btn onClick={() => { markPhaseDone("read"); setActivePhase("watch"); }}>Continue to Watch →</Btn>
         </div>
       )}
     </div>
@@ -889,13 +889,13 @@ export default function Level1Page() {
               {/* Header */}
               <div style={{ background: videoComplete ? C.successLight : C.bg, padding: "12px 16px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 80, height: 52, background: C.navy, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span style={{ color: C.teal, fontSize: 20 }}>\u25B6</span>
+                  <span style={{ color: C.teal, fontSize: 20 }}>▶</span>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 11, color: C.muted, margin: "0 0 2px", fontFamily: F.b }}>Video {idx + 1} \u00B7 {video.duration} \u00B7 {video.channel}</p>
+                  <p style={{ fontSize: 11, color: C.muted, margin: "0 0 2px", fontFamily: F.b }}>Video {idx + 1} · {video.duration} · {video.channel}</p>
                   <p style={{ fontSize: 14, fontWeight: 700, color: videoComplete ? C.light : C.navy, fontFamily: F.h, margin: 0, textDecoration: videoComplete ? "line-through" : "none" }}>{video.title}</p>
                 </div>
-                {videoComplete && <span style={{ color: C.success, fontSize: 18, fontWeight: 700 }}>\u2713</span>}
+                {videoComplete && <span style={{ color: C.success, fontSize: 18, fontWeight: 700 }}>✓</span>}
               </div>
               {/* Body */}
               <div style={{ padding: 16 }}>
@@ -903,7 +903,7 @@ export default function Level1Page() {
                 <a href={video.url} target="_blank" rel="noopener noreferrer"
                   onClick={() => setVideoState(prev => ({ ...prev, [video.id]: { ...st, clicked: true } }))}
                   style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 22px", borderRadius: 24, background: C.teal, color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: F.b, minHeight: 44 }}>
-                  \u25B6 Watch video
+                  ▶ Watch video
                 </a>
                 {/* Knowledge check */}
                 {st.clicked && (
@@ -950,7 +950,7 @@ export default function Level1Page() {
                         )}
                         {st.quizChecked[qi] && (
                           <div style={{ marginTop: 8, background: st.quizAnswers[qi] === q.correct ? C.successLight : C.errorLight, borderRadius: 6, padding: "6px 10px" }}>
-                            <p style={{ fontSize: 12, color: st.quizAnswers[qi] === q.correct ? C.success : C.error, fontWeight: 600, margin: 0, fontFamily: F.b }}>{st.quizAnswers[qi] === q.correct ? "Correct!" : `Incorrect \u2014 the answer is: ${q.options[q.correct]}`}</p>
+                            <p style={{ fontSize: 12, color: st.quizAnswers[qi] === q.correct ? C.success : C.error, fontWeight: 600, margin: 0, fontFamily: F.b }}>{st.quizAnswers[qi] === q.correct ? "Correct!" : `Incorrect — the answer is: ${q.options[q.correct]}`}</p>
                           </div>
                         )}
                       </div>
@@ -970,7 +970,7 @@ export default function Level1Page() {
             <h3 style={{ fontSize: 20, fontWeight: 700, color: "#fff", margin: "0 0 4px", fontFamily: F.h }}>Ready to put it into practice</h3>
             <p style={{ fontSize: 13, color: C.muted, margin: 0, fontFamily: F.b }}>Apply your context engineering skills in the Prompt Playground.</p>
           </div>
-          <Btn onClick={() => { markPhaseDone("watch"); setActivePhase("practice"); }}>Go to Prompt Playground \u2192</Btn>
+          <Btn onClick={() => { markPhaseDone("watch"); setActivePhase("practice"); }}>Go to Prompt Playground →</Btn>
         </div>
       )}
     </div>
@@ -982,11 +982,11 @@ export default function Level1Page() {
   const renderHandoff = () => (
     <div style={{ display: "flex", justifyContent: "center", padding: "40px 0" }}>
       <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 16, padding: 48, textAlign: "center", maxWidth: 500 }}>
-        <div style={{ width: 64, height: 64, borderRadius: "50%", background: C.tealLight, border: `2px solid ${C.mint}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: 24, color: C.teal }}>\u25C8</div>
+        <div style={{ width: 64, height: 64, borderRadius: "50%", background: C.tealLight, border: `2px solid ${C.mint}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: 24, color: C.teal }}>◈</div>
         <p style={{ fontSize: 10, fontWeight: 700, color: C.teal, letterSpacing: 2, margin: "0 0 8px", fontFamily: F.b, textTransform: "uppercase" as const }}>NEXT STEP</p>
         <h2 style={{ fontSize: 22, fontWeight: 700, color: C.navy, fontFamily: F.h, margin: "0 0 8px" }}>Prompt Playground</h2>
-        <p style={{ fontSize: 14, color: C.body, fontFamily: F.b, lineHeight: 1.7, margin: "0 0 20px" }}>Apply your context engineering skills to a structured real-work challenge. Build prompts, attach context, and get feedback \u2014 then save your best work to your personal prompt library.</p>
-        <a href="#playground" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "12px 28px", borderRadius: 24, background: C.teal, color: "#fff", fontSize: 14, fontWeight: 600, textDecoration: "none", fontFamily: F.b }}>Open Prompt Playground \u2192</a>
+        <p style={{ fontSize: 14, color: C.body, fontFamily: F.b, lineHeight: 1.7, margin: "0 0 20px" }}>Apply your context engineering skills to a structured real-work challenge. Build prompts, attach context, and get feedback — then save your best work to your personal prompt library.</p>
+        <a href="#playground" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "12px 28px", borderRadius: 24, background: C.teal, color: "#fff", fontSize: 14, fontWeight: 600, textDecoration: "none", fontFamily: F.b }}>Open Prompt Playground →</a>
       </div>
     </div>
   );
@@ -996,7 +996,7 @@ export default function Level1Page() {
      ════════════════════════════════════════════════════════════ */
   const renderJourneyStrip = () => (
     <div className="l1-journey-strip" style={{ marginTop: 32, marginBottom: 32 }}>
-      <p style={{ fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: 2, textTransform: "uppercase" as const, marginBottom: 12, fontFamily: F.b }}>LEARNING JOURNEY \u2014 LEVEL 1</p>
+      <p style={{ fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: 2, textTransform: "uppercase" as const, marginBottom: 12, fontFamily: F.b }}>LEARNING JOURNEY — LEVEL 1</p>
       <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
         {PHASES.map((phase, i) => {
           const isActive = activePhase === phase.id;
@@ -1008,7 +1008,7 @@ export default function Level1Page() {
               {i > 0 && (
                 <div style={{ display: "flex", alignItems: "center", padding: "0 8px", flexShrink: 0 }}>
                   <div style={{ height: 1, width: 16, background: prevDone ? C.teal : C.border }} />
-                  <span style={{ fontSize: 12, color: prevDone ? C.teal : C.muted }}>\u203A</span>
+                  <span style={{ fontSize: 12, color: prevDone ? C.teal : C.muted }}>›</span>
                 </div>
               )}
               <div onClick={() => {
@@ -1022,7 +1022,7 @@ export default function Level1Page() {
                 }}>
                 {isDone && (
                   <div style={{ position: "absolute" as const, top: -6, right: -6, width: 20, height: 20, borderRadius: "50%", background: C.success, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ color: "#fff", fontSize: 11, fontWeight: 700 }}>\u2713</span>
+                    <span style={{ color: "#fff", fontSize: 11, fontWeight: 700 }}>✓</span>
                   </div>
                 )}
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
@@ -1047,8 +1047,8 @@ export default function Level1Page() {
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 40px" }}>
         {/* Breadcrumb */}
         <p style={{ fontSize: 12, color: C.muted, margin: "0 0 16px", fontFamily: F.b }}>
-          <a href="#" style={{ color: C.muted, textDecoration: "none" }}>Learning</a> <span style={{ margin: "0 4px" }}>\u203A</span>
-          <span>Level 1</span> <span style={{ margin: "0 4px" }}>\u203A</span>
+          <a href="#" style={{ color: C.muted, textDecoration: "none" }}>Learning</a> <span style={{ margin: "0 4px" }}>›</span>
+          <span>Level 1</span> <span style={{ margin: "0 4px" }}>›</span>
           <span style={{ color: C.body }}>Context & Prompt Engineering</span>
         </p>
         <div className="l1-hero-cols" style={{ display: "flex", gap: 40, alignItems: "flex-start" }}>
@@ -1060,7 +1060,7 @@ export default function Level1Page() {
               Context & <TU>Prompt Engineering</TU>
             </h1>
             <p style={{ fontSize: 14, color: C.body, fontFamily: F.b, lineHeight: 1.7, maxWidth: 600, margin: "0 0 16px" }}>
-              Learn how to get dramatically better AI outputs \u2014 not by using a different tool, but by changing how you communicate with it. This module covers the full context engineering toolkit: from what you write in your prompt, to the documents you attach, to how you organise your work for consistent, high-quality AI performance.
+              Learn how to get dramatically better AI outputs — not by using a different tool, but by changing how you communicate with it. This module covers the full context engineering toolkit: from what you write in your prompt, to the documents you attach, to how you organise your work for consistent, high-quality AI performance.
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {["~45 min total", "3 activities", "Beginner friendly", "Pharma & Consulting"].map(tag => (
@@ -1119,14 +1119,14 @@ export default function Level1Page() {
                 <div style={{ height: "100%", background: C.teal, width: `${((slide + 1) / SLIDES.length) * 100}%`, transition: "width 300ms ease" }} />
               </div>
               {/* Content area */}
-              <div className="l1-player-content" style={{ height: 460, overflowY: "auto" as const, padding: "36px 48px" }}>
+              <div className="l1-player-content" style={{ height: 620, overflowY: "auto" as const, padding: "36px 48px" }}>
                 {renderSlide()}
               </div>
               {/* Nav bar */}
               <div style={{ borderTop: `1px solid ${C.border}`, padding: "14px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff" }}>
-                <Btn onClick={prevSlide} disabled={slide === 0} secondary>\u2190 Previous</Btn>
+                <Btn onClick={prevSlide} disabled={slide === 0} secondary>← Previous</Btn>
                 <span style={{ fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: 1.5, textTransform: "uppercase" as const, fontFamily: F.b }}>{s.section}</span>
-                <Btn onClick={nextSlide}>{slide === SLIDES.length - 1 ? "Finish E-Learning \u2192" : "Next \u2192"}</Btn>
+                <Btn onClick={nextSlide}>{slide === SLIDES.length - 1 ? "Finish E-Learning →" : "Next →"}</Btn>
               </div>
             </div>
           </>
