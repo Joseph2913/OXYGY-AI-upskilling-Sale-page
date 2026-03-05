@@ -139,3 +139,10 @@ Every Level artifact page (L1 Playground, L2 Agent Builder, L3 Workflow Designer
 ## Reference
 - Full content spec: OXYGY_AI_UPSKILLING_SYSTEM_PROMPT.md
 - PDF content source: OXYGY_AI_Upskilling.pdf
+
+## Skills
+
+Before building any e-learning page or learning module, read and follow:
+`PRD/SKILL-Elearning-Page.md`
+
+This file defines the mandatory template, brand tokens, component specs, slide types, and quality rules for all e-learning pages on this site. Do not deviate from it.

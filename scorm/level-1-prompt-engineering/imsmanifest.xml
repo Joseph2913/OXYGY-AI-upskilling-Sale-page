@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="oxygy_l1_prompt_engineering" version="2.0"
+  xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+  xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+  <organizations default="oxygy_l1_org">
+    <organization identifier="oxygy_l1_org">
+      <title>Level 1: Prompt Engineering Essentials</title>
+      <item identifier="item_1" identifierref="resource_1">
+        <title>Prompt Engineering Essentials</title>
+        <adlcp:masteryscore>60</adlcp:masteryscore>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="resource_1" type="webcontent" adlcp:scormtype="sco" href="index.html">
+      <file href="index.html"/>
+      <file href="css/course.css"/>
+      <file href="css/interactions.css"/>
+      <file href="js/course.js"/>
+      <file href="js/scorm-api.js"/>
+      <file href="js/drag-drop.js"/>
+      <file href="js/card-flip.js"/>
+      <file href="js/spectrum-slider.js"/>
+      <file href="js/quiz-engine.js"/>
+      <file href="assets/logo.png"/>
+    </resource>
+  </resources>
+</manifest>

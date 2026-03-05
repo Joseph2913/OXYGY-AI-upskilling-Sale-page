@@ -262,8 +262,8 @@ export const LevelJourney: React.FC = () => {
                          </h4>
                          <div className="flex flex-wrap gap-2">
                             {level.keyTools.map((tool, i) => (
-                              <span 
-                                key={i} 
+                              <span
+                                key={i}
                                 className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-medium bg-gray-50 border border-gray-200 text-gray-700"
                               >
                                 {tool}
