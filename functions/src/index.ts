@@ -2,7 +2,7 @@ import { onRequest } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 import { callGemini, fetchWithRetry } from "./gemini";
 
-const openRouterApiKey = defineSecret("OpenRouter_API");
+const openRouterApiKey = defineSecret("OPEN_ROUTER_API");
 
 function getEnv() {
   const apiKey = openRouterApiKey.value();
