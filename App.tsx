@@ -17,6 +17,7 @@ import { CaseStudiesSection, CaseStudiesPage } from './components/CaseStudies';
 import { UserJourney } from './components/UserJourney';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { AuthModal } from './components/AuthModal';
+import { PartnershipBanner } from './components/PartnershipBanner';
 type Page = 'home' | 'playground' | 'agent-builder' | 'workflow-designer' | 'product-architecture' | 'dashboard-design' | 'learning-pathway' | 'engagement-model' | 'case-studies' | 'user-journey' | 'dashboard';
 
 function getPageFromHash(): Page {
@@ -62,6 +63,7 @@ function AppContent() {
       {currentPage === 'home' && (
         <>
           <Hero />
+          <PartnershipBanner />
           <LevelJourney />
           <PersonaCarousel />
           <LearningModel />
