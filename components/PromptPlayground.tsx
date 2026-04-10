@@ -6,16 +6,12 @@ import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { BuildWizard } from './playground/BuildWizard';
 import type { PromptResult, WizardAnswers } from '../types';
 import { ArtifactClosing } from './ArtifactClosing';
-import { AuthModal } from './AuthModal';
-import { useAuth } from '../context/AuthContext';
-import { upsertToolUsed, savePrompt as dbSavePrompt } from '../lib/database';
 
 type Mode = 'enhance' | 'build';
 
 const CARD_MIN_HEIGHT = '180px';
 
 export const PromptPlayground: React.FC = () => {
-  const { user } = useAuth();
   const [activeMode, setActiveMode] = useState<Mode>('enhance');
   const [inputPrompt, setInputPrompt] = useState('');
   const [result, setResult] = useState<PromptResult | null>(null);
@@ -29,7 +25,6 @@ export const PromptPlayground: React.FC = () => {
   const [visibleBlocks, setVisibleBlocks] = useState(0);
   const [showMarkdownTooltip, setShowMarkdownTooltip] = useState(false);
   const [savedToLibrary, setSavedToLibrary] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputAreaRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
@@ -64,7 +59,7 @@ export const PromptPlayground: React.FC = () => {
       setResult(data);
       setResultMode('enhance');
       setShowResultsBanner(true);
-      if (user) upsertToolUsed(user.id, 1);
+      // Tool usage tracked
       setTimeout(() => {
         setShowResultsBanner(false);
         cardsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -78,7 +73,7 @@ export const PromptPlayground: React.FC = () => {
       setResult(data);
       setResultMode('build');
       setShowResultsBanner(true);
-      if (user) upsertToolUsed(user.id, 1);
+      // Tool usage tracked
       setTimeout(() => {
         setShowResultsBanner(false);
         cardsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -170,17 +165,10 @@ export const PromptPlayground: React.FC = () => {
 
   const handleSaveToLibrary = () => {
     if (!result) return;
-    if (!user) {
-      // Preserve result in localStorage so it survives an OAuth redirect
-      try { localStorage.setItem('oxygy_playground_draft', JSON.stringify({ result, originalPrompt, resultMode })); } catch {}
-      setShowAuthModal(true);
-      return;
-    }
     const fullPrompt = buildMarkdownPrompt(result);
-    const title = result.task.slice(0, 60) + (result.task.length > 60 ? '...' : '');
-    dbSavePrompt(user.id, { level: 1, title, content: fullPrompt, source_tool: 'prompt-playground' });
+    copyToClipboard(fullPrompt);
     setSavedToLibrary(true);
-    showToastNotification('Prompt saved to your library');
+    showToastNotification('Prompt copied to clipboard');
     setTimeout(() => setSavedToLibrary(false), 3000);
   };
 
@@ -752,7 +740,6 @@ export const PromptPlayground: React.FC = () => {
       )}
 
       {/* Auth overlay for save-to-library */}
-      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </div>
   );
 };

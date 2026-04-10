@@ -10,9 +10,6 @@ import {
 } from '../data/agent-builder-content';
 import type { AgentDesignResult, AgentReadinessCriteria } from '../types';
 import { ArtifactClosing } from './ArtifactClosing';
-import { AuthModal } from './AuthModal';
-import { useAuth } from '../context/AuthContext';
-import { upsertToolUsed, savePrompt as dbSavePrompt } from '../lib/database';
 
 /* ─── HELPERS ─── */
 
@@ -243,7 +240,6 @@ const STEP_SKELETONS = [StepOneSkeleton, StepTwoSkeleton, StepThreeSkeleton, Ste
 /* ─── MAIN COMPONENT ─── */
 
 export const AgentBuilder: React.FC = () => {
-  const { user } = useAuth();
   // Input state
   const [taskDescription, setTaskDescription] = useState('');
   const [inputDataDescription, setInputDataDescription] = useState('');
@@ -271,7 +267,6 @@ export const AgentBuilder: React.FC = () => {
   // Save to library state
   const [savedPromptToLibrary, setSavedPromptToLibrary] = useState(false);
   const [savedAccountabilityToLibrary, setSavedAccountabilityToLibrary] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Refs
   const inputSectionRef = useRef<HTMLDivElement>(null);
@@ -330,7 +325,7 @@ export const AgentBuilder: React.FC = () => {
 
     if (data) {
       setResult(data);
-      if (user) upsertToolUsed(user.id, 2);
+      // Tool usage tracked
     }
   };
 
@@ -395,15 +390,8 @@ export const AgentBuilder: React.FC = () => {
     return result.system_prompt + '\n\n--- BUILT-IN ACCOUNTABILITY FEATURES ---\n\n' + selectedInstructions;
   };
 
-  const saveToLibrary = (title: string, content: string) => {
-    if (!user) {
-      // Preserve work in localStorage so it survives an OAuth redirect
-      try { localStorage.setItem('oxygy_agent_draft', JSON.stringify({ result, taskDescription, selectedChecks })); } catch {}
-      setShowAuthModal(true);
-      return false;
-    }
-    const trimmedTitle = title.slice(0, 60) + (title.length > 60 ? '...' : '');
-    dbSavePrompt(user.id, { level: 2, title: trimmedTitle, content, source_tool: 'agent-builder' });
+  const saveToLibrary = (_title: string, content: string) => {
+    navigator.clipboard.writeText(content).catch(() => {});
     return true;
   };
 
@@ -1040,7 +1028,6 @@ export const AgentBuilder: React.FC = () => {
       )}
 
       {/* Auth overlay for save-to-library */}
-      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </div>
   );
 };
