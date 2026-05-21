@@ -3,6 +3,7 @@ import type { FrameMeta } from '../types';
 import { useHashState } from '../hooks/useHashState';
 import { useKeyboardNav } from '../hooks/useKeyboardNav';
 import { Cockpit } from './Cockpit';
+import { BackgroundMesh } from './BackgroundMesh';
 
 interface StagePageProps {
   routeKey: string;
@@ -30,7 +31,10 @@ export function StagePage({ routeKey, dayLabel, frames }: StagePageProps) {
 
   return (
     <div className="relative min-h-screen w-full bg-stage-base text-stage-white overflow-hidden">
-      {/* Frame content (BackgroundMesh inserted in Task 7 once component exists) */}
+      {/* Atmospheric background — sits behind frame content */}
+      <BackgroundMesh />
+
+      {/* Frame content */}
       <main className="relative z-10 min-h-screen w-full">
         <FrameComponent />
       </main>
