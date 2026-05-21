@@ -1605,6 +1605,14 @@ export default defineConfig(({ mode }) => {
       prdProxyPlugin(env.OpenRouter_API, geminiModel),
       insightAnalysisProxyPlugin(env.OpenRouter_API, geminiModel),
     ],
+    build: {
+      rollupOptions: {
+        input: {
+          main: path.resolve(__dirname, 'index.html'),
+          barcelona: path.resolve(__dirname, 'barcelona.html'),
+        },
+      },
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

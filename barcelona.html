@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="https://oxygy.com/wp-content/uploads/2019/11/cropped-favicon-32x32.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OXYGY × Working Futures — Day 1 · Barcelona</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['system-ui', '-apple-system', 'sans-serif'],
+              mono: ['ui-monospace', 'SFMono-Regular', 'monospace'],
+            },
+            colors: {
+              'stage-base': '#0E1320',
+              'stage-white': '#EAEFF5',
+              'stage-murmur': '#8B97A6',
+              teal: {
+                DEFAULT: '#38B2AC',
+                dark: '#2C9A94',
+              },
+              accent: {
+                yellow: '#F7E8A4',
+                lavender: '#C3D0F5',
+                peach: '#F5B8A0',
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      html, body, #root { height: 100%; }
+      body { margin: 0; background: #0E1320; }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@^19.2.4",
+          "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+          "react/": "https://esm.sh/react@^19.2.4/",
+          "lucide-react": "https://esm.sh/lucide-react@^0.563.0"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/barcelona/main.tsx"></script>
+  </body>
+</html>
