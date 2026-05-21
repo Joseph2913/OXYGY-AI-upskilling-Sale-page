@@ -17,9 +17,9 @@ interface FrameProps {
 export function Frame({ children, className = '' }: FrameProps) {
   return (
     <section
-      className={`relative min-h-screen w-full flex items-center justify-center px-12 py-16 ${className}`}
+      className={`relative h-screen w-full overflow-hidden ${className}`}
     >
-      <div className="relative z-10 w-full max-w-6xl frame-enter">
+      <div className="relative z-10 w-full h-full max-w-6xl mx-auto px-12 py-14 flex flex-col frame-enter">
         {children}
       </div>
     </section>
