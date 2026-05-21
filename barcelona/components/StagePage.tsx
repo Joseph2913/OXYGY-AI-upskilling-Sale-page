@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { FrameMeta } from '../types';
 import { useHashState } from '../hooks/useHashState';
 import { useKeyboardNav } from '../hooks/useKeyboardNav';
+import { Cockpit } from './Cockpit';
 
 interface StagePageProps {
   routeKey: string;
@@ -51,21 +52,13 @@ export function StagePage({ routeKey, dayLabel, frames }: StagePageProps) {
         </div>
       )}
 
-      {/* Cockpit placeholder — full implementation in Task 6 */}
       {cockpitOpen && (
-        <div
-          className="absolute inset-0 z-30 bg-stage-base/95 backdrop-blur-sm flex items-center justify-center"
-          onClick={() => setCockpitOpen(false)}
-        >
-          <div className="text-stage-white">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-stage-murmur mb-4">
-              Facilitator cockpit
-            </p>
-            <p>Frame {frameIndex + 1} of {frames.length}: {currentFrame.title}</p>
-            <p className="text-stage-murmur mt-4 max-w-xl">{currentFrame.speakerNotes}</p>
-            <p className="text-stage-murmur/60 mt-8 font-mono text-xs">Press Esc to close · Thumbnails arrive in Task 6</p>
-          </div>
-        </div>
+        <Cockpit
+          frames={frames}
+          currentIndex={frameIndex}
+          onJumpTo={setFrameIndex}
+          onClose={() => setCockpitOpen(false)}
+        />
       )}
     </div>
   );
