@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { Route } from './types';
+import { Day1 } from './pages/Day1';
+import { Day2 } from './pages/Day2';
+import { Landing } from './pages/Landing';
 
 function getRouteFromHash(): Route {
   const hash = window.location.hash.replace(/^#/, '').split('/')[0] ?? '';
@@ -17,13 +20,7 @@ export function App() {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  return (
-    <div className="min-h-screen w-full bg-stage-base text-stage-white font-sans">
-      <div className="p-8">
-        <p className="text-stage-murmur">Route: {route}</p>
-        <p className="text-stage-murmur">Bootstrap working. Frame content arrives in later tasks.</p>
-        <p className="text-stage-murmur mt-4">Try: <a href="#day-1" className="text-teal underline">#day-1</a></p>
-      </div>
-    </div>
-  );
+  if (route === 'day-1') return <Day1 />;
+  if (route === 'day-2') return <Day2 />;
+  return <Landing />;
 }
