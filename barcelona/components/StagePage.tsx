@@ -3,7 +3,7 @@ import type { FrameMeta } from '../types';
 import { useHashState } from '../hooks/useHashState';
 import { useKeyboardNav } from '../hooks/useKeyboardNav';
 import { Cockpit } from './Cockpit';
-import { BackgroundMesh } from './BackgroundMesh';
+import { OxygyLogo } from './OxygyLogo';
 
 interface StagePageProps {
   routeKey: string;
@@ -30,28 +30,30 @@ export function StagePage({ routeKey, dayLabel, frames }: StagePageProps) {
   const FrameComponent = currentFrame.component;
 
   return (
-    <div className="relative min-h-screen w-full bg-stage-base text-stage-white overflow-hidden">
-      {/* Atmospheric background — sits behind frame content */}
-      <BackgroundMesh />
-
+    <div className="relative h-screen w-full bg-white text-navy-900 overflow-hidden">
       {/* Frame content */}
-      <main className="relative z-10 min-h-screen w-full">
+      <main className="relative z-10 h-screen w-full">
         <FrameComponent />
       </main>
 
-      {/* Brand mark — bottom-left, low opacity */}
-      <div className="absolute left-8 bottom-8 z-20 font-mono text-xs uppercase tracking-[0.2em] text-stage-murmur/60 select-none pointer-events-none">
-        OXYGY × Working Futures — {dayLabel}
-      </div>
+      {/* Brand mark — bottom-left, OXYGY logo only on non-title frames */}
+      {frameIndex > 0 && (
+        <div className="absolute left-8 bottom-7 z-20 select-none pointer-events-none flex items-center gap-3 text-navy-600">
+          <OxygyLogo variant="wordmark" className="h-[18px] text-navy-800" />
+          <span className="font-mono text-[10px] uppercase tracking-[0.22em]">
+            {dayLabel}
+          </span>
+        </div>
+      )}
 
       {/* Frame counter — bottom-right, low opacity */}
-      <div className="absolute right-8 bottom-8 z-20 font-mono text-xs uppercase tracking-[0.2em] text-stage-murmur/60 select-none pointer-events-none">
-        {String(frameIndex + 1).padStart(2, '0')} / {String(frames.length).padStart(2, '0')}
+      <div className="absolute right-8 bottom-8 z-20 font-mono text-[10px] uppercase tracking-[0.22em] text-navy-500 select-none pointer-events-none">
+        {String(frameIndex + 1).padStart(2, '0')} <span className="text-navy-400">·</span> {String(frames.length).padStart(2, '0')}
       </div>
 
       {/* Optional per-frame timer badge */}
       {timerOn && (
-        <div className="absolute right-8 top-8 z-20 font-mono text-xs uppercase tracking-[0.2em] text-teal/80 border border-teal/40 px-3 py-1.5 rounded-full">
+        <div className="absolute right-8 top-8 z-20 font-mono text-[11px] uppercase tracking-[0.2em] text-teal-dark border border-teal/50 bg-teal-pale px-3 py-1.5 rounded-full">
           {currentFrame.targetMinutes} min target
         </div>
       )}

@@ -1,83 +1,96 @@
 import { Frame } from '../../Frame';
-
-const cards = [
-  {
-    num: '01',
-    title: 'The most strategic asset',
-    sub: 'Talent. People. Capability.',
-    detail: 'You own the org\'s biggest line item — and the one AI will reshape most.',
-  },
-  {
-    num: '02',
-    title: 'The messiest data',
-    sub: 'HRIS. Performance. Capacity. Skills.',
-    detail: 'Fragmented systems, manual updates, blind spots. The data nobody else will touch.',
-  },
-  {
-    num: '03',
-    title: 'The only broker of both',
-    sub: 'Not IT. Not Strategy. You.',
-    detail: 'You\'re the one person who sees the workforce strategy AND the data that proves it.',
-  },
-] as const;
+import {
+  OpenAIIcon,
+  AnthropicIcon,
+  GeminiIcon,
+  MetaIcon,
+  MistralIcon,
+  OpenSourceIcon,
+} from '../../BrandLogos';
 
 /**
- * Frame 2 — Why the CHRO is uniquely positioned to broker the strategy/data
- * conversation. Three vertically-spaced cards, each with a teal mono numeral
- * as the single accent. Fits the viewport without scroll.
+ * Slide 2 — The Hook
+ * "In five years, every company in this room will have the same AI models.
+ *  What will set yours apart?"
+ *
+ * Centered composition. Floating AI brand logos in the periphery grounding
+ * the "same AI models" idea. The question lands large in teal.
  */
 export function ChroPosition() {
   return (
-    <Frame>
-      <div className="flex-1 flex flex-col justify-center w-full">
-        {/* Kicker */}
-        <p className="font-mono text-xs uppercase tracking-[0.28em] text-teal">
-          Frame 02 · The CHRO&rsquo;s Position
-        </p>
+    <Frame noContainer>
+      <div className="relative w-full h-full">
+        {/* Floating brand logos — drift around the canvas at low opacity */}
+        <FloatingLogos />
 
-        {/* Headline */}
-        <h2 className="mt-4 font-sans font-semibold text-stage-white leading-[1.05] tracking-tight text-[clamp(2.5rem,5.2vw,4.75rem)]">
-          Why this is{' '}
-          <span className="relative inline-block">
-            your moment
-            <span
-              className="underline-sweep absolute left-0 -bottom-1 w-full h-[3px] bg-teal rounded-full"
-              aria-hidden="true"
-            />
-          </span>
-          .
-        </h2>
+        {/* Centered text composition */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-16 z-20">
+          <p className="font-mono text-[12px] uppercase tracking-[0.3em] text-navy-500 mb-12">
+            The Question
+          </p>
 
-        {/* Three cards */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-5">
-          {cards.map(({ num, title, sub, detail }) => (
-            <div
-              key={num}
-              className="relative border border-stage-murmur/25 bg-stage-murmur/[0.03] p-7 transition-colors hover:border-stage-murmur/50 group"
-            >
-              {/* Top row: numeral + decorative tick line */}
-              <div className="flex items-center gap-3 mb-5">
-                <span className="font-mono text-base text-teal tracking-wider">
-                  {num}
-                </span>
-                <span className="flex-1 h-px bg-stage-murmur/20" aria-hidden="true" />
-              </div>
+          <p className="text-center max-w-5xl font-sans font-medium text-navy-700 leading-[1.18] text-[clamp(2rem,3.8vw,3.4rem)] tracking-[-0.012em]">
+            <span className="word-reveal" style={{ animationDelay: '200ms' }}>In</span>{' '}
+            <span className="word-reveal" style={{ animationDelay: '280ms' }}>five</span>{' '}
+            <span className="word-reveal" style={{ animationDelay: '360ms' }}>years,</span>{' '}
+            <span className="word-reveal" style={{ animationDelay: '460ms' }}>every</span>{' '}
+            <span className="word-reveal" style={{ animationDelay: '540ms' }}>company</span>{' '}
+            <span className="word-reveal" style={{ animationDelay: '620ms' }}>in</span>{' '}
+            <span className="word-reveal" style={{ animationDelay: '680ms' }}>this</span>{' '}
+            <span className="word-reveal" style={{ animationDelay: '740ms' }}>room</span>{' '}
+            <span className="word-reveal" style={{ animationDelay: '820ms' }}>will</span>{' '}
+            <span className="word-reveal" style={{ animationDelay: '880ms' }}>have</span>{' '}
+            <span className="word-reveal" style={{ animationDelay: '940ms' }}>the</span>{' '}
+            <span className="word-reveal" style={{ animationDelay: '1000ms' }}>same</span>{' '}
+            <span className="word-reveal" style={{ animationDelay: '1060ms' }}>AI</span>{' '}
+            <span className="word-reveal" style={{ animationDelay: '1140ms' }}>models.</span>
+          </p>
 
-              <h3 className="font-sans text-2xl font-medium text-stage-white leading-tight">
-                {title}
-              </h3>
-
-              <p className="mt-3 font-sans text-base text-stage-murmur leading-snug">
-                {sub}
-              </p>
-
-              <p className="mt-6 pt-5 border-t border-stage-murmur/15 font-sans text-sm text-stage-murmur/70 leading-relaxed">
-                {detail}
-              </p>
-            </div>
-          ))}
+          <p
+            className="word-reveal mt-10 text-center font-display font-extrabold text-teal teal-pulse leading-[1.08] text-[clamp(2.5rem,5.4vw,5rem)] tracking-[-0.02em]"
+            style={{ animationDelay: '1700ms' }}
+          >
+            What will set yours apart?
+          </p>
         </div>
       </div>
     </Frame>
+  );
+}
+
+/**
+ * Floating logos at low opacity in the periphery. Each drifts subtly.
+ * Position chosen so they frame the centered question without crowding it.
+ */
+function FloatingLogos() {
+  const logos = [
+    { Cmp: OpenAIIcon, top: '12%', left: '8%', size: 'w-12 h-12', drift: 'drift-a', color: 'text-navy-400' },
+    { Cmp: AnthropicIcon, top: '24%', right: '11%', size: 'w-14 h-14', drift: 'drift-b', color: 'text-navy-400' },
+    { Cmp: GeminiIcon, bottom: '20%', left: '12%', size: 'w-12 h-12', drift: 'drift-b', color: 'text-navy-400' },
+    { Cmp: MetaIcon, bottom: '14%', right: '14%', size: 'w-14 h-14', drift: 'drift-a', color: 'text-navy-400' },
+    { Cmp: MistralIcon, top: '46%', left: '4%', size: 'w-10 h-10', drift: 'drift-a', color: '' },
+    { Cmp: OpenSourceIcon, top: '52%', right: '5%', size: 'w-12 h-12', drift: 'drift-b', color: 'text-navy-400' },
+    { Cmp: OpenAIIcon, bottom: '36%', right: '22%', size: 'w-8 h-8', drift: 'drift-b', color: 'text-navy-300' },
+    { Cmp: GeminiIcon, top: '32%', left: '24%', size: 'w-8 h-8', drift: 'drift-a', color: 'text-navy-300' },
+  ];
+
+  return (
+    <div className="absolute inset-0 pointer-events-none z-10" aria-hidden="true">
+      {logos.map((l, i) => (
+        <div
+          key={i}
+          className={`absolute ${l.size} ${l.drift} ${l.color} opacity-30 float-soft`}
+          style={{
+            top: l.top,
+            left: l.left,
+            right: l.right,
+            bottom: l.bottom,
+            animationDelay: `${i * 250}ms`,
+          }}
+        >
+          <l.Cmp className="w-full h-full" />
+        </div>
+      ))}
+    </div>
   );
 }

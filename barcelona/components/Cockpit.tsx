@@ -15,6 +15,12 @@ function formatElapsed(ms: number): string {
   return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
+/**
+ * Facilitator overlay. Dark on light — pops above the white slide surface
+ * with a navy-tinted backdrop for strong contrast. Shows current frame's
+ * speaker notes, elapsed-time, total target minutes, and a clickable
+ * thumbnail grid.
+ */
 export function Cockpit({ frames, currentIndex, onJumpTo, onClose }: CockpitProps) {
   const [startTime] = useState<number>(() => Date.now());
   const [elapsed, setElapsed] = useState<number>(0);
@@ -29,38 +35,38 @@ export function Cockpit({ frames, currentIndex, onJumpTo, onClose }: CockpitProp
 
   return (
     <div
-      className="absolute inset-0 z-30 bg-stage-base/95 backdrop-blur-sm overflow-y-auto"
+      className="absolute inset-0 z-30 bg-navy-900/97 backdrop-blur-md overflow-y-auto"
       onClick={onClose}
     >
       <div className="max-w-6xl mx-auto p-12" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-baseline justify-between mb-12">
-          <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-stage-murmur">
+          <h2 className="font-mono text-xs uppercase tracking-[0.22em] text-navy-400">
             Facilitator cockpit
           </h2>
-          <div className="flex items-baseline gap-8 font-mono text-xs uppercase tracking-[0.15em] text-stage-murmur">
+          <div className="flex items-baseline gap-8 font-mono text-xs uppercase tracking-[0.15em] text-navy-400">
             <span>Elapsed <span className="text-teal ml-2">{formatElapsed(elapsed)}</span></span>
             <span>Target <span className="text-teal ml-2">{targetTotalMin} min</span></span>
-            <button onClick={onClose} className="text-stage-white hover:text-teal transition-colors">
+            <button onClick={onClose} className="text-white hover:text-teal transition-colors">
               Esc to close
             </button>
           </div>
         </div>
 
-        {/* Speaker notes for current frame */}
+        {/* Speaker notes */}
         <div className="mb-12 border-l-2 border-teal pl-6">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-teal mb-2">
+          <p className="font-mono text-xs uppercase tracking-[0.22em] text-teal mb-2">
             Now showing · Frame {currentIndex + 1} · {currentFrame.targetMinutes} min target
           </p>
-          <h3 className="text-2xl text-stage-white mb-3">{currentFrame.title}</h3>
-          <p className="text-stage-murmur leading-relaxed max-w-2xl">
+          <h3 className="font-display text-2xl text-white mb-3">{currentFrame.title}</h3>
+          <p className="text-navy-400 leading-relaxed max-w-2xl">
             {currentFrame.speakerNotes}
           </p>
         </div>
 
         {/* Thumbnail grid */}
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-stage-murmur mb-4">
+          <p className="font-mono text-xs uppercase tracking-[0.22em] text-navy-400 mb-4">
             All frames · click to jump
           </p>
           <div className="grid grid-cols-4 gap-3">
@@ -75,14 +81,14 @@ export function Cockpit({ frames, currentIndex, onJumpTo, onClose }: CockpitProp
                   }}
                   className={`text-left p-4 border transition-colors ${
                     active
-                      ? 'border-teal bg-teal/10'
-                      : 'border-stage-murmur/30 hover:border-stage-white/60'
+                      ? 'border-teal bg-teal/15'
+                      : 'border-navy-700 hover:border-navy-500'
                   }`}
                 >
-                  <p className="font-mono text-xs text-stage-murmur mb-2">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-navy-400 mb-2">
                     {String(idx + 1).padStart(2, '0')} · {frame.targetMinutes} min
                   </p>
-                  <p className={`text-sm ${active ? 'text-stage-white' : 'text-stage-murmur'}`}>
+                  <p className={`text-sm ${active ? 'text-white' : 'text-navy-500'}`}>
                     {frame.title}
                   </p>
                 </button>

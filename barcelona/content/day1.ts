@@ -7,61 +7,74 @@ import { TwoHalves } from '../components/frames/day1/05-TwoHalves';
 import { TwoPillars } from '../components/frames/day1/06-TwoPillars';
 import { WhatWeDeliver } from '../components/frames/day1/07-WhatWeDeliver';
 
+/**
+ * Day 1 frame sequence, aligned to the printed deck.
+ *
+ * Frames 1-5 below are the shared framing slides:
+ *   1. Title — "Strategic Workforce Planning in the Age of AI"
+ *   2. The Hook — "What will set yours apart?"
+ *   3. The Shift — three-layer stack
+ *   4. The Old Playbook Is Gone — four shifts
+ *   5. What You're About To Do — 1 case, 2 angles, 1 question
+ *
+ * Frames 6-7 still hold the legacy placeholder components — they'll
+ * be repurposed as "Meet HorizonWorks" and "Two Tables" in the next pass.
+ */
 export const day1Frames: FrameMeta[] = [
   {
-    id: 'opener-hook',
-    title: 'Opener + Hook',
+    id: 'title',
+    title: 'Strategic Workforce Planning in the Age of AI',
     targetMinutes: 1,
     speakerNotes:
-      'Title slide that IS the hook. Pause after each line. Then say: "That\'s the gap we\'re closing this hour."',
+      "Open the session. Set the room. Click 'Let's Begin' or hit → to move into the hook.",
     component: OpenerHook,
   },
   {
-    id: 'chro-position',
-    title: "CHRO's Unique Position",
-    targetMinutes: 1,
+    id: 'hook',
+    title: 'What will set yours apart?',
+    targetMinutes: 1.5,
     speakerNotes:
-      'Most CHROs default to letting the CIO drive AI. That\'s a strategic miss. You\'re the bridge.',
+      'Pause after the first sentence. Let it land. Then the second line — the question is the heart of the session. Look around the room before clicking on.',
     component: ChroPosition,
   },
   {
-    id: 'data-picture',
-    title: 'Accurate Data Picture',
-    targetMinutes: 2,
+    id: 'shift',
+    title: "The AI advantage isn't where you think it is",
+    targetMinutes: 3,
     speakerNotes:
-      'Walk each item. Pause on DUPLICATES — biggest commercial unlock. Most CHROs have never seen this map.',
+      "Walk the stack top-down. Bottom layer (Model) is commoditising — same for everyone in 5 years. Middle (Strategy) is your advantage. Top (Data + Adoption) is your foundation. The model is what everyone will have. The other two are what only you can build.",
     component: DataPicture,
   },
   {
-    id: 'steer-pov',
-    title: 'Steer + POV',
-    targetMinutes: 1.5,
+    id: 'old-playbook',
+    title: 'The old playbook is gone',
+    targetMinutes: 3,
     speakerNotes:
-      'CHROs resist AI because they think they have to learn data engineering. They don\'t. They have to learn what to ask for. Spend extra time on the ongoing-data point.',
+      "Four shifts that broke strategic workforce planning. Don't dwell — name each and move. The point is the closing quote: today's CHRO isn't running a more advanced version of yesterday's HR function — they're running a fundamentally different operation.",
     component: SteerPov,
   },
   {
-    id: 'two-halves',
-    title: 'Two Halves That Meet',
+    id: 'what-you-do',
+    title: "What you're about to do",
     targetMinutes: 1,
     speakerNotes:
-      'Set up the next frame. Don\'t dive into either pillar yet.',
+      "Frame the next 40 minutes: One case (HorizonWorks). Two angles (top-down strategy vs bottom-up data). One question (what AI use cases would you take to the CEO?). Then click on to Meet HorizonWorks.",
     component: TwoHalves,
   },
   {
-    id: 'two-pillars',
-    title: 'The Two Pillars',
-    targetMinutes: 1.5,
+    id: 'meet-horizonworks',
+    title: 'Meet HorizonWorks',
+    targetMinutes: 2,
     speakerNotes:
-      'High-level view of Leadership Strategic Agenda + Data Foundation Mapping. Anchor what we do. No deep dives.',
+      "Placeholder — to be built next. Will introduce the fictional case company: 7,500 employees, 3 regions, 30·50·20 revenue split, medium AI maturity, CEO mandate of 'documented, measurable AI impact by end of 2026'.",
     component: TwoPillars,
   },
   {
-    id: 'what-we-deliver',
-    title: 'What We Deliver',
+    id: 'two-tables',
+    title: '40 minutes · Two tables · One question',
     targetMinutes: 1,
     speakerNotes:
-      'Soft sell. The diagnostic is focused, defendable, board-ready. No week numbers, no specifics — anchor the outcome.',
+      'Placeholder — to be built next. Will show the table assignment and split the room.',
     component: WhatWeDeliver,
   },
 ];

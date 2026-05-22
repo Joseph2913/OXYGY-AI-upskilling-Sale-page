@@ -4,29 +4,50 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="https://oxygy.com/wp-content/uploads/2019/11/cropped-favicon-32x32.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OXYGY × Working Futures — Day 1 · Barcelona</title>
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>OXYGY AI CoE — Day 1 · Strategic Workforce Planning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Geist', 'system-ui', 'sans-serif'],
-              mono: ['"Geist Mono"', 'ui-monospace', 'monospace'],
+              sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+              display: ['"Plus Jakarta Sans"', '"DM Sans"', 'sans-serif'],
+              mono: ['"DM Mono"', 'ui-monospace', 'monospace'],
             },
             colors: {
-              'stage-base': '#0E1320',
-              'stage-white': '#EAEFF5',
-              'stage-murmur': '#8B97A6',
+              navy: {
+                900: '#1A202C',
+                800: '#2D3748',
+                700: '#4A5568',
+                600: '#718096',
+                500: '#A0AEC0',
+                400: '#CBD5E0',
+              },
               teal: {
                 DEFAULT: '#38B2AC',
                 dark: '#2C9A94',
+                light: '#4FD1C5',
+                bg: '#E6FFFA',
+                pale: '#F0FBFA',
               },
-              accent: {
-                yellow: '#F7E8A4',
+              oxygy: {
                 lavender: '#C3D0F5',
+                'lavender-light': '#E7EBF9',
+                yellow: '#F7E8A4',
+                'yellow-light': '#FDF8DE',
                 peach: '#F5B8A0',
+                'peach-light': '#FCEAE0',
+                mint: '#A8F0E0',
+              },
+              surface: {
+                DEFAULT: '#FFFFFF',
+                alt: '#F7FAFC',
+                muted: '#EDF2F7',
+                border: '#E2E8F0',
               },
             },
           },
@@ -35,67 +56,116 @@
     </script>
     <style>
       html, body, #root { height: 100%; }
-      body { margin: 0; background: #0E1320; }
+      body {
+        margin: 0;
+        background: #FFFFFF;
+        font-family: 'DM Sans', system-ui, sans-serif;
+        color: #1A202C;
+        -webkit-font-smoothing: antialiased;
+      }
+
       @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after {
           animation-duration: 0.01ms !important;
           transition-duration: 0.01ms !important;
         }
       }
+
+      /* Frame entry stagger */
       @keyframes frame-enter {
-        from {
-          opacity: 0;
-          transform: translateY(8px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
       }
       .frame-enter > * {
         opacity: 0;
-        animation: frame-enter 0.4s ease-out forwards;
+        animation: frame-enter 0.55s ease-out forwards;
       }
       .frame-enter > *:nth-child(1) { animation-delay: 0ms; }
-      .frame-enter > *:nth-child(2) { animation-delay: 80ms; }
-      .frame-enter > *:nth-child(3) { animation-delay: 160ms; }
-      .frame-enter > *:nth-child(4) { animation-delay: 240ms; }
-      .frame-enter > *:nth-child(5) { animation-delay: 320ms; }
-      .frame-enter > *:nth-child(6) { animation-delay: 400ms; }
+      .frame-enter > *:nth-child(2) { animation-delay: 120ms; }
+      .frame-enter > *:nth-child(3) { animation-delay: 240ms; }
+      .frame-enter > *:nth-child(4) { animation-delay: 360ms; }
+      .frame-enter > *:nth-child(5) { animation-delay: 480ms; }
+      .frame-enter > *:nth-child(6) { animation-delay: 600ms; }
 
-      /* Atmospheric breathing — for circles, halos, ambient visuals */
-      @keyframes breathe-a {
-        0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.85; }
-        50% { transform: scale(1.04) translate(4px, -2px); opacity: 1; }
-      }
-      @keyframes breathe-b {
-        0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.85; }
-        50% { transform: scale(1.06) translate(-4px, 2px); opacity: 1; }
-      }
-      .breathe-a { animation: breathe-a 7s ease-in-out infinite; transform-origin: center; }
-      .breathe-b { animation: breathe-b 9s ease-in-out infinite; transform-origin: center; }
-
-      /* Underline sweep-in */
+      /* Underline sweep */
       @keyframes underline-sweep {
         from { transform: scaleX(0); }
         to { transform: scaleX(1); }
       }
       .underline-sweep {
         transform-origin: left center;
-        animation: underline-sweep 0.7s ease-out 0.6s forwards;
+        animation: underline-sweep 0.9s ease-out 0.5s forwards;
         transform: scaleX(0);
       }
 
-      /* Title letter cascade — used by Frame 1 */
-      @keyframes title-letter {
-        from { opacity: 0; transform: translateY(20px); filter: blur(8px); }
-        to { opacity: 1; transform: translateY(0); filter: blur(0); }
+      /* Teal pulse */
+      @keyframes teal-pulse {
+        0%, 100% { opacity: 0.9; }
+        50% { opacity: 1; }
       }
-      .title-letter {
-        display: inline-block;
-        opacity: 0;
-        animation: title-letter 0.7s ease-out forwards;
+      .teal-pulse { animation: teal-pulse 3.5s ease-in-out infinite; }
+
+      /* Word reveal — for hook */
+      @keyframes word-reveal {
+        from { opacity: 0; filter: blur(6px); transform: translateY(6px); }
+        to { opacity: 1; filter: blur(0); transform: translateY(0); }
       }
+      .word-reveal { animation: word-reveal 0.5s ease-out forwards; opacity: 0; display: inline-block; }
+
+      /* Layer slide — for the shift stack */
+      @keyframes layer-slide {
+        from { opacity: 0; transform: translateY(40px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .layer-slide { animation: layer-slide 0.7s ease-out forwards; opacity: 0; }
+
+      /* Card break — for old playbook */
+      @keyframes card-break {
+        0% { opacity: 0; transform: translateY(20px) scale(0.96); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      .card-break { animation: card-break 0.6s cubic-bezier(0.34, 1.2, 0.64, 1) forwards; opacity: 0; }
+
+      /* Number rise — for what you're about to do */
+      @keyframes number-rise {
+        from { opacity: 0; transform: translateY(30px) scale(0.92); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      .number-rise { animation: number-rise 0.7s ease-out forwards; opacity: 0; }
+
+      /* Pixel cascade — for title hero */
+      @keyframes pixel-fall {
+        0% { opacity: 0; transform: translateY(-50px) scale(0.6); }
+        70% { opacity: var(--pixel-op, 0.7); transform: translateY(2px) scale(1.02); }
+        100% { opacity: var(--pixel-op, 0.7); transform: translateY(0) scale(1); }
+      }
+      .pixel-fall { animation: pixel-fall 1.1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; opacity: 0; }
+
+      /* Subtle drift — for ambient particles */
+      @keyframes drift {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(2px, -3px); }
+      }
+      .drift-a { animation: drift 8s ease-in-out infinite; }
+      .drift-b { animation: drift 11s ease-in-out infinite reverse; }
+
+      /* Logo float — for slide 2 grounding logos */
+      @keyframes float-soft {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+      }
+      .float-soft { animation: float-soft 4s ease-in-out infinite; }
+
+      /* Arrow draw — for TO/FROM axis on slide 3 */
+      @keyframes arrow-draw {
+        from { stroke-dashoffset: 200; }
+        to { stroke-dashoffset: 0; }
+      }
+      .arrow-draw { stroke-dasharray: 200; stroke-dashoffset: 200; animation: arrow-draw 1.2s ease-out 0.8s forwards; }
+
+      /* Hide scrollbar */
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
     <script type="importmap">
       {
