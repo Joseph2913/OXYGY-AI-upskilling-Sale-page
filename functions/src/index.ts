@@ -6,7 +6,7 @@ const openRouterApiKey = defineSecret("OPEN_ROUTER_API");
 
 function getEnv() {
   const apiKey = openRouterApiKey.value();
-  const model = process.env.GEMINI_MODEL || "google/gemini-2.0-flash-001";
+  const model = process.env.GEMINI_MODEL || "google/gemini-2.5-flash";
   return { apiKey, model };
 }
 

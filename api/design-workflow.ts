@@ -174,7 +174,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const apiKey = process.env.OpenRouter_API;
-  const model = process.env.GEMINI_MODEL || 'google/gemini-2.0-flash-001';
+  const model = process.env.GEMINI_MODEL || 'google/gemini-2.5-flash';
 
   if (!apiKey) {
     return res.status(503).json({ error: 'API key not configured' });
