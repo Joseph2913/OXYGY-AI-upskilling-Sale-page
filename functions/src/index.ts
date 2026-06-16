@@ -6,7 +6,7 @@ const openRouterApiKey = defineSecret("OPEN_ROUTER_API");
 
 function getEnv() {
   const apiKey = openRouterApiKey.value();
-  const model = process.env.GEMINI_MODEL || "google/gemini-2.0-flash-001";
+  const model = process.env.GEMINI_MODEL || "google/gemini-3-flash-preview";
   return { apiKey, model };
 }
 
@@ -213,7 +213,7 @@ RESPONSE FORMAT (JSON only, no markdown):
   ]
 }`;
 
-export const designagent = onRequest({ secrets: [openRouterApiKey] }, async (req, res) => {
+export const designagent = onRequest({ secrets: [openRouterApiKey], timeoutSeconds: 120 }, async (req, res) => {
   if (req.method !== "POST") { res.status(405).json({ error: "Method not allowed" }); return; }
   const { apiKey, model } = getEnv();
   if (!apiKey) { res.status(503).json({ error: "API key not configured" }); return; }
@@ -281,7 +281,7 @@ RESPONSE FORMAT (JSON only):
   ]
 }`;
 
-export const designworkflow = onRequest({ secrets: [openRouterApiKey] }, async (req, res) => {
+export const designworkflow = onRequest({ secrets: [openRouterApiKey], timeoutSeconds: 120 }, async (req, res) => {
   if (req.method !== "POST") { res.status(405).json({ error: "Method not allowed" }); return; }
   const { apiKey, model } = getEnv();
   if (!apiKey) { res.status(503).json({ error: "API key not configured" }); return; }
@@ -328,7 +328,7 @@ For each tool, generate: classification (essential/recommended/optional), forYou
 
 Respond with ONLY JSON — no markdown, no extra text.`;
 
-export const analyzearchitecture = onRequest({ secrets: [openRouterApiKey] }, async (req, res) => {
+export const analyzearchitecture = onRequest({ secrets: [openRouterApiKey], timeoutSeconds: 120 }, async (req, res) => {
   if (req.method !== "POST") { res.status(405).json({ error: "Method not allowed" }); return; }
   const { apiKey, model } = getEnv();
   if (!apiKey) { res.status(503).json({ error: "API key not configured" }); return; }
@@ -419,7 +419,7 @@ OUTPUT FORMAT (JSON only):
   }
 }`;
 
-export const generatepathway = onRequest({ secrets: [openRouterApiKey] }, async (req, res) => {
+export const generatepathway = onRequest({ secrets: [openRouterApiKey], timeoutSeconds: 120 }, async (req, res) => {
   if (req.method !== "POST") { res.status(405).json({ error: "Method not allowed" }); return; }
   const { apiKey, model } = getEnv();
   if (!apiKey) { res.status(503).json({ error: "API key not configured" }); return; }

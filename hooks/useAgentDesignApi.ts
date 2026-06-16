@@ -26,46 +26,54 @@ export function useAgentDesignApi() {
     setError(null);
     lastCallRef.current = now;
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60000);
+    const hasValidShape = (data: AgentDesignResult) =>
+      !!data.readiness &&
+      !!data.output_format &&
+      !!data.system_prompt &&
+      !!data.accountability &&
+      typeof data.readiness.overall_score === 'number' &&
+      Array.isArray(data.accountability);
 
+    // The model occasionally drops a required field. Retry the whole call once
+    // before surfacing an error so a single bad generation is invisible.
+    const MAX_ATTEMPTS = 2;
     try {
-      const res = await fetchWithRetry('/api/design-agent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
+      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 120000);
+        try {
+          const res = await fetchWithRetry('/api/design-agent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            signal: controller.signal,
+          });
+          clearTimeout(timeout);
 
-      clearTimeout(timeout);
+          if (!res.ok) {
+            if (attempt < MAX_ATTEMPTS) continue;
+            setError(getErrorMessage(res.status, 'agent design'));
+            return null;
+          }
 
-      if (!res.ok) {
-        setError(getErrorMessage(res.status, 'agent design'));
-        return null;
-      }
+          const data = await res.json();
+          if (!hasValidShape(data)) {
+            if (attempt < MAX_ATTEMPTS) continue;
+            setError('Received an unexpected response format. Please try again.');
+            return null;
+          }
 
-      const data = await res.json();
-
-      // Validate response structure
-      if (
-        !data.readiness ||
-        !data.output_format ||
-        !data.system_prompt ||
-        !data.accountability ||
-        typeof data.readiness.overall_score !== 'number' ||
-        !Array.isArray(data.accountability)
-      ) {
-        setError('Received an unexpected response format. Please try again.');
-        return null;
-      }
-
-      return data as AgentDesignResult;
-    } catch (err: unknown) {
-      clearTimeout(timeout);
-      if (err instanceof Error && err.name === 'AbortError') {
-        setError('This is taking longer than expected. Please try again.');
-      } else {
-        setError('Unable to reach the agent design service. Please check your connection and try again.');
+          return data as AgentDesignResult;
+        } catch (err: unknown) {
+          clearTimeout(timeout);
+          if (err instanceof Error && err.name === 'AbortError') {
+            setError('This is taking longer than expected. Please try again.');
+            return null;
+          }
+          if (attempt < MAX_ATTEMPTS) continue;
+          setError('Unable to reach the agent design service. Please check your connection and try again.');
+          return null;
+        }
       }
       return null;
     } finally {

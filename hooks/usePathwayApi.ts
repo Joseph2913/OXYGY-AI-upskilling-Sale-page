@@ -23,38 +23,46 @@ export function usePathwayApi() {
     setError(null);
     lastCallRef.current = now;
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60000);
-
+    // The model occasionally returns an incomplete payload. Retry the whole
+    // call once before surfacing an error so a single bad generation is invisible.
+    const MAX_ATTEMPTS = 2;
     try {
-      const res = await fetchWithRetry('/api/generate-pathway', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formData, levelDepths }),
-        signal: controller.signal,
-      });
+      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 120000);
+        try {
+          const res = await fetchWithRetry('/api/generate-pathway', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ formData, levelDepths }),
+            signal: controller.signal,
+          });
+          clearTimeout(timeout);
 
-      clearTimeout(timeout);
+          if (!res.ok) {
+            if (attempt < MAX_ATTEMPTS) continue;
+            setError(getErrorMessage(res.status, 'pathway'));
+            return null;
+          }
 
-      if (!res.ok) {
-        setError(getErrorMessage(res.status, 'pathway'));
-        return null;
-      }
+          const data = await res.json();
+          if (!data.pathwaySummary || !data.levels) {
+            if (attempt < MAX_ATTEMPTS) continue;
+            setError('Received an unexpected response format. Please try again.');
+            return null;
+          }
 
-      const data = await res.json();
-
-      if (!data.pathwaySummary || !data.levels) {
-        setError('Received an unexpected response format. Please try again.');
-        return null;
-      }
-
-      return data as PathwayApiResponse;
-    } catch (err: unknown) {
-      clearTimeout(timeout);
-      if (err instanceof Error && err.name === 'AbortError') {
-        setError('This is taking longer than expected. The AI service may be under heavy load — please try again in a moment.');
-      } else {
-        setError('Unable to reach the pathway service. Please check your connection and try again.');
+          return data as PathwayApiResponse;
+        } catch (err: unknown) {
+          clearTimeout(timeout);
+          if (err instanceof Error && err.name === 'AbortError') {
+            setError('This is taking longer than expected. The AI service may be under heavy load — please try again in a moment.');
+            return null;
+          }
+          if (attempt < MAX_ATTEMPTS) continue;
+          setError('Unable to reach the pathway service. Please check your connection and try again.');
+          return null;
+        }
       }
       return null;
     } finally {

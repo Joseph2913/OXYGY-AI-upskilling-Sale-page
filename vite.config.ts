@@ -54,6 +54,60 @@ async function fetchWithRetry(
   throw lastError || new Error('All retries exhausted');
 }
 
+// Calls OpenRouter for a JSON answer and retries the failure modes that come
+// back as HTTP 200: an upstream error body (e.g. "504 operation was aborted"),
+// empty content, or syntactically malformed JSON (the model occasionally emits
+// a stray brace on large nested schemas). Mirrors functions/src/gemini.ts so
+// local dev behaves like production. Returns parsed JSON or { __error }.
+async function callOpenRouterJSON(
+  apiKey: string,
+  model: string,
+  systemPrompt: string,
+  userMessage: string,
+  label: string,
+): Promise<any> {
+  const openRouterModel = model.startsWith('google/') ? model : `google/${model}`;
+  const MAX_ATTEMPTS = 3;
+  let lastStatus = 502;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    const resp = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: openRouterModel,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage },
+        ],
+        temperature: 0.7,
+        max_tokens: 16000,
+        response_format: { type: 'json_object' },
+      }),
+    }, label);
+
+    if (!resp.ok) {
+      if (resp.status === 429) return { __error: 429 };
+      lastStatus = 502;
+      continue;
+    }
+    const data = await resp.json();
+    const text = data?.choices?.[0]?.message?.content || '';
+    if (data?.error || !text) {
+      console.warn(`[${label}] empty/errored body (attempt ${attempt}/${MAX_ATTEMPTS}):`, data?.error ? JSON.stringify(data.error) : 'no content');
+      lastStatus = 502;
+      continue;
+    }
+    try {
+      return JSON.parse(text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim());
+    } catch {
+      console.warn(`[${label}] unparseable JSON (attempt ${attempt}/${MAX_ATTEMPTS}), finish_reason=${data?.choices?.[0]?.finish_reason}, len=${text.length}`);
+      lastStatus = 502;
+      continue;
+    }
+  }
+  return { __error: lastStatus };
+}
+
 const GEMINI_SYSTEM_PROMPT = `You are the OXYGY Prompt Engineering Coach — an expert in transforming raw, unstructured prompts into well-engineered, structured prompts that produce dramatically better AI outputs.
 
 Your job is to take a user's input and produce an enhanced prompt structured into exactly 6 sections. These 6 sections are called "The Prompt Blueprint":
@@ -132,43 +186,11 @@ function geminiProxyPlugin(apiKey: string, model: string): Plugin {
               userMessage = `The user wants to build a prompt with the following inputs:\n\nRole: ${wa.role || 'Not specified'}\nContext: ${wa.context || 'Not specified'}\nTask: ${wa.task || 'Not specified'}\nFormat preferences: ${formatText}\nSteps: ${wa.steps || 'Not specified'}\nQuality constraints: ${qualityText}\n\nPlease enhance and expand each section into a polished, comprehensive prompt following The Prompt Blueprint framework.`;
             }
 
-            const openRouterModel = model.startsWith('google/') ? model : `google/${model}`;
-            const geminiResponse = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-              body: JSON.stringify({
-                model: openRouterModel,
-                messages: [
-                  { role: 'system', content: GEMINI_SYSTEM_PROMPT },
-                  { role: 'user', content: userMessage },
-                ],
-                temperature: 0.7,
-                response_format: { type: 'json_object' },
-              }),
-            }, 'enhance-prompt');
-
-            if (!geminiResponse.ok) {
-              const errText = await geminiResponse.text();
-              console.error('Gemini API error:', errText);
-              res.statusCode = 502;
+            const parsed = await callOpenRouterJSON(apiKey, model, GEMINI_SYSTEM_PROMPT, userMessage, 'enhance-prompt');
+            if (parsed?.__error) {
+              res.statusCode = parsed.__error === 429 ? 429 : 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'AI service error', retryable: true }));
-              return;
-            }
-
-            const data = await geminiResponse.json();
-            const text = data?.choices?.[0]?.message?.content || '';
-
-            // Parse the JSON response — handle potential markdown fences
-            let parsed;
-            try {
-              const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-              parsed = JSON.parse(cleaned);
-            } catch {
-              console.error('Failed to parse Gemini response:', text);
-              res.statusCode = 502;
-              res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'Failed to parse AI response', retryable: true }));
+              res.end(JSON.stringify({ error: parsed.__error === 429 ? 'The AI service is temporarily busy. Please wait a moment and try again.' : 'AI service error', retryable: true }));
               return;
             }
 
@@ -300,42 +322,11 @@ You must respond with the following JSON structure ONLY — no markdown, no extr
 
             const userMessage = `Task Description: ${task_description}\n\nInput Data Description: ${input_data_description || 'Not specified'}`;
 
-            const openRouterModel = model.startsWith('google/') ? model : `google/${model}`;
-            const geminiResponse = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-              body: JSON.stringify({
-                model: openRouterModel,
-                messages: [
-                  { role: 'system', content: systemPrompt },
-                  { role: 'user', content: userMessage },
-                ],
-                temperature: 0.7,
-                response_format: { type: 'json_object' },
-              }),
-            }, 'agent-design');
-
-            if (!geminiResponse.ok) {
-              const errText = await geminiResponse.text();
-              console.error('Gemini API error (agent design):', errText);
-              res.statusCode = 502;
+            const parsed = await callOpenRouterJSON(apiKey, model, systemPrompt, userMessage, 'agent-design');
+            if (parsed?.__error) {
+              res.statusCode = parsed.__error === 429 ? 429 : 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'AI service error', retryable: true }));
-              return;
-            }
-
-            const data = await geminiResponse.json();
-            const text = data?.choices?.[0]?.message?.content || '';
-
-            let parsed;
-            try {
-              const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-              parsed = JSON.parse(cleaned);
-            } catch {
-              console.error('Failed to parse Gemini response (agent design):', text);
-              res.statusCode = 502;
-              res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'Failed to parse AI response', retryable: true }));
+              res.end(JSON.stringify({ error: parsed.__error === 429 ? 'The AI service is temporarily busy. Please wait a moment and try again.' : 'AI service error', retryable: true }));
               return;
             }
 
@@ -509,42 +500,11 @@ For the user's original workflow, you will receive nodes with IDs like "user-nod
               userMessage = `Process to automate: ${task_description}\n\nExisting tools and systems: ${tools_and_systems || 'Not specified'}\n\nUser's workflow:\n${nodeList}\n\nUser's design rationale: ${user_rationale || 'Not provided'}`;
             }
 
-            const openRouterModel = model.startsWith('google/') ? model : `google/${model}`;
-            const geminiResponse = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-              body: JSON.stringify({
-                model: openRouterModel,
-                messages: [
-                  { role: 'system', content: systemPrompt },
-                  { role: 'user', content: userMessage },
-                ],
-                temperature: 0.7,
-                response_format: { type: 'json_object' },
-              }),
-            }, 'workflow-design');
-
-            if (!geminiResponse.ok) {
-              const errText = await geminiResponse.text();
-              console.error('Gemini API error (workflow design):', errText);
-              res.statusCode = 502;
+            const parsed = await callOpenRouterJSON(apiKey, model, systemPrompt, userMessage, 'workflow-design');
+            if (parsed?.__error) {
+              res.statusCode = parsed.__error === 429 ? 429 : 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'AI service error', retryable: true }));
-              return;
-            }
-
-            const data = await geminiResponse.json();
-            const text = data?.choices?.[0]?.message?.content || '';
-
-            let parsed;
-            try {
-              const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-              parsed = JSON.parse(cleaned);
-            } catch {
-              console.error('Failed to parse Gemini response (workflow design):', text);
-              res.statusCode = 502;
-              res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'Failed to parse AI response', retryable: true }));
+              res.end(JSON.stringify({ error: parsed.__error === 429 ? 'The AI service is temporarily busy. Please wait a moment and try again.' : 'AI service error', retryable: true }));
               return;
             }
 
@@ -697,42 +657,11 @@ Respond with ONLY this JSON structure — no markdown, no extra text:
               `TECHNICAL COMFORT LEVEL: ${techLabels[technicalLevel || ''] || technicalLevel || 'Not specified'}`,
             ].join('\n\n');
 
-            const openRouterModel = model.startsWith('google/') ? model : `google/${model}`;
-            const geminiResponse = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-              body: JSON.stringify({
-                model: openRouterModel,
-                messages: [
-                  { role: 'system', content: systemPrompt },
-                  { role: 'user', content: userMessage },
-                ],
-                temperature: 0.7,
-                response_format: { type: 'json_object' },
-              }),
-            }, 'architecture');
-
-            if (!geminiResponse.ok) {
-              const errText = await geminiResponse.text();
-              console.error('Gemini API error (architecture):', errText);
-              res.statusCode = 502;
+            const parsed = await callOpenRouterJSON(apiKey, model, systemPrompt, userMessage, 'architecture');
+            if (parsed?.__error) {
+              res.statusCode = parsed.__error === 429 ? 429 : 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'AI service error', retryable: true }));
-              return;
-            }
-
-            const data = await geminiResponse.json();
-            const text = data?.choices?.[0]?.message?.content || '';
-
-            let parsed;
-            try {
-              const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-              parsed = JSON.parse(cleaned);
-            } catch {
-              console.error('Failed to parse Gemini response (architecture):', text);
-              res.statusCode = 502;
-              res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'Failed to parse AI response', retryable: true }));
+              res.end(JSON.stringify({ error: parsed.__error === 429 ? 'The AI service is temporarily busy. Please wait a moment and try again.' : 'AI service error', retryable: true }));
               return;
             }
 
@@ -891,48 +820,11 @@ Respond ONLY with valid JSON:
 
 Only include levels that are "full" or "fast-track". Omit "awareness" and "skip" levels entirely.`;
 
-            const openRouterModel = model.startsWith('google/') ? model : `google/${model}`;
-            const requestBody = JSON.stringify({
-              model: openRouterModel,
-              messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: userMessage },
-              ],
-              temperature: 0.7,
-              response_format: { type: 'json_object' },
-            });
-
-            const geminiResponse = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-              body: requestBody,
-            }, 'pathway');
-
-            if (!geminiResponse.ok) {
-              const errText = await geminiResponse.text();
-              console.error('Gemini API error (pathway):', geminiResponse.status, errText);
-              const status = geminiResponse.status === 429 ? 429 : 502;
-              const message = geminiResponse.status === 429
-                ? 'The AI service is temporarily busy. Please wait a moment and try again.'
-                : 'AI service error';
-              res.statusCode = status;
+            const parsed = await callOpenRouterJSON(apiKey, model, systemPrompt, userMessage, 'pathway');
+            if (parsed?.__error) {
+              res.statusCode = parsed.__error === 429 ? 429 : 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: message, retryable: true }));
-              return;
-            }
-
-            const data = await geminiResponse.json();
-            const text = data?.choices?.[0]?.message?.content || '';
-
-            let parsed;
-            try {
-              const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-              parsed = JSON.parse(cleaned);
-            } catch {
-              console.error('Failed to parse Gemini response (pathway):', text);
-              res.statusCode = 502;
-              res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'Failed to parse AI response', retryable: true }));
+              res.end(JSON.stringify({ error: parsed.__error === 429 ? 'The AI service is temporarily busy. Please wait a moment and try again.' : 'AI service error', retryable: true }));
               return;
             }
 
@@ -951,7 +843,7 @@ Only include levels that are "full" or "fast-track". Omit "awareness" and "skip"
 }
 
 function dashboardDesignProxyPlugin(apiKey: string, model: string, textModel?: string): Plugin {
-  const htmlModel = textModel || 'google/gemini-2.0-flash-001';
+  const htmlModel = textModel || 'google/gemini-3-flash-preview';
   // System prompt for Gemini HTML fallback (used when Imagen is unavailable)
   const htmlFallbackPrompt = `You are an elite UI designer creating stunning, modern dashboard mockups. Generate a complete HTML dashboard.
 
@@ -1188,6 +1080,7 @@ The html_content MUST fit inside a 1100x700px iframe WITHOUT scrolling. Add "htm
                   { role: 'user', content: userMessage },
                 ],
                 temperature: 0.7,
+                max_tokens: 16000,
                 response_format: { type: 'json_object' },
               }),
             }, 'dashboard-html');
@@ -1393,42 +1286,11 @@ For each key metric, specify:
               update_frequency ? `UPDATE FREQUENCY: ${update_frequency}` : '',
             ].filter(Boolean).join('\n');
 
-            const openRouterModel = model.startsWith('google/') ? model : `google/${model}`;
-            const geminiResponse = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-              body: JSON.stringify({
-                model: openRouterModel,
-                messages: [
-                  { role: 'system', content: systemPrompt },
-                  { role: 'user', content: userMessage },
-                ],
-                temperature: 0.7,
-                response_format: { type: 'json_object' },
-              }),
-            }, 'prd');
-
-            if (!geminiResponse.ok) {
-              const errText = await geminiResponse.text();
-              console.error('Gemini API error (PRD):', errText);
-              res.statusCode = 502;
+            const parsed = await callOpenRouterJSON(apiKey, model, systemPrompt, userMessage, 'prd');
+            if (parsed?.__error) {
+              res.statusCode = parsed.__error === 429 ? 429 : 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'AI service error', retryable: true }));
-              return;
-            }
-
-            const data = await geminiResponse.json();
-            const text = data?.choices?.[0]?.message?.content || '';
-
-            let parsed;
-            try {
-              const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-              parsed = JSON.parse(cleaned);
-            } catch {
-              console.error('Failed to parse Gemini response (PRD):', text);
-              res.statusCode = 502;
-              res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'Failed to parse AI response', retryable: true }));
+              res.end(JSON.stringify({ error: parsed.__error === 429 ? 'The AI service is temporarily busy. Please wait a moment and try again.' : 'AI service error', retryable: true }));
               return;
             }
 
@@ -1531,42 +1393,11 @@ Context: ${context}
 Outcome: ${outcome}
 Self-assessed Impact Rating: ${rating}/5${profileContext}`;
 
-            const openRouterModel = model.startsWith('google/') ? model : `google/${model}`;
-            const geminiResponse = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-              body: JSON.stringify({
-                model: openRouterModel,
-                messages: [
-                  { role: 'system', content: systemPrompt },
-                  { role: 'user', content: userMessage },
-                ],
-                temperature: 0.7,
-                response_format: { type: 'json_object' },
-              }),
-            }, 'insight');
-
-            if (!geminiResponse.ok) {
-              const errText = await geminiResponse.text();
-              console.error('Gemini API error (Insight):', errText);
-              res.statusCode = 502;
+            const parsed = await callOpenRouterJSON(apiKey, model, systemPrompt, userMessage, 'insight');
+            if (parsed?.__error) {
+              res.statusCode = parsed.__error === 429 ? 429 : 502;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'AI service error', retryable: true }));
-              return;
-            }
-
-            const data = await geminiResponse.json();
-            const text = data?.choices?.[0]?.message?.content || '';
-
-            let parsed;
-            try {
-              const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-              parsed = JSON.parse(cleaned);
-            } catch {
-              console.error('Failed to parse Gemini response (Insight):', text);
-              res.statusCode = 502;
-              res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'Failed to parse AI response', retryable: true }));
+              res.end(JSON.stringify({ error: parsed.__error === 429 ? 'The AI service is temporarily busy. Please wait a moment and try again.' : 'AI service error', retryable: true }));
               return;
             }
 
@@ -1586,7 +1417,7 @@ Self-assessed Impact Rating: ${rating}/5${profileContext}`;
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
-  const geminiModel = env.GEMINI_MODEL || 'google/gemini-2.0-flash-001';
+  const geminiModel = env.GEMINI_MODEL || 'google/gemini-3-flash-preview';
   const dashboardModel = env.DASHBOARD_MODEL || 'google/gemini-3.1-flash-image-preview';
 
   return {

@@ -23,45 +23,53 @@ export function useWorkflowDesignApi() {
     setError(null);
     lastCallRef.current = now;
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20000);
+    const hasValidShape = (data: WorkflowGenerateResult & WorkflowFeedbackResult) =>
+      payload.mode === 'auto_generate'
+        ? !!data.workflow_name && Array.isArray(data.nodes)
+        : Array.isArray(data.suggested_workflow) && !!data.changes;
 
+    // The model occasionally returns an incomplete payload. Retry the whole
+    // call once before surfacing an error so a single bad generation is invisible.
+    const MAX_ATTEMPTS = 2;
     try {
-      const res = await fetchWithRetry('/api/design-workflow', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
+      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 120000);
+        try {
+          const res = await fetchWithRetry('/api/design-workflow', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            signal: controller.signal,
+          });
+          clearTimeout(timeout);
 
-      clearTimeout(timeout);
+          if (!res.ok) {
+            if (attempt < MAX_ATTEMPTS) continue;
+            setError(getErrorMessage(res.status, 'workflow design'));
+            return null;
+          }
 
-      if (!res.ok) {
-        setError(getErrorMessage(res.status, 'workflow design'));
-        return null;
-      }
+          const data = await res.json();
+          if (!hasValidShape(data)) {
+            if (attempt < MAX_ATTEMPTS) continue;
+            setError('Received an unexpected response format. Please try again.');
+            return null;
+          }
 
-      const data = await res.json();
-
-      if (payload.mode === 'auto_generate') {
-        if (!data.workflow_name || !data.nodes || !Array.isArray(data.nodes)) {
-          setError('Received an unexpected response format. Please try again.');
+          return payload.mode === 'auto_generate'
+            ? (data as WorkflowGenerateResult)
+            : (data as WorkflowFeedbackResult);
+        } catch (err: unknown) {
+          clearTimeout(timeout);
+          if (err instanceof Error && err.name === 'AbortError') {
+            setError('This is taking longer than expected. Please try again.');
+            return null;
+          }
+          if (attempt < MAX_ATTEMPTS) continue;
+          setError('Unable to reach the workflow design service. Please check your connection and try again.');
           return null;
         }
-        return data as WorkflowGenerateResult;
-      } else {
-        if (!data.suggested_workflow || !Array.isArray(data.suggested_workflow) || !data.changes) {
-          setError('Received an unexpected response format. Please try again.');
-          return null;
-        }
-        return data as WorkflowFeedbackResult;
-      }
-    } catch (err: unknown) {
-      clearTimeout(timeout);
-      if (err instanceof Error && err.name === 'AbortError') {
-        setError('This is taking longer than expected. Please try again.');
-      } else {
-        setError('Unable to reach the workflow design service. Please check your connection and try again.');
       }
       return null;
     } finally {

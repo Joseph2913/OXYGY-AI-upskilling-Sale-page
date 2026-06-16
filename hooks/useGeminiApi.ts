@@ -26,7 +26,7 @@ export function useGeminiApi() {
     setError(null);
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const timeout = setTimeout(() => controller.abort(), 45000);
 
     try {
       const res = await fetchWithRetry('/api/enhance-prompt', {
