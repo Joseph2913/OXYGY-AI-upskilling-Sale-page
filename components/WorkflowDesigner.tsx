@@ -10,8 +10,6 @@ import {
   LAYER_COLORS, WORKFLOW_EXAMPLES, ICON_MAP,
 } from '../data/workflow-designer-content';
 import { ArtifactClosing } from './ArtifactClosing';
-import { useAuth } from '../context/AuthContext';
-import { upsertToolUsed } from '../lib/database';
 
 /* ─── Constants ──────────────────────────────────────────────────── */
 
@@ -499,7 +497,6 @@ function NodeLibrarySection() {
    ═══════════════════════════════════════════════════════════════════ */
 
 export function WorkflowDesigner() {
-  const { user } = useAuth();
   /* ── State ── */
   const [taskDescription, setTaskDescription] = useState('');
   const [toolsAndSystems, setToolsAndSystems] = useState('');
@@ -624,7 +621,6 @@ export function WorkflowDesigner() {
     });
     if (result && 'workflow_name' in result) {
       setGenerateResult(result);
-      if (user) upsertToolUsed(user.id, 3);
     }
   };
 
@@ -710,7 +706,6 @@ export function WorkflowDesigner() {
       setComparisonView('ai');
       setNodesAnimated(0);
       setConnectionsAnimated(0);
-      if (user) upsertToolUsed(user.id, 3);
     }
   };
 

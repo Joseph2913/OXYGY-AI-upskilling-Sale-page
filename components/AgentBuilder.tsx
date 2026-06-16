@@ -10,9 +10,6 @@ import {
 } from '../data/agent-builder-content';
 import type { AgentDesignResult, AgentReadinessCriteria } from '../types';
 import { ArtifactClosing } from './ArtifactClosing';
-import { AuthModal } from './AuthModal';
-import { useAuth } from '../context/AuthContext';
-import { upsertToolUsed, savePrompt as dbSavePrompt } from '../lib/database';
 
 /* ─── HELPERS ─── */
 
@@ -243,7 +240,6 @@ const STEP_SKELETONS = [StepOneSkeleton, StepTwoSkeleton, StepThreeSkeleton, Ste
 /* ─── MAIN COMPONENT ─── */
 
 export const AgentBuilder: React.FC = () => {
-  const { user } = useAuth();
   // Input state
   const [taskDescription, setTaskDescription] = useState('');
   const [inputDataDescription, setInputDataDescription] = useState('');
@@ -268,10 +264,9 @@ export const AgentBuilder: React.FC = () => {
   // Accountability checkbox state
   const [selectedChecks, setSelectedChecks] = useState<Record<number, boolean>>({});
 
-  // Save to library state
+  // Copy-to-clipboard feedback state
   const [savedPromptToLibrary, setSavedPromptToLibrary] = useState(false);
   const [savedAccountabilityToLibrary, setSavedAccountabilityToLibrary] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Refs
   const inputSectionRef = useRef<HTMLDivElement>(null);
@@ -330,7 +325,6 @@ export const AgentBuilder: React.FC = () => {
 
     if (data) {
       setResult(data);
-      if (user) upsertToolUsed(user.id, 2);
     }
   };
 
@@ -395,38 +389,22 @@ export const AgentBuilder: React.FC = () => {
     return result.system_prompt + '\n\n--- BUILT-IN ACCOUNTABILITY FEATURES ---\n\n' + selectedInstructions;
   };
 
-  const saveToLibrary = (title: string, content: string) => {
-    if (!user) {
-      // Preserve work in localStorage so it survives an OAuth redirect
-      try { localStorage.setItem('oxygy_agent_draft', JSON.stringify({ result, taskDescription, selectedChecks })); } catch {}
-      setShowAuthModal(true);
-      return false;
-    }
-    const trimmedTitle = title.slice(0, 60) + (title.length > 60 ? '...' : '');
-    dbSavePrompt(user.id, { level: 2, title: trimmedTitle, content, source_tool: 'agent-builder' });
-    return true;
+  const copyText = (text: string) => {
+    navigator.clipboard.writeText(text).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    });
   };
-
-  // Restore draft from localStorage after OAuth redirect
-  useEffect(() => {
-    try {
-      const draft = localStorage.getItem('oxygy_agent_draft');
-      if (draft) {
-        const parsed = JSON.parse(draft);
-        if (parsed.result) setResult(parsed.result);
-        if (parsed.taskDescription) setTaskDescription(parsed.taskDescription);
-        if (parsed.selectedChecks) setSelectedChecks(parsed.selectedChecks);
-        localStorage.removeItem('oxygy_agent_draft');
-      }
-    } catch {}
-  }, []);
 
   const handleSaveSystemPrompt = () => {
     if (!result) return;
-    const saved = saveToLibrary(`Agent: ${taskDescription.slice(0, 50)}`, result.system_prompt);
-    if (!saved) return;
+    copyText(result.system_prompt);
     setSavedPromptToLibrary(true);
-    setToastMessage('System prompt saved to your library');
+    setToastMessage('System prompt copied to clipboard');
     setShowToast(true);
     setTimeout(() => setShowToast(false), 2500);
     setTimeout(() => setSavedPromptToLibrary(false), 3000);
@@ -434,10 +412,9 @@ export const AgentBuilder: React.FC = () => {
 
   const handleSaveFullWithChecks = () => {
     if (!result) return;
-    const saved = saveToLibrary(`Agent + Accountability: ${taskDescription.slice(0, 40)}`, buildFullPromptWithChecks());
-    if (!saved) return;
+    copyText(buildFullPromptWithChecks());
     setSavedAccountabilityToLibrary(true);
-    setToastMessage('Full prompt with accountability saved to your library');
+    setToastMessage('Full prompt with accountability copied to clipboard');
     setShowToast(true);
     setTimeout(() => setShowToast(false), 2500);
     setTimeout(() => setSavedAccountabilityToLibrary(false), 3000);
@@ -601,7 +578,7 @@ export const AgentBuilder: React.FC = () => {
                 cursor: savedPromptToLibrary ? 'default' : 'pointer',
               }}
             >
-              {savedPromptToLibrary ? <><Check size={16} /> Saved!</> : <><Library size={16} /> Save to Library</>}
+              {savedPromptToLibrary ? <><Check size={16} /> Copied!</> : <><Copy size={16} /> Copy to clipboard</>}
             </button>
             <button onClick={() => setPromptExpanded(!promptExpanded)}
               className="flex items-center gap-1 text-[14px] text-[#718096] hover:text-[#5B6DC2] transition-colors"
@@ -721,7 +698,7 @@ export const AgentBuilder: React.FC = () => {
             cursor: selectedCount === 0 || savedAccountabilityToLibrary ? 'default' : 'pointer',
           }}
         >
-          {savedAccountabilityToLibrary ? <><Check size={14} /> Saved!</> : <><Library size={14} /> Save to Library</>}
+          {savedAccountabilityToLibrary ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy to clipboard</>}
         </button>
       </div>
     </>
@@ -1039,8 +1016,6 @@ export const AgentBuilder: React.FC = () => {
         </div>
       )}
 
-      {/* Auth overlay for save-to-library */}
-      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </div>
   );
 };

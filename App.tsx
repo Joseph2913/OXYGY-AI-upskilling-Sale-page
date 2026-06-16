@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { LevelJourney } from './components/LevelJourney';
@@ -15,16 +14,11 @@ import { LearningPathway } from './components/LearningPathway';
 import { EngagementModel } from './components/EngagementModel';
 import { CaseStudiesSection, CaseStudiesPage } from './components/CaseStudies';
 import { UserJourney } from './components/UserJourney';
-import { Dashboard } from './components/dashboard/Dashboard';
-import { AuthModal } from './components/AuthModal';
-type Page = 'home' | 'playground' | 'agent-builder' | 'workflow-designer' | 'product-architecture' | 'dashboard-design' | 'learning-pathway' | 'engagement-model' | 'case-studies' | 'user-journey' | 'dashboard';
+
+type Page = 'home' | 'playground' | 'agent-builder' | 'workflow-designer' | 'product-architecture' | 'dashboard-design' | 'learning-pathway' | 'engagement-model' | 'case-studies' | 'user-journey';
 
 function getPageFromHash(): Page {
   const hash = window.location.hash;
-  // Ignore Supabase auth callback tokens in the hash
-  if (hash.includes('access_token=') || hash.includes('refresh_token=') || hash.includes('error_description=')) {
-    return 'home';
-  }
   if (hash === '#playground') return 'playground';
   if (hash === '#agent-builder') return 'agent-builder';
   if (hash === '#workflow-designer') return 'workflow-designer';
@@ -34,14 +28,10 @@ function getPageFromHash(): Page {
   if (hash === '#engagement-model') return 'engagement-model';
   if (hash === '#case-studies') return 'case-studies';
   if (hash === '#user-journey') return 'user-journey';
-  if (hash === '#dashboard') return 'dashboard';
   return 'home';
 }
 
-const PROTECTED_PAGES = new Set<Page>(['learning-pathway', 'dashboard']);
-
-function AppContent() {
-  const { user } = useAuth();
+function App() {
   const [currentPage, setCurrentPage] = useState<Page>(getPageFromHash);
 
   useEffect(() => {
@@ -53,8 +43,6 @@ function AppContent() {
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
-
-  const needsAuth = PROTECTED_PAGES.has(currentPage) && !user;
 
   return (
     <div className="min-h-screen bg-white font-sans text-navy-900 selection:bg-teal selection:text-white">
@@ -74,23 +62,14 @@ function AppContent() {
       {currentPage === 'workflow-designer' && <WorkflowDesigner />}
       {currentPage === 'product-architecture' && <ProductArchitecture />}
       {currentPage === 'dashboard-design' && <DashboardDesigner />}
-      {currentPage === 'learning-pathway' && (needsAuth ? <AuthModal /> : <LearningPathway />)}
+      {currentPage === 'learning-pathway' && <LearningPathway />}
       {currentPage === 'engagement-model' && <EngagementModel />}
       {currentPage === 'case-studies' && <CaseStudiesPage />}
       {currentPage === 'user-journey' && <UserJourney />}
-      {currentPage === 'dashboard' && (needsAuth ? <AuthModal /> : <Dashboard />)}
 
       {/* Footer bar on all non-home pages */}
       {currentPage !== 'home' && <FooterBar />}
     </div>
-  );
-}
-
-function App() {
-  return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
   );
 }
 

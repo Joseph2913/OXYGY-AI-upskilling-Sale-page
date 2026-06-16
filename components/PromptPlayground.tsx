@@ -1,21 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, ArrowRight, ArrowDown, Sparkles, Puzzle, Mic, MicOff, Info, Copy, Check, RotateCcw, ChevronDown, Code, Library } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowDown, Sparkles, Puzzle, Mic, MicOff, Info, Copy, Check, RotateCcw, ChevronDown, Code } from 'lucide-react';
 import { EXAMPLE_PROMPTS, PROMPT_BLUEPRINT, BLUEPRINT_EDUCATION } from '../data/playground-content';
 import { useGeminiApi } from '../hooks/useGeminiApi';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { BuildWizard } from './playground/BuildWizard';
 import type { PromptResult, WizardAnswers } from '../types';
 import { ArtifactClosing } from './ArtifactClosing';
-import { AuthModal } from './AuthModal';
-import { useAuth } from '../context/AuthContext';
-import { upsertToolUsed, savePrompt as dbSavePrompt } from '../lib/database';
 
 type Mode = 'enhance' | 'build';
 
 const CARD_MIN_HEIGHT = '180px';
 
 export const PromptPlayground: React.FC = () => {
-  const { user } = useAuth();
   const [activeMode, setActiveMode] = useState<Mode>('enhance');
   const [inputPrompt, setInputPrompt] = useState('');
   const [result, setResult] = useState<PromptResult | null>(null);
@@ -29,7 +25,6 @@ export const PromptPlayground: React.FC = () => {
   const [visibleBlocks, setVisibleBlocks] = useState(0);
   const [showMarkdownTooltip, setShowMarkdownTooltip] = useState(false);
   const [savedToLibrary, setSavedToLibrary] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputAreaRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
@@ -64,7 +59,6 @@ export const PromptPlayground: React.FC = () => {
       setResult(data);
       setResultMode('enhance');
       setShowResultsBanner(true);
-      if (user) upsertToolUsed(user.id, 1);
       setTimeout(() => {
         setShowResultsBanner(false);
         cardsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -78,7 +72,6 @@ export const PromptPlayground: React.FC = () => {
       setResult(data);
       setResultMode('build');
       setShowResultsBanner(true);
-      if (user) upsertToolUsed(user.id, 1);
       setTimeout(() => {
         setShowResultsBanner(false);
         cardsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -168,35 +161,13 @@ export const PromptPlayground: React.FC = () => {
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const handleSaveToLibrary = () => {
+  const handleCopyAll = async () => {
     if (!result) return;
-    if (!user) {
-      // Preserve result in localStorage so it survives an OAuth redirect
-      try { localStorage.setItem('oxygy_playground_draft', JSON.stringify({ result, originalPrompt, resultMode })); } catch {}
-      setShowAuthModal(true);
-      return;
-    }
-    const fullPrompt = buildMarkdownPrompt(result);
-    const title = result.task.slice(0, 60) + (result.task.length > 60 ? '...' : '');
-    dbSavePrompt(user.id, { level: 1, title, content: fullPrompt, source_tool: 'prompt-playground' });
+    await copyToClipboard(buildMarkdownPrompt(result));
     setSavedToLibrary(true);
-    showToastNotification('Prompt saved to your library');
+    showToastNotification('Prompt copied to clipboard');
     setTimeout(() => setSavedToLibrary(false), 3000);
   };
-
-  // Restore draft from localStorage after OAuth redirect
-  useEffect(() => {
-    try {
-      const draft = localStorage.getItem('oxygy_playground_draft');
-      if (draft) {
-        const parsed = JSON.parse(draft);
-        if (parsed.result) setResult(parsed.result);
-        if (parsed.originalPrompt) setOriginalPrompt(parsed.originalPrompt);
-        if (parsed.resultMode) setResultMode(parsed.resultMode);
-        localStorage.removeItem('oxygy_playground_draft');
-      }
-    } catch {}
-  }, []);
 
   const scrollToModes = () => {
     modeCardsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -504,7 +475,7 @@ export const PromptPlayground: React.FC = () => {
                   {copied ? 'Copied!' : 'Copy Full Prompt'}
                 </button>
                 <button
-                  onClick={handleSaveToLibrary}
+                  onClick={handleCopyAll}
                   disabled={savedToLibrary}
                   className="px-4 py-2 text-[13px] font-semibold rounded-full transition-colors flex items-center gap-1.5"
                   style={{
@@ -514,8 +485,8 @@ export const PromptPlayground: React.FC = () => {
                     cursor: savedToLibrary ? 'default' : 'pointer',
                   }}
                 >
-                  {savedToLibrary ? <Check size={13} /> : <Library size={13} />}
-                  {savedToLibrary ? 'Saved!' : 'Save to Library'}
+                  {savedToLibrary ? <Check size={13} /> : <Copy size={13} />}
+                  {savedToLibrary ? 'Copied!' : 'Copy to clipboard'}
                 </button>
               </div>
             )}
@@ -616,7 +587,7 @@ export const PromptPlayground: React.FC = () => {
                   {copied ? 'Copied!' : 'Copy Markdown'}
                 </button>
                 <button
-                  onClick={handleSaveToLibrary}
+                  onClick={handleCopyAll}
                   disabled={savedToLibrary}
                   className="px-4 py-1.5 text-[13px] font-semibold rounded-full transition-colors flex items-center gap-1.5"
                   style={{
@@ -626,8 +597,8 @@ export const PromptPlayground: React.FC = () => {
                     cursor: savedToLibrary ? 'default' : 'pointer',
                   }}
                 >
-                  {savedToLibrary ? <Check size={13} /> : <Library size={13} />}
-                  {savedToLibrary ? 'Saved!' : 'Save to Library'}
+                  {savedToLibrary ? <Check size={13} /> : <Copy size={13} />}
+                  {savedToLibrary ? 'Copied!' : 'Copy to clipboard'}
                 </button>
               </div>
               <div className="relative">
@@ -717,7 +688,7 @@ export const PromptPlayground: React.FC = () => {
                 {copied ? 'Copied!' : 'Copy Full Prompt'}
               </button>
               <button
-                onClick={handleSaveToLibrary}
+                onClick={handleCopyAll}
                 disabled={savedToLibrary}
                 className="px-5 py-2.5 text-[14px] font-semibold rounded-full transition-colors flex items-center justify-center gap-2"
                 style={{
@@ -726,8 +697,8 @@ export const PromptPlayground: React.FC = () => {
                   border: savedToLibrary ? '1px solid #38B2AC' : 'none',
                 }}
               >
-                {savedToLibrary ? <Check size={14} /> : <Library size={14} />}
-                {savedToLibrary ? 'Saved!' : 'Save to Library'}
+                {savedToLibrary ? <Check size={14} /> : <Copy size={14} />}
+                {savedToLibrary ? 'Copied!' : 'Copy to clipboard'}
               </button>
             </div>
           )}
@@ -750,9 +721,6 @@ export const PromptPlayground: React.FC = () => {
           {toastMessage} ✓
         </div>
       )}
-
-      {/* Auth overlay for save-to-library */}
-      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </div>
   );
 };

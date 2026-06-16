@@ -15,8 +15,6 @@ import {
 } from '../hooks/useDashboardDesignApi';
 import { ArtifactClosing } from './ArtifactClosing';
 import { cn } from '../utils/cn';
-import { useAuth } from '../context/AuthContext';
-import { upsertToolUsed } from '../lib/database';
 import type { DashboardBrief, NewPRDResult } from '../types';
 import {
   DASHBOARD_STEPS,
@@ -216,7 +214,6 @@ function JsonCodeBlock({ data, onCopy }: { data: object; onCopy: () => void }) {
 
 // ─── Main Component ───
 export const DashboardDesigner: React.FC = () => {
-  const { user } = useAuth();
   // Brief state
   const [brief, setBrief] = useState<DashboardBrief>({ ...INITIAL_BRIEF });
   const [dataSourcesText, setDataSourcesText] = useState('');
@@ -485,7 +482,6 @@ export const DashboardDesigner: React.FC = () => {
     } else {
       setPrdResult(generateFallbackPRD(brief));
     }
-    if (user) upsertToolUsed(user.id, 4);
 
     setTimeout(() => {
       prdRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -582,7 +578,6 @@ export const DashboardDesigner: React.FC = () => {
     } else {
       setPrdResult(generateFallbackPRD(brief));
     }
-    if (user) upsertToolUsed(user.id, 4);
 
     setTimeout(() => {
       prdRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });

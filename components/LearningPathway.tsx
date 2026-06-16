@@ -5,10 +5,7 @@ import {
   Link2, AlertCircle, BookOpen, Users, Briefcase, Sparkles,
 } from 'lucide-react';
 import { ArtifactClosing } from './ArtifactClosing';
-import { AuthModal } from './AuthModal';
 import { usePathwayApi } from '../hooks/usePathwayApi';
-import { useAuth } from '../context/AuthContext';
-import { getProfile, upsertProfile, getLatestLearningPlan, saveLearningPlan } from '../lib/database';
 import type { PathwayFormData, PathwayApiResponse, PathwayLevelResult, LevelDepth } from '../types';
 
 // ---- Constants ----
@@ -438,46 +435,14 @@ const EMPTY_FORM: PathwayFormData = {
 };
 
 export const LearningPathway: React.FC = () => {
-  const { user } = useAuth();
-  const userId = user?.id ?? '';
-
-  // Form state — pre-fill from Supabase profile if available
+  // Form state
   const [formData, setFormData] = useState<PathwayFormData>(EMPTY_FORM);
   const [selectedProfile, setSelectedProfile] = useState<string | null>(null);
   const [answersChanged, setAnswersChanged] = useState(false);
 
-  // Results state — load previously generated plan from Supabase
+  // Results state
   const [pathwayResults, setPathwayResults] = useState<PathwayApiResponse | null>(null);
   const [levelDepths, setLevelDepths] = useState<Record<string, LevelDepth> | null>(null);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-
-  // Load saved profile + plan from Supabase on mount
-  useEffect(() => {
-    if (!userId) return;
-    Promise.all([
-      getProfile(userId),
-      getLatestLearningPlan(userId),
-    ]).then(([profileData, planData]) => {
-      if (profileData) {
-        setFormData({
-          role: profileData.role || '',
-          function: profileData.function || '',
-          functionOther: profileData.functionOther || '',
-          seniority: profileData.seniority || '',
-          aiExperience: profileData.aiExperience || '',
-          ambition: profileData.ambition || '',
-          challenge: profileData.challenge || '',
-          availability: profileData.availability || '',
-          experienceDescription: profileData.experienceDescription || '',
-          goalDescription: profileData.goalDescription || '',
-        });
-      }
-      if (planData) {
-        setPathwayResults(planData.plan);
-        setLevelDepths(planData.level_depths);
-      }
-    });
-  }, [userId]);
 
   // UI state
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -543,25 +508,7 @@ export const LearningPathway: React.FC = () => {
     }, 100);
   }, [pathwayResults]);
 
-  // Restore form draft from localStorage after OAuth redirect
-  useEffect(() => {
-    try {
-      const draft = localStorage.getItem('oxygy_pathway_draft');
-      if (draft) {
-        const parsed = JSON.parse(draft);
-        if (parsed.formData) setFormData(parsed.formData);
-        localStorage.removeItem('oxygy_pathway_draft');
-      }
-    } catch {}
-  }, []);
-
   const handleGenerate = useCallback(async () => {
-    if (!user) {
-      // Save form data so it survives an OAuth redirect
-      try { localStorage.setItem('oxygy_pathway_draft', JSON.stringify({ formData })); } catch {}
-      setShowAuthModal(true);
-      return;
-    }
     clearError();
     const depths = classifyLevels(formData.aiExperience, formData.ambition);
     setLevelDepths(depths);
@@ -578,22 +525,6 @@ export const LearningPathway: React.FC = () => {
     const result = await generatePathway(formData, depths);
     if (result) {
       setPathwayResults(result);
-      // Persist plan and profile data to Supabase for dashboard integration
-      if (userId) {
-        saveLearningPlan(userId, result, depths);
-        upsertProfile(userId, {
-          role: formData.role,
-          function: formData.function,
-          functionOther: formData.functionOther,
-          seniority: formData.seniority,
-          aiExperience: formData.aiExperience,
-          ambition: formData.ambition,
-          challenge: formData.challenge,
-          availability: formData.availability,
-          experienceDescription: formData.experienceDescription,
-          goalDescription: formData.goalDescription,
-        } as any);
-      }
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 200);
@@ -1698,7 +1629,6 @@ export const LearningPathway: React.FC = () => {
       `}</style>
 
       {/* Auth overlay for generate */}
-      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </div>
   );
 };
