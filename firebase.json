@@ -43,6 +43,7 @@
       ]
     },
     {
+      "site": "oxygy-ai-upskilling-sales-page",
       "public": "dist",
       "ignore": [
         "firebase.json",
