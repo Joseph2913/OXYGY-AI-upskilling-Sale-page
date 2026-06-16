@@ -1,5 +1,15 @@
 {
   "projects": {
-    "default": "oxygy-ai-upskilling-site"
-  }
+    "default": "oxygy-ai-upskilling-sales-page"
+  },
+  "targets": {
+    "oxygy-ai-upskilling-sales-page": {
+      "hosting": {
+        "demo": [
+          "oxygy-upskilling-demo"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

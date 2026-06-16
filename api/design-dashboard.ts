@@ -96,7 +96,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const apiKey = process.env.OpenRouter_API;
-  const textModel = process.env.GEMINI_MODEL || 'google/gemini-2.0-flash-001';
+  const textModel = process.env.GEMINI_MODEL || 'google/gemini-2.5-flash';
   const imageModel = process.env.DASHBOARD_MODEL || 'google/gemini-3.1-flash-image-preview';
 
   if (!apiKey) {

@@ -441,8 +441,6 @@ export function ProductArchitecture() {
     typeof window !== 'undefined' ? window.innerWidth < 768 : false
   );
 
-  // Auth
-
   // API
   const { analyzeArchitecture, isLoading, error, clearError } = useArchitectureApi();
 

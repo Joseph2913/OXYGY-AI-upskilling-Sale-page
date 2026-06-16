@@ -482,7 +482,6 @@ export const DashboardDesigner: React.FC = () => {
     } else {
       setPrdResult(generateFallbackPRD(brief));
     }
-
     setTimeout(() => {
       prdRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 300);
@@ -578,7 +577,6 @@ export const DashboardDesigner: React.FC = () => {
     } else {
       setPrdResult(generateFallbackPRD(brief));
     }
-
     setTimeout(() => {
       prdRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 300);

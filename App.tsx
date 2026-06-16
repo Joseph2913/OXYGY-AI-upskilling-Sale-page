@@ -14,6 +14,7 @@ import { LearningPathway } from './components/LearningPathway';
 import { EngagementModel } from './components/EngagementModel';
 import { CaseStudiesSection, CaseStudiesPage } from './components/CaseStudies';
 import { UserJourney } from './components/UserJourney';
+import { PartnershipBanner } from './components/PartnershipBanner';
 
 type Page = 'home' | 'playground' | 'agent-builder' | 'workflow-designer' | 'product-architecture' | 'dashboard-design' | 'learning-pathway' | 'engagement-model' | 'case-studies' | 'user-journey';
 
@@ -50,6 +51,7 @@ function App() {
       {currentPage === 'home' && (
         <>
           <Hero />
+          <PartnershipBanner />
           <LevelJourney />
           <PersonaCarousel />
           <LearningModel />

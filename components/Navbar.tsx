@@ -379,9 +379,8 @@ export const Navbar: React.FC = () => {
 
         </div>
 
-        {/* Right — Dashboard + Contact Us + Mobile Toggle */}
+        {/* Right — Mobile Toggle */}
         <div className="flex items-center gap-2">
-
           {/* Mobile hamburger */}
           <button
             className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors"
@@ -532,7 +531,6 @@ export const Navbar: React.FC = () => {
             >
               Case Studies
             </a>
-
 
           </div>
         </div>
