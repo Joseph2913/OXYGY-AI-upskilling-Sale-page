@@ -717,9 +717,16 @@ const PRD_SYSTEM = `You are a senior product manager and technical writer specia
 
 You will receive details about a dashboard project. Generate a comprehensive, detailed, and actionable PRD.
 
+OUTPUT RULES (non-negotiable):
+- Respond with a single JSON object and nothing else
+- The root object MUST have exactly two top-level keys: "prd_content" and "sections"
+- Do NOT wrap the JSON in any outer object, array, or key (e.g. never use "prd", "result", "data", "document" as a wrapper)
+- Do NOT include markdown, backticks, code fences, or any text before or after the JSON
+- Your response must begin with { and end with }
+
 CRITICAL: Every section value MUST be a plain text STRING, not a JSON object. Use formatted text with newlines and bullets within the string.
 
-RESPONSE FORMAT (JSON only):
+RESPONSE FORMAT — your entire response must be exactly this structure:
 {
   "prd_content": "PRD: [Dashboard name]",
   "sections": {
@@ -735,7 +742,12 @@ RESPONSE FORMAT (JSON only):
     "human_checkpoints": "...",
     "acceptance_criteria": "..."
   }
-}`;
+}
+
+Rules:
+- The "sections" object must contain exactly these 11 keys — no additions, no omissions
+- All values must be strings (never nested objects or arrays)
+- Do not add any keys outside of "prd_content" and "sections" at the root level`;
 
 export const generateprd = onRequest({ secrets: [openRouterApiKey] }, async (req, res) => {
   if (req.method !== "POST") { res.status(405).json({ error: "Method not allowed" }); return; }

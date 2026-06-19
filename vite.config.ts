@@ -1171,7 +1171,14 @@ CRITICAL RULES:
 - Use concrete examples that reference the user's specific metrics and data.
 - IMPORTANT: Every section value MUST be a plain text STRING, not a JSON object. Use formatted text with newlines, bullets (using * or -), and headers (using plain text) within the string. Never nest JSON objects inside section values.
 
-RESPONSE FORMAT (JSON only, no markdown, no code fences):
+OUTPUT RULES (non-negotiable):
+- Respond with a single JSON object and nothing else
+- The root object MUST have exactly two top-level keys: "prd_content" and "sections"
+- Do NOT wrap the JSON in any outer object, array, or key (e.g. never use "prd", "result", "data", "document" as a wrapper)
+- Do NOT include markdown, backticks, code fences, or any text before or after the JSON
+- Your response must begin with { and end with }
+
+RESPONSE FORMAT — your entire response must be exactly this structure:
 
 {
   "prd_content": "PRD: [Descriptive dashboard name based on the user's purpose]",
@@ -1189,6 +1196,11 @@ RESPONSE FORMAT (JSON only, no markdown, no code fences):
     "acceptance_criteria": "SECTION CONTENT"
   }
 }
+
+Rules:
+- The "sections" object must contain exactly these 11 keys — no additions, no omissions
+- All values must be strings (never nested objects or arrays)
+- Do not add any keys outside of "prd_content" and "sections" at the root level
 
 SECTION REQUIREMENTS (each section must be comprehensive):
 
