@@ -98,7 +98,11 @@ async function callOpenRouterJSON(
       continue;
     }
     try {
-      return JSON.parse(text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim());
+      const stripped = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+      const jsonStart = stripped.indexOf('{');
+      const jsonEnd = stripped.lastIndexOf('}');
+      const cleaned = jsonStart !== -1 && jsonEnd !== -1 ? stripped.slice(jsonStart, jsonEnd + 1) : stripped;
+      return JSON.parse(cleaned);
     } catch {
       console.warn(`[${label}] unparseable JSON (attempt ${attempt}/${MAX_ATTEMPTS}), finish_reason=${data?.choices?.[0]?.finish_reason}, len=${text.length}`);
       lastStatus = 502;
@@ -688,7 +692,12 @@ Your outputs must be:
 - Empathetic — acknowledge where the learner is starting from and build confidence
 - Connected — explicitly reference how each project relates to the learner's specific challenge from their questionnaire input
 
-You generate content in strict JSON format. Never include markdown, backticks, or preamble outside the JSON object.
+OUTPUT RULES (non-negotiable):
+- Respond with a single JSON object and nothing else
+- The root object MUST have exactly three top-level keys: "pathwaySummary", "totalEstimatedWeeks", "levels"
+- Do NOT wrap the JSON in any outer object, array, or key (e.g. never use "pathway", "result", "data" as a wrapper)
+- Do NOT include markdown, backticks, code fences, or any text before or after the JSON
+- Your response must begin with { and end with }
 
 CRITICAL: In the "challengeConnection" field for EVERY level, you MUST directly reference and quote specific details from the user's stated challenge. This is the most important personalization element — the learner should feel that this pathway was built specifically for their situation.`;
 
@@ -800,14 +809,34 @@ For "fast-track" levels, frame as "validate and sharpen" rather than "learn from
 
 ## OUTPUT FORMAT
 
-Respond ONLY with valid JSON:
+Your entire response must be a single JSON object with exactly these three top-level keys: "pathwaySummary", "totalEstimatedWeeks", "levels". No wrapper, no preamble, no markdown.
+
+Example structure (include as many levels as applicable — L1 and L2 are always present):
 
 {
   "pathwaySummary": "1-2 sentence personalized overview",
-  "totalEstimatedWeeks": number,
+  "totalEstimatedWeeks": 8,
   "levels": {
     "L1": {
-      "depth": "full|fast-track",
+      "depth": "full",
+      "projectTitle": "string",
+      "projectDescription": "string",
+      "deliverable": "string",
+      "challengeConnection": "string",
+      "sessionFormat": "string",
+      "resources": [{ "name": "string", "note": "string" }]
+    },
+    "L2": {
+      "depth": "fast-track",
+      "projectTitle": "string",
+      "projectDescription": "string",
+      "deliverable": "string",
+      "challengeConnection": "string",
+      "sessionFormat": "string",
+      "resources": [{ "name": "string", "note": "string" }]
+    },
+    "L3": {
+      "depth": "full",
       "projectTitle": "string",
       "projectDescription": "string",
       "deliverable": "string",
@@ -818,7 +847,12 @@ Respond ONLY with valid JSON:
   }
 }
 
-Only include levels that are "full" or "fast-track". Omit "awareness" and "skip" levels entirely.`;
+Rules:
+- Only include levels classified as "full" or "fast-track" in the "levels" object
+- Omit "awareness" and "skip" levels from the JSON entirely
+- Level keys must be exactly "L1", "L2", "L3", "L4", "L5" — no other keys inside "levels"
+- "depth" value must be exactly "full" or "fast-track" — no other values
+- Do not add any keys not shown in the example above`;
 
             const parsed = await callOpenRouterJSON(apiKey, model, systemPrompt, userMessage, 'pathway');
             if (parsed?.__error) {

@@ -142,7 +142,10 @@ export async function callGemini(opts: {
       continue;
     }
 
-    const cleaned = text.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+    const stripped = text.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+    const jsonStart = stripped.indexOf("{");
+    const jsonEnd = stripped.lastIndexOf("}");
+    const cleaned = jsonStart !== -1 && jsonEnd !== -1 ? stripped.slice(jsonStart, jsonEnd + 1) : stripped;
     try {
       return { ok: true, data: JSON.parse(cleaned) };
     } catch (parseErr) {
