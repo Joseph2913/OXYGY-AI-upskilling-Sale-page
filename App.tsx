@@ -15,11 +15,13 @@ import { EngagementModel } from './components/EngagementModel';
 import { CaseStudiesSection, CaseStudiesPage } from './components/CaseStudies';
 import { UserJourney } from './components/UserJourney';
 import { PartnershipBanner } from './components/PartnershipBanner';
+import { ReadinessAssessment } from './components/ReadinessAssessment';
 
-type Page = 'home' | 'playground' | 'agent-builder' | 'workflow-designer' | 'product-architecture' | 'dashboard-design' | 'learning-pathway' | 'engagement-model' | 'case-studies' | 'user-journey';
+type Page = 'home' | 'ai-readiness' | 'playground' | 'agent-builder' | 'workflow-designer' | 'product-architecture' | 'dashboard-design' | 'learning-pathway' | 'engagement-model' | 'case-studies' | 'user-journey';
 
 function getPageFromHash(): Page {
   const hash = window.location.hash;
+  if (hash === '#ai-readiness') return 'ai-readiness';
   if (hash === '#playground') return 'playground';
   if (hash === '#agent-builder') return 'agent-builder';
   if (hash === '#workflow-designer') return 'workflow-designer';
@@ -59,6 +61,7 @@ function App() {
           <Footer />
         </>
       )}
+      {currentPage === 'ai-readiness' && <ReadinessAssessment />}
       {currentPage === 'playground' && <PromptPlayground />}
       {currentPage === 'agent-builder' && <AgentBuilder />}
       {currentPage === 'workflow-designer' && <WorkflowDesigner />}

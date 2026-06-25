@@ -3,6 +3,7 @@ import { ChevronDown, Home, Menu, X } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 const AI_TOOLS = [
+  { level: 0, emoji: '\uD83E\uDDED', label: 'AI Readiness Assessment', href: '#ai-readiness' },
   { level: 1, emoji: '\uD83C\uDFAF', label: 'Prompt Engineering Fundamentals', href: '#playground' },
   { level: 2, emoji: '\uD83E\uDD16', label: 'Build Your First AI Agent', href: '#agent-builder' },
   { level: 3, emoji: '\uD83D\uDDFA\uFE0F', label: 'Workflow Mapping & Design', href: '#workflow-designer' },
