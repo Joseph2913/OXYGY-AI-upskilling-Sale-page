@@ -12,6 +12,10 @@ interface ArtifactClosingProps {
   accentColor: string;
   /** If true, CTA scrolls to a section instead of navigating to a hash page */
   ctaScrollTo?: string;
+  /** Optional secondary CTA label, rendered as a bordered secondary button next to the primary CTA */
+  secondaryCtaLabel?: string;
+  /** Href for the secondary CTA, e.g. a mailto: link */
+  secondaryCtaHref?: string;
 }
 
 export const ArtifactClosing: React.FC<ArtifactClosingProps> = ({
@@ -20,6 +24,8 @@ export const ArtifactClosing: React.FC<ArtifactClosingProps> = ({
   ctaHref,
   accentColor,
   ctaScrollTo,
+  secondaryCtaLabel,
+  secondaryCtaHref,
 }) => {
   const handleCtaClick = (e: React.MouseEvent) => {
     if (ctaScrollTo) {
@@ -51,20 +57,39 @@ export const ArtifactClosing: React.FC<ArtifactClosingProps> = ({
           </p>
         )}
 
-        <a
-          href={ctaHref}
-          onClick={ctaScrollTo ? handleCtaClick : undefined}
-          className="inline-flex items-center gap-2 text-white font-semibold rounded-full transition-all duration-150 hover:-translate-y-0.5"
-          style={{
-            backgroundColor: accentColor,
-            padding: '14px 28px',
-            fontSize: '15px',
-            textDecoration: 'none',
-          }}
-        >
-          {ctaLabel}
-          <ArrowRight size={16} />
-        </a>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <a
+            href={ctaHref}
+            onClick={ctaScrollTo ? handleCtaClick : undefined}
+            className="inline-flex items-center gap-2 text-white font-semibold rounded-full transition-all duration-150 hover:-translate-y-0.5"
+            style={{
+              backgroundColor: accentColor,
+              padding: '14px 28px',
+              fontSize: '15px',
+              textDecoration: 'none',
+            }}
+          >
+            {ctaLabel}
+            <ArrowRight size={16} />
+          </a>
+
+          {secondaryCtaLabel && secondaryCtaHref && (
+            <a
+              href={secondaryCtaHref}
+              className="inline-flex items-center gap-2 font-semibold rounded-full transition-all duration-150 hover:-translate-y-0.5"
+              style={{
+                backgroundColor: 'transparent',
+                color: '#1A202C',
+                border: '1px solid #1A202C',
+                padding: '14px 28px',
+                fontSize: '15px',
+                textDecoration: 'none',
+              }}
+            >
+              {secondaryCtaLabel}
+            </a>
+          )}
+        </div>
 
         <div className="mt-4">
           <a

@@ -1,7 +1,7 @@
 // Content source of truth for the L0 AI Readiness Assessment page (Phase 1, static).
 // Copied from PRD/AI-Readiness-Assessment-Spec.md. Edit the spec and this file together.
 
-export type QuestionBlock = 'company' | 'respondent' | 'strategic' | 'workEnvironment';
+export type QuestionBlock = 'company' | 'respondent' | 'strategic' | 'workEnvironment' | 'perception';
 
 export interface Question {
   id: string;
@@ -24,7 +24,7 @@ export const QUESTIONS: Question[] = [
   { id: 'A4', block: 'company', label: 'Where are you in your AI journey?', options: ['Just exploring', 'Strategy defined, early delivery', 'Multiple live use cases', 'Scaling across the org'] },
 
   // Block B — Respondent context
-  { id: 'B1', block: 'respondent', label: 'Role level', options: ['Individual contributor', 'Team lead / supervisor', 'Middle management', 'Senior leadership / C-suite'] },
+  { id: 'B1', block: 'respondent', label: 'Role level', options: ['Individual contributor', 'Team lead / supervisor', 'Direct people manager / supervisor', 'Senior leadership / C-suite'] },
   { id: 'B2', block: 'respondent', label: 'Department / function', options: ['HR', 'Finance', 'Operations', 'Technology / IT', 'Sales & Marketing', 'Legal & Compliance', 'Strategy', 'Other'] },
   { id: 'B3', block: 'respondent', label: 'Tenure', options: ['<1 yr', '1–3 yrs', '3–5 yrs', '5–10 yrs', '10+ yrs'] },
 
@@ -111,26 +111,40 @@ export const QUESTIONS: Question[] = [
       enables: 'Shows whether to invest in internal networks, communities of practice and recognition to sustain momentum beyond the early adopters.',
     },
   },
+
+  // AI Literacy & Perception — scored, but kept separate from the matrix. Sentiment, not capability.
+  { id: 'PQ1', block: 'perception', label: 'I am concerned AI will negatively affect my role.' },
+  { id: 'PQ2', block: 'perception', label: 'I feel I have the right skills to keep up with AI development.' },
+  { id: 'PQ3', block: 'perception', label: 'I believe AI will make my work more effective.' },
+  { id: 'PQ4', block: 'perception', label: 'I can write effective prompts and give AI tools the right context to get useful output.' },
 ];
+
+/** Phase 1 framing: why the survey exists, shown once above the survey/matrix block. */
+export const PHASE1_WHY =
+  "The survey exists to place you on the matrix, fast, so Phase 2 can start from evidence instead of guesswork. It's deliberately standardised, not customised, so your position is comparable across companies and industries.";
 
 export const LIKERT_LABELS = ['Strongly disagree', 'Somewhat disagree', 'Neutral', 'Somewhat agree', 'Strongly agree'];
 
 export type ProfileId = 'sitting-duck' | 'disconnected-antenna' | 'island-of-creativity' | 'systematic-innovator';
 
-export interface DataSourceCluster {
-  cluster: 'On-the-ground signal' | 'Strategic direction' | 'Systems & operating reality';
-  /** Relative emphasis 0–100 for this profile */
-  weight: number;
-  detail: string;
-  who: string;
+export interface Offering {
+  title: string;
+  icon: 'compass' | 'graduationCap' | 'flask' | 'shield' | 'refresh' | 'broadcast' | 'target';
+  duration: string;
+  /** What this OXYGY offering generically is / does */
+  description: string;
+  /** Specific to this quadrant — what it does for an organisation in this exact situation */
+  valueAdd: string;
 }
 
 export interface ProfileTraits {
-  /** Same four fields across every profile; the values differ to characterise the quadrant */
-  strategy: string;
-  experimentation: string;
-  governance: string;
-  adoption: string;
+  /** Same four fields across every profile; the values differ to characterise the quadrant.
+   * Each is 2 short bullet points, `**word**` marks the highlighted term, kept to a tight
+   * length band across every profile so the trait cards render at a consistent height. */
+  strategy: string[];
+  experimentation: string[];
+  governance: string[];
+  adoption: string[];
 }
 
 export interface Evidence {
@@ -161,6 +175,13 @@ export interface Profile {
   respondent: { role: string; department: string; tenure: string };
   /** Per-question answers, keyed by question id. Categorical = string, Likert = 1–5. */
   answers: Record<string, string | number>;
+  /** AI Literacy & Perception — scored, but never folded into strategicScore/workEnvScore/overallScore. */
+  perception: {
+    /** 1–5, same band() scale as the axis scores, but reported alone. */
+    score: number;
+    /** 2 short bullet points, same `**word**` highlight convention as ProfileTraits. */
+    insight: string[];
+  };
   results: {
     output: {
       headline: string;
@@ -168,9 +189,16 @@ export interface Profile {
       biggestGap: string;
       heroArtifact: string;
     };
-    dataSources: DataSourceCluster[];
-    analysis: { centralQuestion: string; computes: string[]; evidence: Evidence };
-    decisions: { sequence: string[]; guardrail?: string; routesInto: string[]; evidence: Evidence };
+    /** Phase 2, the primary visual: OXYGY's offerings for this quadrant, 2–3 per profile. */
+    offerings: Offering[];
+    decisions: {
+      /** One-line "why this sequence, why now" — the Phase 2 rationale for this quadrant. */
+      rationale: string;
+      /** Precise, specific "don't do this yet" recommendations — not a single soft caveat. */
+      guardrails: string[];
+    };
+    /** Single independently-sourced research citation grounding the roadmap. Never a consulting firm. */
+    evidence: Evidence;
   };
 }
 
@@ -183,16 +211,20 @@ export const PROFILES: Profile[] = [
     summary: 'A traditional, hierarchical organisation that has not yet set an AI direction. Most AI use is informal and scattered, and there is everything to play for once a clear path is in place.',
     color: '#2D3748',
     persona: { industry: 'Manufacturing', size: '2,000–10,000', footprint: 'Single country', stage: 'Just exploring' },
-    respondent: { role: 'Middle management', department: 'Operations', tenure: '5–10 yrs' },
+    respondent: { role: 'Direct people manager / supervisor', department: 'Operations', tenure: '5–10 yrs' },
     traits: {
-      strategy: 'No strategy on paper. A few leaders are curious, but no one has agreed where AI should take the business.',
-      experimentation: 'No real space to experiment. The odd person uses a chatbot on the side, but nothing gets tested or shared.',
-      governance: 'No AI policy and no clear data owner. Use is invisible to leadership, and data is scattered and hard to trust.',
-      adoption: 'In off-the-record pockets. People use the odd tool quietly, with no visibility and no way to scale what works.',
+      strategy: ['**No AI strategy** on paper', '**No agreement** on direction'],
+      experimentation: ['**No safe space** to test', '**Nothing shared** across teams'],
+      governance: ['**No AI policy** exists yet', '**No named** data owner in place'],
+      adoption: ['Used in **hidden pockets**', '**No visibility** for leaders'],
+    },
+    perception: {
+      score: 2,
+      insight: ['**Low confidence** in AI skills', '**Cautious**, not excited'],
     },
     answers: {
       A1: 'Manufacturing', A2: '2,000–10,000', A3: 'Single country', A4: 'Just exploring',
-      B1: 'Middle management', B2: 'Operations', B3: '5–10 yrs',
+      B1: 'Direct people manager / supervisor', B2: 'Operations', B3: '5–10 yrs',
       SC1: 2, SC2: 1, SC3: 2, SC4: 2, SC5: 1,
       WE1: 1, WE2: 2, WE3: 2, WE4: 2, WE5: 1,
     },
@@ -203,39 +235,41 @@ export const PROFILES: Profile[] = [
         biggestGap: 'A clear AI strategy and the guardrails to back it',
         heroArtifact: 'A clear picture of where you stand against peers in your sector, so you can see what good looks like and the quickest path to it.',
       },
-      dataSources: [
-        { cluster: 'Strategic direction', weight: 55, detail: 'We start with your leadership: interviews and a working session to shape the AI strategy, ambition and guardrails the organisation does not have yet.', who: 'Senior leadership / C-suite' },
-        { cluster: 'On-the-ground signal', weight: 30, detail: 'A short pulse survey to capture how your people use AI today and where the appetite to do more already sits.', who: 'Employees and line managers' },
-        { cluster: 'Systems & operating reality', weight: 15, detail: 'A light review of the tools already in use, so the strategy is built on solid ground.', who: 'IT owners' },
-      ],
-      analysis: {
-        centralQuestion: 'Where do we start, and what is the fastest path to momentum?',
-        computes: [
-          'A clear baseline of where you stand across strategy and environment',
-          'What is really holding things back: awareness, intent, or capability',
-          'How you compare with peers in your sector, and what to prioritise first',
-        ],
-        evidence: {
-          figure: '60%',
-          statement: 'of leaders worry their organisation has no real plan to put AI to work, even as adoption races ahead.',
-          source: 'Microsoft & LinkedIn, Work Trend Index 2024',
+      offerings: [
+        {
+          title: 'AI Strategy Workshop',
           icon: 'compass',
+          duration: '2–4 weeks',
+          description: 'A focused leadership session that sets your AI ambition, priorities and the people plan to match — the north star everything else is measured against.',
+          valueAdd: "Turns 'someone should look into this' into a direction your leadership actually owns.",
         },
-      },
-      decisions: {
-        sequence: [
-          'Shape your AI strategy and the people plan to match, in a focused leadership workshop',
-          'Choose 2 to 3 priority use cases to focus your first wins',
-          'Build broad AI confidence with a foundational upskilling programme',
-        ],
-        guardrail: 'Hold off on buying tools or training at scale until the strategy is set. That is where most early budgets are wasted.',
-        routesInto: ['AI strategy workshop', 'Upskilling foundations (L1)'],
-        evidence: {
-          figure: 'Just 21%',
-          statement: 'of companies have redesigned how they work around AI, the factor most tied to bottom-line impact. It starts with strategy, not tools.',
-          source: 'McKinsey, The State of AI, 2025',
+        {
+          title: 'Use Case Prioritisation Sprint',
           icon: 'target',
+          duration: '1–2 weeks',
+          description: 'A short, structured sprint that turns your new strategy into 2–3 concrete, validated use cases worth building first.',
+          valueAdd: 'Stops the first win from being picked at random — you start with the highest-value, most feasible use case.',
         },
+        {
+          title: 'Upskilling Foundations (L1)',
+          icon: 'graduationCap',
+          duration: '8–12 weeks',
+          description: 'A foundational, hands-on AI capability programme that builds broad confidence and skill across your workforce.',
+          valueAdd: 'Replaces scattered, hidden AI use with visible, confident, consistent adoption.',
+        },
+      ],
+      decisions: {
+        rationale: 'Because nothing is defined yet, the fastest path to momentum is direction first, not tools or training at scale.',
+        guardrails: [
+          "Don't buy AI tools or licences before the strategy is set — most early AI budgets are wasted here.",
+          "Don't run generic, org-wide training yet — target the 2–3 priority use cases first.",
+        ],
+      },
+      evidence: {
+        figure: '9 in 10',
+        statement: "executives report no measurable productivity impact from AI in their own firm over the past three years. It starts with strategy, not tools.",
+        source: 'NBER Working Paper, AI, Productivity & the Workforce, 2025',
+        icon: 'target',
       },
     },
   },
@@ -249,10 +283,14 @@ export const PROFILES: Profile[] = [
     persona: { industry: 'Logistics & Supply Chain', size: '10,000–50,000', footprint: 'Global', stage: 'Strategy defined, early delivery' },
     respondent: { role: 'Senior leadership / C-suite', department: 'Strategy', tenure: '3–5 yrs' },
     traits: {
-      strategy: 'A clear, board-backed strategy with named use cases, but it mostly lives in slide decks and steering meetings.',
-      experimentation: 'Ideas need sign-off before they go anywhere. Pilots crawl through approvals and momentum quietly stalls.',
-      governance: 'Centralised and risk-aware, owned by a small team. Safe but slow, and seen as a gate rather than an enabler.',
-      adoption: 'Concentrated at the top and a central team. Frontline staff heard the strategy, but daily work is unchanged.',
+      strategy: ['**Clear strategy** on paper', '**Lives in slide decks** only'],
+      experimentation: ['**Ideas stall** in approval', '**Momentum** quietly fades'],
+      governance: ['**Centralised** and cautious', 'Seen as a **gate**, not help'],
+      adoption: ['**Concentrated** at the top', '**Frontline** work unchanged'],
+    },
+    perception: {
+      score: 3,
+      insight: ['Strategy **heard**, not felt', '**Confidence trails** ambition'],
     },
     answers: {
       A1: 'Logistics & Supply Chain', A2: '10,000–50,000', A3: 'Global', A4: 'Strategy defined, early delivery',
@@ -267,39 +305,41 @@ export const PROFILES: Profile[] = [
         biggestGap: 'Engagement: your people have not been brought into the plan yet',
         heroArtifact: "A clear view of where your strategy and your people's day-to-day actually diverge, by level and function, so you know exactly where adoption is stalling.",
       },
-      dataSources: [
-        { cluster: 'On-the-ground signal', weight: 55, detail: 'We listen to your workforce through a broad survey and focus groups, to find the real distance between the strategy on paper and the way people work.', who: 'Employees, line managers, HR / L&D' },
-        { cluster: 'Strategic direction', weight: 25, detail: 'A few leadership conversations to confirm the strategy as it stands today.', who: 'Senior leadership' },
-        { cluster: 'Systems & operating reality', weight: 20, detail: 'A review with your data and IT owners to see whether the tools already in place are actually being used.', who: 'Data & IT owners' },
+      offerings: [
+        {
+          title: 'Innovation Sandbox',
+          icon: 'flask',
+          duration: '8–12 weeks',
+          description: 'A structured, safe space where teams can test AI ideas quickly, with a fast-tracked path to real approval.',
+          valueAdd: 'Gives ideas a way through, instead of stalling in layers of sign-off.',
+        },
+        {
+          title: 'Change Management Programme',
+          icon: 'refresh',
+          duration: '2–3 months',
+          description: 'A structured, sequenced change programme — the kind of deliberate approach research shows actually makes transformation stick.',
+          valueAdd: 'Equips your direct people managers to carry the strategy the last mile, not just hear it.',
+        },
+        {
+          title: 'Upskilling Platform',
+          icon: 'graduationCap',
+          duration: '3–6 months',
+          description: 'An ongoing, role-specific AI capability platform that builds hands-on skill and confidence at scale.',
+          valueAdd: 'Closes the gap between the strategy your people have heard and the confidence they actually have.',
+        },
       ],
-      analysis: {
-        centralQuestion: 'Does the strategy actually reach the people who have to deliver it?',
-        computes: [
-          "Where your strategy and your people's reality diverge, by level and function",
-          'Where the message stalls, most often at middle management',
-          'How ready your organisation really is to adopt, compared with sector peers',
-        ],
-        evidence: {
-          figure: 'Only 15%',
-          statement: 'of employees strongly agree they are trained to use AI well, even though 96% of executives feel the pressure to adopt it.',
-          source: 'Slack Workforce Index, 2024',
-          icon: 'users',
-        },
-      },
       decisions: {
-        sequence: [
-          'Give people a safe space to experiment, with an innovation sandbox',
-          'Equip your middle managers to lead adoption on the ground',
-          'Bring everyone along with change management and targeted upskilling',
+        rationale: 'Because the strategy already exists, the constraint is adoption, not more planning, so the sequence starts with giving people a way to act on it.',
+        guardrails: [
+          "Don't add another strategy deck or town hall — the plan is already understood at the top.",
+          "Don't skip past middle management — they're where the message is currently dying.",
         ],
-        guardrail: 'More strategy or more top-down communication will not move the needle here. The gap is adoption, not direction.',
-        routesInto: ['Innovation sandbox', 'Change management', 'Upskilling platform'],
-        evidence: {
-          figure: '6x',
-          statement: 'more likely to hit their goals: the advantage initiatives gain from strong change management over weak.',
-          source: 'Prosci, Best Practices in Change Management',
-          icon: 'compass',
-        },
+      },
+      evidence: {
+        figure: '70%',
+        statement: 'of major change initiatives fail to reach their goals. The ones that succeed follow a deliberate, sequenced approach, not more top-down messaging.',
+        source: 'John Kotter, Harvard Business School — Harvard Business Review, 1995',
+        icon: 'users',
       },
     },
   },
@@ -313,10 +353,14 @@ export const PROFILES: Profile[] = [
     persona: { industry: 'Technology', size: '500–2,000', footprint: 'Regional', stage: 'Multiple live use cases' },
     respondent: { role: 'Team lead / supervisor', department: 'Technology / IT', tenure: '1–3 yrs' },
     traits: {
-      strategy: 'No single strategy ties it together. Teams set their own direction, with no shared view of what AI should win.',
-      experimentation: 'Strong and everywhere. Teams spin up tools and build their own agents, often faster than the business can keep up.',
-      governance: 'Light-touch and inconsistent. Tools and data sprawl, much of it unsanctioned, creating real shadow-AI exposure.',
-      adoption: 'Bottom-up, in vibrant pockets. Plenty is live, but the value stays trapped inside individual teams.',
+      strategy: ['**No shared direction** yet', '**Teams set** their own path'],
+      experimentation: ['**Strong** and everywhere already', '**Builds own** tools fast'],
+      governance: ['**Light-touch**, inconsistent', '**Shadow AI** sprawl building'],
+      adoption: ['**Bottom-up**, in pockets', 'Value stays **trapped** locally'],
+    },
+    perception: {
+      score: 4,
+      insight: ['**Confident** and enthusiastic', '**Ahead** of governance'],
     },
     answers: {
       A1: 'Technology', A2: '500–2,000', A3: 'Regional', A4: 'Multiple live use cases',
@@ -331,39 +375,41 @@ export const PROFILES: Profile[] = [
         biggestGap: 'Direction and guardrails to turn that energy into results',
         heroArtifact: 'A clear map of what is already running across your teams and where ungoverned AI is quietly creating risk, so you can harness the energy without the exposure.',
       },
-      dataSources: [
-        { cluster: 'Systems & operating reality', weight: 45, detail: 'We map the AI already live across your teams, the data behind it and where tools have sprawled, working hands-on with your data and IT owners.', who: 'Data & IT owners, data stewards' },
-        { cluster: 'Strategic direction', weight: 30, detail: 'A leadership working session to set a clear direction over the energy you already have.', who: 'Senior leadership' },
-        { cluster: 'On-the-ground signal', weight: 25, detail: 'A survey to find where your strongest pockets of activity and skill really sit.', who: 'Employees and team leads' },
-      ],
-      analysis: {
-        centralQuestion: 'What is already working, and where is risk quietly building?',
-        computes: [
-          'Where the cost and risk of ungoverned AI is concentrated today',
-          'Where your energy sits now, and where a strategy should point it',
-          'Which grassroots ideas are the ones worth scaling next',
-        ],
-        evidence: {
-          figure: '78%',
-          statement: 'of employees already using AI bring their own unsanctioned tools to work, putting company data at risk.',
-          source: 'Microsoft & LinkedIn, Work Trend Index 2024',
-          icon: 'warning',
+      offerings: [
+        {
+          title: 'AI Strategy Workshop',
+          icon: 'compass',
+          duration: '2–4 weeks',
+          description: 'A focused leadership session that sets clear direction and light governance over energy that already exists.',
+          valueAdd: 'Gives your grassroots activity somewhere to aim, without killing the momentum.',
         },
-      },
-      decisions: {
-        sequence: [
-          'Set a clear strategy and light governance to channel the energy you already have',
-          'Consolidate a fragmented tool set into something that scales',
-          'Scale your best ideas into the business through process redesign',
-        ],
-        guardrail: 'Heavy-handed governance will kill what makes you strong. The goal is to channel the energy, not control it.',
-        routesInto: ['AI strategy workshop', 'Governance framework', 'Process redesign / selective scaling'],
-        evidence: {
-          figure: '47%',
-          statement: 'of organisations have already had a negative AI outcome, most often inaccuracy. That is the cost of scaling without governance.',
-          source: 'McKinsey, The State of AI, 2025',
+        {
+          title: 'Governance Framework',
           icon: 'shield',
+          duration: '4–6 weeks',
+          description: 'A light-touch set of guardrails for AI use, data and tools — enough structure to manage risk without slowing teams down.',
+          valueAdd: 'Closes your shadow-AI exposure while keeping the experimentation culture intact.',
         },
+        {
+          title: 'Process Redesign / Selective Scaling',
+          icon: 'broadcast',
+          duration: '2–3 months',
+          description: 'Taking your strongest grassroots use cases and redesigning the surrounding process so they can scale safely into the wider business.',
+          valueAdd: 'Turns your best bottom-up ideas into business-wide value, not just team-level wins.',
+        },
+      ],
+      decisions: {
+        rationale: 'Because the energy already exists, the fix is a direction to point it at, not more experimentation.',
+        guardrails: [
+          "Don't impose heavy top-down governance — it will kill the grassroots energy that's working.",
+          "Don't try to inventory every use case at once — set direction first, consolidate second.",
+        ],
+      },
+      evidence: {
+        figure: '1 in 5',
+        statement: 'organisations has already had a data breach linked to unsanctioned AI tools. That is the cost of scaling without governance.',
+        source: 'Ponemon Institute / IBM Security, Cost of a Data Breach Report, 2025',
+        icon: 'warning',
       },
     },
   },
@@ -377,10 +423,14 @@ export const PROFILES: Profile[] = [
     persona: { industry: 'Financial Services', size: '50,000+', footprint: 'Global', stage: 'Scaling across the org' },
     respondent: { role: 'Senior leadership / C-suite', department: 'Strategy', tenure: '5–10 yrs' },
     traits: {
-      strategy: 'A clear enterprise strategy people understand and act on, tied to business goals and revisited as the market moves.',
-      experimentation: 'Structured and safe. Real sandboxes and a clear path to production let teams experiment quickly without new risk.',
-      governance: 'Embedded and trusted. Guardrails are clear, data is solid and shadow AI is minimal, so teams can move fast.',
-      adoption: 'Scaling across the organisation, though maturity is still uneven between the leading units and the rest.',
+      strategy: ['**Clear strategy**, understood', '**Revisited** as market moves'],
+      experimentation: ['**Structured** sandboxes exist', '**Fast path** to production'],
+      governance: ['**Embedded** and fully trusted', '**Shadow AI** stays minimal'],
+      adoption: ['**Scaling** across the org now', '**Maturity** still uneven'],
+    },
+    perception: {
+      score: 4,
+      insight: ['**Confident**, day to day', '**Unconcerned** about role risk'],
     },
     answers: {
       A1: 'Financial Services', A2: '50,000+', A3: 'Global', A4: 'Scaling across the org',
@@ -395,39 +445,41 @@ export const PROFILES: Profile[] = [
         biggestGap: 'Keeping every unit and region as strong as your best',
         heroArtifact: 'A side-by-side view of every business unit and region, showing who leads, who lags, and where your edge needs protecting.',
       },
-      dataSources: [
-        { cluster: 'On-the-ground signal', weight: 35, detail: 'A benchmarking survey across your units, with closer looks at the ones slipping behind. Comparative, not a first-time audit, so at scale you can read it by unit and geography.', who: 'Employees across all business units' },
-        { cluster: 'Systems & operating reality', weight: 35, detail: 'A systems review focused on scaling and integration, where consistency across units matters most now.', who: 'Data & IT owners' },
-        { cluster: 'Strategic direction', weight: 30, detail: 'Light leadership input: direction is already set, so the value is a regular re-check that you are staying ahead.', who: 'Senior leadership / C-suite' },
+      offerings: [
+        {
+          title: 'Best-Practice Diffusion',
+          icon: 'broadcast',
+          duration: 'Ongoing, quarterly',
+          description: 'A structured way to identify what your best-performing units do differently, and spread it deliberately across the business.',
+          valueAdd: 'Closes the maturity gap between your leading units and the rest, before competitors do.',
+        },
+        {
+          title: 'Advanced Upskilling (L3+)',
+          icon: 'graduationCap',
+          duration: '2–4 months',
+          description: 'A deeper capability track for teams who are already AI-confident and ready to build more advanced, autonomous use cases.',
+          valueAdd: 'Keeps your most advanced teams pulling further ahead instead of plateauing.',
+        },
+        {
+          title: 'Periodic Re-assessment',
+          icon: 'refresh',
+          duration: 'Ongoing, quarterly',
+          description: 'A lightweight, repeatable version of this same diagnostic, run on a cadence to catch drift before it becomes a gap.',
+          valueAdd: "Confirms you're staying ahead instead of assuming it.",
+        },
       ],
-      analysis: {
-        centralQuestion: 'Are you staying ahead, and is that strength even across the business?',
-        computes: [
-          'How readiness varies across your units and regions',
-          'Who is leading, who is lagging, and how you sit against the wider industry',
-          'Where your advantage is strongest, and where it is beginning to slip',
-        ],
-        evidence: {
-          figure: 'Just 4%',
-          statement: 'of companies have built cutting-edge AI across functions and consistently turn it into real value.',
-          source: "BCG, Where's the Value in AI?, 2024",
-          icon: 'trophy',
-        },
-      },
       decisions: {
-        sequence: [
-          'Spread what your best units do well across the rest of the business',
-          'Stretch the teams who are ready with advanced upskilling',
-          'Decide how to roll out, all at once or in waves, and set a rhythm to re-check progress',
+        rationale: "Because you're strong on both axes, the sequence shifts from building readiness to protecting and spreading the advantage you already have.",
+        guardrails: [
+          "Don't run a blanket re-assessment across every unit — focus effort on the ones slipping behind.",
+          "Don't assume the lead is permanent — laggards catch up fast once a market shifts.",
         ],
-        guardrail: 'No need for a blanket audit. Focus the effort on the units that are slipping.',
-        routesInto: ['Advanced upskilling (L3+)', 'Best-practice diffusion', 'Periodic re-assessment'],
-        evidence: {
-          figure: '1.7x',
-          statement: 'the revenue growth of laggards: the lead AI front-runners open up as they reinvest and scale faster.',
-          source: 'BCG, The Widening AI Value Gap, 2025',
-          icon: 'trending-up',
-        },
+      },
+      evidence: {
+        figure: '88%',
+        statement: 'of organisations now use AI somewhere in the business, but agent deployment still sits in single digits across nearly every function. The real gap is maturity, not adoption.',
+        source: 'Stanford HAI, AI Index Report, 2026',
+        icon: 'trending-up',
       },
     },
   },

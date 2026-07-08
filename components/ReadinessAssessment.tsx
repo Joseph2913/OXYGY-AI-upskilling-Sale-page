@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Check, AlertTriangle, RadioTower, Lightbulb, Trophy, ArrowDown, Compass, Users, ChevronDown, Database, Search, Shield, Target, TrendingUp, FlaskConical, Network } from 'lucide-react';
+import { ArrowLeft, Clock, AlertTriangle, RadioTower, Lightbulb, Trophy, Compass, Users, ChevronDown, GraduationCap, RefreshCw, Share2, Shield, Target, TrendingUp, FlaskConical, Network } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { ArtifactClosing } from './ArtifactClosing';
 import {
-  QUESTIONS,
   PROFILES,
+  PHASE1_WHY,
   strategicScore,
   workEnvScore,
   overallScore,
   type Profile,
   type ProfileId,
-  type Question,
   type Evidence,
   type ProfileTraits,
+  type Offering,
 } from './readinessData';
 
 const ACCENT = '#2B4C7E';
@@ -27,18 +27,73 @@ const PROFILE_ICON: Record<ProfileId, LucideIcon> = {
   'systematic-innovator': Trophy,
 };
 
-/* Colour per data-collection cluster (for the stacked emphasis bar) */
-const CLUSTER_COLOR: Record<string, string> = {
-  'On-the-ground signal': '#2B4C7E',
-  'Strategic direction': '#38B2AC',
-  'Systems & operating reality': '#C4A934',
-};
+/* The five dimensions the real survey covers (source: PRD/AI Change Readiness Assessment-2.pdf).
+   Deliberately qualitative, not the literal question bank — the questions themselves are part of
+   what a client pays OXYGY to run; the page explains why each dimension matters for the transformation. */
+interface InsightPoint { icon: LucideIcon; label: string }
+interface SurveyCategory { id: string; title: string; icon: LucideIcon; description: string; why: string; insights: InsightPoint[] }
 
-/* The three signal sources gathered in the Collect stage (generic, pre-quadrant) */
-const SIGNAL_SOURCES: { cluster: string; icon: LucideIcon; captures: string; instruments: string; informs: string }[] = [
-  { cluster: 'On-the-ground signal', icon: Users, captures: 'How your people actually work with AI today, and where the appetite and skills sit.', instruments: 'Org-wide survey · Focus groups · Pulse checks', informs: 'Work Environment' },
-  { cluster: 'Strategic direction', icon: Compass, captures: 'Where leadership wants AI to take the business, and how clearly that is set and shared.', instruments: 'Leadership interviews · Leadership-agenda workshop', informs: 'Strategic Context' },
-  { cluster: 'Systems & operating reality', icon: Database, captures: 'The data, tools and governance underneath, including any ungoverned shadow AI.', instruments: 'Data & IT review · Systems audit · Data checks', informs: 'Both factors' },
+const SURVEY_CATEGORIES: SurveyCategory[] = [
+  {
+    id: 'demographics',
+    title: 'Demographics',
+    icon: Users,
+    description: 'So every other score can be read in context, not as one flat number for the whole company.',
+    why: "We tag every response by role, department, tenure and location — not to profile individuals, but to see whether readiness is a company-wide pattern or sits in specific pockets worth targeting first.",
+    insights: [
+      { icon: Users, label: 'Where confidence differs by level' },
+      { icon: Network, label: 'Which functions are furthest ahead' },
+      { icon: Compass, label: 'How tenure shapes trust in AI' },
+    ],
+  },
+  {
+    id: 'ai-literacy-perceptions',
+    title: 'AI Literacy & Perceptions',
+    icon: Lightbulb,
+    description: "Adoption moves at the speed of people's skill and trust in AI, not the strategy on paper.",
+    why: 'Skill and sentiment rarely move together — skill without trust stalls quietly, trust without skill creates risk. We look for which one is actually missing, because that changes what the first move in Phase 2 should be.',
+    insights: [
+      { icon: FlaskConical, label: 'Real skill level, not assumed' },
+      { icon: AlertTriangle, label: 'Hidden resistance, before it surfaces' },
+      { icon: TrendingUp, label: 'Existing confidence worth building on' },
+    ],
+  },
+  {
+    id: 'organisational-motivation',
+    title: 'Organisational Motivation',
+    icon: Compass,
+    description: "A strategy nobody's heard of can't be acted on, however good it looks on paper.",
+    why: 'A strategy only works once it has actually landed. We look for the gap between what leadership believes it has communicated and what the organisation has understood, because that gap is where transformations quietly stall.',
+    insights: [
+      { icon: Compass, label: 'Whether the vision has actually landed' },
+      { icon: Users, label: 'Where the message breaks down' },
+      { icon: Target, label: 'What people think AI is even for' },
+    ],
+  },
+  {
+    id: 'management-practices',
+    title: 'Management Practices',
+    icon: Shield,
+    description: 'Good ideas still die in bureaucracy, even inside organisations with a clear strategy.',
+    why: 'Strategy sets the direction; management practice decides whether anything survives contact with daily work. We look for whether ideas can actually move, because that capacity for execution is what a transformation runs on.',
+    insights: [
+      { icon: Shield, label: 'Ideas killed by bureaucracy, or not' },
+      { icon: Network, label: 'How openly information already flows' },
+      { icon: Compass, label: 'The balance of risk and experimentation' },
+    ],
+  },
+  {
+    id: 'resources-teamwork',
+    title: 'Resources & Teamwork',
+    icon: Network,
+    description: 'Even the best strategy fails without the time, budget, skills and team needed to deliver it.',
+    why: "Even the right strategy fails without the people, time and budget behind it. We look for whether teams can actually build with AI, not just have permission to try, because that's what sets the pace for Phase 2.",
+    insights: [
+      { icon: Network, label: 'Time, budget and skills, not just intent' },
+      { icon: Users, label: 'Team trust and diversity of thinking' },
+      { icon: TrendingUp, label: 'Readiness to execute, not just plan' },
+    ],
+  },
 ];
 
 /* hex -> rgba with alpha */
@@ -53,7 +108,11 @@ function MatrixSelector({ selectedId, onSelect }: { selectedId: ProfileId | null
   const sc = selected ? strategicScore(selected) : 0; // vertical
   const we = selected ? workEnvScore(selected) : 0; // horizontal
   const left = ((we - 1) / 4) * 100;
-  const top = (1 - (sc - 1) / 4) * 100;
+  const rawTop = (1 - (sc - 1) / 4) * 100;
+  // Keep the dot clear of whichever cell's own header it lands in — clamp its position
+  // within its half of the grid so it never sits flush against a row boundary.
+  const rowStart = rawTop < 50 ? 0 : 50;
+  const top = rowStart + Math.min(42, Math.max(18, rawTop - rowStart));
 
   const cells: ProfileId[] = ['disconnected-antenna', 'systematic-innovator', 'sitting-duck', 'island-of-creativity'];
 
@@ -74,12 +133,13 @@ function MatrixSelector({ selectedId, onSelect }: { selectedId: ProfileId | null
               const p = PROFILES.find((x) => x.id === id)!;
               const Icon = PROFILE_ICON[id];
               const active = id === selectedId;
+              const dimmed = !selectedId; // nothing picked yet — dim each cell individually so hover can clear just that one
               return (
                 <button
                   key={id}
                   type="button"
                   onClick={() => onSelect(id)}
-                  className="relative rounded-xl p-3 sm:p-4 flex flex-col items-start text-left transition-all duration-150 hover:-translate-y-0.5"
+                  className={`relative rounded-xl p-3 sm:p-4 flex flex-col items-start text-left transition-all duration-150 hover:-translate-y-0.5 ${dimmed ? 'opacity-70 blur-[1px] hover:opacity-100 hover:blur-none' : ''}`}
                   style={{ backgroundColor: hexA(p.color, active ? 0.22 : 0.07), border: active ? `2px solid ${p.color}` : '1px solid #E2E8F0', boxShadow: active ? `0 0 0 3px ${hexA(p.color, 0.18)}` : 'none' }}
                 >
                   <div className="flex items-center gap-1.5 mb-1.5">
@@ -98,6 +158,19 @@ function MatrixSelector({ selectedId, onSelect }: { selectedId: ProfileId | null
               <span className="block w-4 h-4 rounded-full" style={{ backgroundColor: selected.color, border: '2.5px solid #FFFFFF', boxShadow: `0 0 0 4px ${hexA(selected.color, 0.25)}` }} />
             </div>
           )}
+
+          {/* Overlay inviting a click, sat over the blurred quadrants — the buttons underneath stay clickable */}
+          {!selectedId && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-6">
+              <div className="rounded-xl px-4 py-3.5 text-center" style={{ backgroundColor: 'rgba(255,255,255,0.94)', border: `1.5px solid ${PALE_BORDER}`, boxShadow: '0 4px 16px rgba(30,58,95,0.12)' }}>
+                <div className="w-9 h-9 rounded-full flex items-center justify-center mx-auto mb-2" style={{ backgroundColor: '#EAF0F8' }}>
+                  <Compass size={17} style={{ color: ACCENT }} />
+                </div>
+                <p className="text-[13.5px] font-bold text-[#1A202C] leading-tight">Pick a quadrant to begin</p>
+                <p className="text-[11.5px] text-[#718096] mt-1 leading-[1.4] max-w-[190px]">See the persona and readiness picture for each one</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -111,75 +184,95 @@ function MatrixSelector({ selectedId, onSelect }: { selectedId: ProfileId | null
   );
 }
 
-/* Qualitative band for the comparison meter — easy to scan across profiles */
+/* Qualitative band for the comparison meter — easy to scan across profiles. Colour is semantic
+   (weak/mixed/strong), independent of the profile's own accent colour used elsewhere on the tile. */
 const band = (v: number) =>
-  v <= 2 ? { label: 'Weak', color: '#D97B4A' } : v === 3 ? { label: 'Mixed', color: '#C4A934' } : { label: 'Strong', color: '#2BA89C' };
+  v <= 2 ? { label: 'Weak', color: '#D97B4A' } : v === 3 ? { label: 'Mixed', color: '#C4A934' } : { label: 'Strong', color: '#38A169' };
 
-/* ---------- comparison meter: 5 segments + value + qualitative band ---------- */
-const ScoreMeter: React.FC<{ value: number }> = ({ value }) => {
+/* ---------- compact axis-score tile for the result-card header, tinted to the selected profile's colour ---------- */
+const StatTile: React.FC<{ label: string; value: number; accent: string }> = ({ label, value, accent }) => {
   const b = band(value);
   return (
-    <div className="shrink-0 w-[130px]">
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-[11px] font-bold uppercase tracking-[0.04em]" style={{ color: b.color }}>{b.label}</span>
-        <span className="text-[11px] font-bold text-[#A0AEC0]">{value}/5</span>
-      </div>
-      <div className="flex gap-0.5">
-        {[1, 2, 3, 4, 5].map((n) => (
-          <div key={n} className="h-[8px] flex-1 rounded-[2px]" style={{ backgroundColor: n <= value ? b.color : '#EDF2F7', transition: 'background-color 0.4s ease' }} />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-/* ---------- compact axis-score tile for the result-card header ---------- */
-const StatTile: React.FC<{ label: string; value: number }> = ({ label, value }) => {
-  const b = band(value);
-  return (
-    <div className="rounded-lg p-2.5" style={{ backgroundColor: '#F7FAFC', border: '1px solid #EDF2F7' }}>
+    <div className="rounded-lg p-2.5" style={{ backgroundColor: hexA(accent, 0.07), border: `1px solid ${hexA(accent, 0.22)}` }}>
       <p className="text-[10px] uppercase tracking-[0.05em] text-[#A0AEC0] font-semibold">{label}</p>
       <div className="flex items-baseline gap-1 mt-1">
-        <span className="text-[18px] font-bold" style={{ color: DARK }}>{value.toFixed(1)}</span>
+        <span className="text-[18px] font-bold" style={{ color: accent }}>{value.toFixed(1)}</span>
         <span className="text-[11px] text-[#A0AEC0]">/ 5</span>
-        <span className="text-[11px] font-bold ml-auto" style={{ color: b.color }}>{b.label}</span>
       </div>
+      <p className="text-[11px] font-bold mt-0.5" style={{ color: b.color }}>{b.label}</p>
     </div>
   );
 };
 
-/* ---------- question row: statement + comparison meter + Learn more ---------- */
-const QuestionRow: React.FC<{ q: Question; value: number }> = ({ q, value }) => {
+/* ---------- collapsed-by-default survey-category card, Phase 1 left column ---------- */
+const SurveySectionCard: React.FC<{ title: string; icon: LucideIcon; description: string; why: string; insights: InsightPoint[] }> = ({ title, icon: Icon, description, why, insights }) => {
   const [open, setOpen] = useState(false);
   return (
-    <div className="py-2.5 border-b border-[#EDF2F7] last:border-0">
-      <div className="flex items-start justify-between gap-4">
-        <p className="text-[14px] text-[#2D3748] flex-1 leading-[1.45]">
-          {q.label}
-          {q.rationale && (
-            <button
-              type="button"
-              onClick={() => setOpen((o) => !o)}
-              className="inline-flex items-center gap-0.5 text-[12px] font-semibold ml-1.5 align-baseline whitespace-nowrap"
-              style={{ color: ACCENT }}
-            >
-              Learn more
-              <ChevronDown size={12} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }} />
-            </button>
-          )}
-        </p>
-        <ScoreMeter value={value} />
+    <div className="rounded-xl p-4 relative" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-label={open ? 'Hide why we ask this' : 'See why we ask this'}
+        title={open ? 'Hide why we ask this' : 'See why we ask this'}
+        className="absolute top-3.5 right-3.5 w-6 h-6 rounded-full flex items-center justify-center transition-colors"
+        style={{ backgroundColor: hexA(ACCENT, open ? 0.16 : 0.08) }}
+      >
+        <ChevronDown size={14} style={{ color: ACCENT, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }} />
+      </button>
+      <div className="flex items-start gap-3 pr-8 cursor-pointer" onClick={() => setOpen((o) => !o)}>
+        <span className="w-9 h-9 rounded-lg shrink-0 flex items-center justify-center" style={{ backgroundColor: hexA(ACCENT, 0.1) }}>
+          <Icon size={17} style={{ color: ACCENT }} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[14.5px] font-bold text-[#1A202C]">{title}</p>
+          <p className="text-[13px] text-[#718096] leading-[1.5] mt-1">{description}</p>
+        </div>
       </div>
-      {open && q.rationale && (
-        <div className="mt-2 rounded-lg p-3 space-y-1.5" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
-          <p className="text-[12.5px] text-[#4A5568] leading-[1.55]"><span className="font-bold" style={{ color: DARK }}>Why it matters · </span>{q.rationale.why}</p>
-          <p className="text-[12.5px] text-[#4A5568] leading-[1.55]"><span className="font-bold" style={{ color: DARK }}>How we collect it · </span>{q.rationale.collected}</p>
-          <p className="text-[12.5px] text-[#4A5568] leading-[1.55]"><span className="font-bold" style={{ color: DARK }}>What it enables · </span>{q.rationale.enables}</p>
+      {open && (
+        <div className="pl-12 mt-3">
+          <p className="text-[12.5px] text-[#4A5568] leading-[1.6] mb-3">{why}</p>
+          <div className="flex flex-wrap gap-2">
+            {insights.map((pt, i) => (
+              <div key={i} className="flex items-center gap-1.5 rounded-full pl-1.5 pr-3 py-1.5" style={{ backgroundColor: hexA(ACCENT, 0.06), border: `1px solid ${hexA(ACCENT, 0.18)}` }}>
+                <span className="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: hexA(ACCENT, 0.14) }}>
+                  <pt.icon size={11} style={{ color: ACCENT }} />
+                </span>
+                <span className="text-[11.5px] font-medium text-[#2D3748]">{pt.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
   );
 };
+
+/* ---------- compact tile for the full-width persona snapshot: 4 traits + 1 perception, one row ---------- */
+/* Renders "**word**" spans as a bold highlight in the tile's accent colour, rest as plain text */
+const renderHighlighted = (text: string, accent: string) =>
+  text.split(/\*\*(.+?)\*\*/g).map((part, i) =>
+    i % 2 === 1 ? <span key={i} className="font-bold" style={{ color: accent }}>{part}</span> : <React.Fragment key={i}>{part}</React.Fragment>
+  );
+
+const TraitTile: React.FC<{ icon: LucideIcon; label: string; bullets: string[]; accent: string; dashed?: boolean; badge?: { label: string; color: string } }> = ({ icon: Icon, label, bullets, accent, dashed, badge }) => (
+  <div className="rounded-lg p-3" style={{ backgroundColor: hexA(accent, dashed ? 0.05 : 0.07), border: dashed ? `1.5px dashed ${hexA(accent, 0.4)}` : `1px solid ${hexA(accent, 0.22)}` }}>
+    <div className="flex items-center gap-2 mb-1.5">
+      <span className="w-6 h-6 rounded-md shrink-0 flex items-center justify-center" style={{ backgroundColor: hexA(accent, 0.12) }}>
+        <Icon size={13} style={{ color: accent }} />
+      </span>
+      <p className="text-[10px] font-bold uppercase tracking-[0.05em] text-[#A0AEC0] flex-1 leading-tight">{label}</p>
+      {badge && <span className="text-[9.5px] font-bold shrink-0" style={{ color: badge.color }}>{badge.label}</span>}
+    </div>
+    <ul className="space-y-1">
+      {bullets.map((b, i) => (
+        <li key={i} className="text-[12px] text-[#4A5568] leading-[1.4] flex items-start gap-1.5">
+          <span className="w-1 h-1 rounded-full shrink-0 mt-[6px]" style={{ backgroundColor: accent }} />
+          <span>{renderHighlighted(b, accent)}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
 
 /* The four quadrant-defining dimensions — same labels for every profile, values differ */
 const TRAIT_FIELDS: { key: keyof ProfileTraits; label: string; Icon: LucideIcon }[] = [
@@ -190,9 +283,9 @@ const TRAIT_FIELDS: { key: keyof ProfileTraits; label: string; Icon: LucideIcon 
 ];
 
 /* ============================================================================
-   Per-persona evidence callouts. The Analyse and Decide phases each show one
-   verified industry statistic, tailored to that profile's situation and sourced.
-   Content lives in readinessData.ts (results.analysis.evidence / decisions.evidence).
+   Per-persona evidence callout — one verified, independently-sourced statistic
+   grounding the roadmap. Content lives in readinessData.ts (results.evidence).
+   Never a consulting firm's own research — academic, government or vendor-survey only.
    ============================================================================ */
 
 const EVIDENCE_ICON: Record<Evidence['icon'], LucideIcon> = {
@@ -230,13 +323,51 @@ const EvidenceCallout: React.FC<{ evidence: Evidence; accent: string }> = ({ evi
   );
 };
 
+/* ---------- Phase 2: OXYGY's offerings for this quadrant, the primary visual — not a score ---------- */
+const OFFERING_ICON: Record<Offering['icon'], LucideIcon> = {
+  compass: Compass,
+  graduationCap: GraduationCap,
+  flask: FlaskConical,
+  shield: Shield,
+  refresh: RefreshCw,
+  broadcast: Share2,
+  target: Target,
+};
+
+const OfferingCard: React.FC<{ offering: Offering; accent: string }> = ({ offering, accent }) => {
+  const Icon = OFFERING_ICON[offering.icon];
+  return (
+    <div className="rounded-xl p-4 flex flex-col h-full" style={{ backgroundColor: hexA(accent, 0.04), border: `1px solid ${hexA(accent, 0.2)}` }}>
+      <div className="flex items-center gap-2.5 mb-3">
+        <span className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: hexA(accent, 0.15) }}>
+          <Icon size={19} style={{ color: accent }} />
+        </span>
+        <p className="text-[14.5px] font-bold text-[#1A202C] leading-tight">{offering.title}</p>
+      </div>
+      <span className="inline-flex items-center gap-1.5 self-start text-[10.5px] font-bold uppercase tracking-[0.05em] px-2.5 py-1 rounded-full mb-3" style={{ backgroundColor: hexA(accent, 0.1), color: accent }}>
+        <Clock size={11} /> {offering.duration}
+      </span>
+      <p className="text-[12.5px] text-[#4A5568] leading-[1.55] mb-3">{offering.description}</p>
+      <div className="mt-auto rounded-lg p-3" style={{ backgroundColor: '#FFFFFF', border: `1px solid ${hexA(accent, 0.2)}` }}>
+        <p className="text-[10px] font-bold uppercase tracking-[0.06em] mb-1" style={{ color: accent }}>For you</p>
+        <p className="text-[12.5px] text-[#2D3748] leading-[1.5]">{offering.valueAdd}</p>
+      </div>
+    </div>
+  );
+};
+
+/* Small "Phase N" eyebrow badge, consistent across both phase blocks */
+const PhaseBadge: React.FC<{ n: 1 | 2 }> = ({ n }) => (
+  <span className="text-[10.5px] font-bold uppercase tracking-[0.1em] px-2.5 py-1 rounded-full shrink-0" style={{ backgroundColor: '#EAF0F8', color: DARK, border: `1px solid ${PALE_BORDER}` }}>
+    Phase {n}
+  </span>
+);
+
 export const ReadinessAssessment: React.FC = () => {
   const [selectedId, setSelectedId] = useState<ProfileId | null>(null);
   const profile = PROFILES.find((p) => p.id === selectedId) ?? null;
   const isPlaceholder = !profile;
   const displayProfile = profile ?? PROFILES[0]; // blurred preview before a choice is made
-
-  const [inputsOpen, setInputsOpen] = useState(false); // detailed answers collapsed by default
 
   const goHome = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -244,10 +375,8 @@ export const ReadinessAssessment: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const strategicQs = QUESTIONS.filter((q) => q.block === 'strategic');
-  const workEnvQs = QUESTIONS.filter((q) => q.block === 'workEnvironment');
-
   const evidenceAccent = EVIDENCE_ACCENT[displayProfile.id];
+  const perceptionBand = band(displayProfile.perception.score);
 
   return (
     <div className="min-h-screen bg-white pt-24 pb-16">
@@ -259,7 +388,7 @@ export const ReadinessAssessment: React.FC = () => {
         </a>
 
         {/* Title */}
-        <div className="mb-8 text-center">
+        <div className="mb-4 text-center">
           <div className="inline-block text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-1.5 rounded-full mb-6" style={{ backgroundColor: '#EAF0F8', color: DARK, border: `1px solid ${PALE_BORDER}` }}>
             L0 &mdash; AI Readiness
           </div>
@@ -271,6 +400,11 @@ export const ReadinessAssessment: React.FC = () => {
             </span>
           </h1>
         </div>
+
+        {/* Problem-first framing — the "why", ahead of any method */}
+        <p className="text-[16px] md:text-[18px] text-[#4A5568] text-center max-w-[620px] mx-auto mb-8 leading-[1.6]">
+          Struggling to get AI traction, or unsure if leadership and the frontline even agree on where things stand? This is where you find out, and where the next move gets decided.
+        </p>
 
         {/* Fun fact */}
         <div className="mb-8">
@@ -291,235 +425,121 @@ export const ReadinessAssessment: React.FC = () => {
           </div>
         </div>
 
-        {/* ① Collect — how the assessment gathers signals and reads them against two factors */}
+        {/* ============ PHASE 1 — AI READINESS SURVEY ============ */}
         <div className="rounded-2xl p-6 sm:p-8 mb-6" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
           <div className="flex items-center gap-3 mb-2">
-            <span className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[13px] font-bold shrink-0" style={{ backgroundColor: DARK }}>1</span>
-            <h2 className="text-[20px] md:text-[24px] font-bold text-[#1A202C]">How we read your AI readiness</h2>
+            <PhaseBadge n={1} />
+            <h2 className="text-[20px] md:text-[24px] font-bold text-[#1A202C]">AI Readiness Survey</h2>
           </div>
-          <p className="text-[14px] text-[#718096] max-w-[680px] mb-6 leading-[1.6]">We gather real signals from three sources, then score them against two factors to place you on the matrix.</p>
-
-          {/* Three signal sources */}
-          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-3">Three signal sources</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {SIGNAL_SOURCES.map(({ cluster, icon: Icon, captures, instruments, informs }) => {
-              const c = CLUSTER_COLOR[cluster];
-              return (
-                <div key={cluster} className="rounded-xl p-4 flex flex-col" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center" style={{ backgroundColor: hexA(c, 0.14) }}>
-                      <Icon size={16} style={{ color: c }} />
-                    </span>
-                    <p className="text-[14px] font-bold text-[#1A202C] leading-tight">{cluster}</p>
-                  </div>
-                  <p className="text-[13px] text-[#718096] leading-[1.5] mb-2.5">{captures}</p>
-                  <p className="text-[12px] text-[#4A5568] leading-[1.5] mb-3">{instruments}</p>
-                  <div className="mt-auto pt-2.5" style={{ borderTop: '1px solid #EDF2F7' }}>
-                    <span className="text-[11px] font-bold uppercase tracking-[0.04em]" style={{ color: c }}>Informs {informs}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Scored against two factors */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex-1 h-px" style={{ backgroundColor: '#E2E8F0' }} />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#A0AEC0]">Scored against two factors</span>
-            <div className="flex-1 h-px" style={{ backgroundColor: '#E2E8F0' }} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-xl p-4" style={{ backgroundColor: '#FFFFFF', border: `1.5px solid ${PALE_BORDER}` }}>
-              <div className="flex items-center justify-between gap-2 mb-1">
-                <p className="text-[15px] font-bold" style={{ color: DARK }}>Strategic Context</p>
-                <span className="text-[11px] font-semibold text-[#A0AEC0] whitespace-nowrap">Unclear → Defined</span>
-              </div>
-              <p className="text-[13px] text-[#718096] leading-[1.6]">Strategy definition · leadership motivation · data &amp; infrastructure · tech-stack consistency · governance</p>
-            </div>
-            <div className="rounded-xl p-4" style={{ backgroundColor: '#FFFFFF', border: `1.5px solid ${PALE_BORDER}` }}>
-              <div className="flex items-center justify-between gap-2 mb-1">
-                <p className="text-[15px] font-bold" style={{ color: DARK }}>Work Environment</p>
-                <span className="text-[11px] font-semibold text-[#A0AEC0] whitespace-nowrap">Conventional → Innovative</span>
-              </div>
-              <p className="text-[13px] text-[#718096] leading-[1.6]">Experimentation &amp; sandboxes · idea governance · AI knowledge &amp; resources · teamwork &amp; sponsorship</p>
-            </div>
-          </div>
-
-          {/* Bridge into the results */}
-          <div className="flex flex-col items-center mt-5">
-            <ArrowDown size={20} style={{ color: '#A0AEC0' }} />
-            <p className="text-[13.5px] font-semibold text-[#2D3748] mt-1">Together these place you in one of four profiles.</p>
-          </div>
-        </div>
-
-        {/* ② Results — the visitor picks the profile that fits, and its tailored picture appears */}
-        <div className="rounded-2xl p-6 sm:p-8 mb-6" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
-          <div className="flex items-center gap-3 mb-2">
-            <span className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[13px] font-bold shrink-0" style={{ backgroundColor: DARK }}>2</span>
-            <h2 className="text-[20px] md:text-[24px] font-bold text-[#1A202C]">Which profile do you belong to?</h2>
-          </div>
-          <p className="text-[14px] text-[#718096] mb-6">Pick the quadrant that fits your organisation, and we'll show its tailored readiness picture.</p>
+          <p className="text-[14px] text-[#718096] max-w-[760px] mb-7 leading-[1.6]">{PHASE1_WHY}</p>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-            {/* Left: interactive quadrant selector */}
+            {/* Left: what we ask, collapsed by default */}
             <div>
-              <MatrixSelector selectedId={selectedId} onSelect={setSelectedId} />
-              <p className="text-[12px] text-[#A0AEC0] mt-3 leading-[1.5]">Each quadrant is an AI-readiness profile. Pick the one that sounds most like your organisation.</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-3">What we ask</p>
+              <div className="space-y-3">
+                {SURVEY_CATEGORIES.map((cat) => (
+                  <SurveySectionCard key={cat.id} title={cat.title} icon={cat.icon} description={cat.description} why={cat.why} insights={cat.insights} />
+                ))}
+              </div>
             </div>
 
-            {/* Right: the selected profile's detail, or a prompt to choose */}
+            {/* Right: where it places you — the overlay inside the matrix invites the click, no extra copy needed */}
             <div>
-              {isPlaceholder ? (
-                <div className="rounded-2xl h-full flex flex-col items-center justify-center text-center px-8 py-12" style={{ backgroundColor: '#FFFFFF', border: `1.5px dashed ${PALE_BORDER}` }}>
-                  <div className="w-11 h-11 rounded-full flex items-center justify-center mb-3" style={{ backgroundColor: '#EAF0F8' }}>
-                    <Compass size={20} style={{ color: ACCENT }} />
-                  </div>
-                  <p className="text-[17px] font-bold text-[#1A202C]">Pick a quadrant to begin</p>
-                  <p className="text-[14px] text-[#718096] mt-1 leading-[1.6] max-w-[320px]">Choose the profile on the left that sounds most like your organisation, and we'll reveal its tailored readiness picture.</p>
-                </div>
-              ) : (
-                <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-3">Where it places you</p>
+              <MatrixSelector selectedId={selectedId} onSelect={setSelectedId} />
+            </div>
+          </div>
+
+          {/* Full-width persona snapshot, once a quadrant is picked */}
+          {!isPlaceholder && (
+            <div className="rounded-2xl p-5 sm:p-6 mt-8" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+              <div className="flex flex-col md:flex-row md:items-start gap-5 md:gap-8">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2.5 mb-3">
                     <span className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center" style={{ backgroundColor: `${displayProfile.color}22` }}>
                       {React.createElement(PROFILE_ICON[displayProfile.id], { size: 20, style: { color: displayProfile.color } })}
                     </span>
                     <div className="min-w-0">
-                      <p className="text-[18px] font-bold text-[#1A202C] leading-tight">{displayProfile.name}</p>
+                      <p className="text-[17px] font-bold text-[#1A202C] leading-tight">{displayProfile.name}</p>
                       <p className="text-[10.5px] font-semibold uppercase tracking-[0.05em] text-[#A0AEC0]">{displayProfile.quadrantTag}</p>
                     </div>
                   </div>
-                  <p className="text-[16px] font-semibold text-[#1A202C] leading-[1.4] mb-2">&ldquo;{displayProfile.results.output.headline}&rdquo;</p>
-                  <p className="text-[14px] text-[#4A5568] leading-[1.55] mb-5">{displayProfile.summary}</p>
-                  <div className="grid grid-cols-3 gap-2.5 mb-5">
-                    <StatTile label="Strategic" value={strategicScore(displayProfile)} />
-                    <StatTile label="Work env." value={workEnvScore(displayProfile)} />
-                    <StatTile label="Overall" value={overallScore(displayProfile)} />
-                  </div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#A0AEC0] mb-2.5">What this profile looks like</p>
-                  <div className="space-y-2.5">
-                    {TRAIT_FIELDS.map(({ key, label, Icon }) => (
-                      <div key={key} className="flex items-start gap-3 rounded-xl p-3" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-                        <span className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center mt-0.5" style={{ backgroundColor: hexA(evidenceAccent, 0.12) }}>
-                          <Icon size={16} style={{ color: evidenceAccent }} />
-                        </span>
-                        <div className="min-w-0">
-                          <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-[#A0AEC0]">{label}</p>
-                          <p className="text-[13px] text-[#4A5568] leading-[1.5] mt-0.5 line-clamp-2">{displayProfile.traits[key]}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <p className="text-[15px] font-semibold text-[#1A202C] leading-[1.4] mb-2">&ldquo;{displayProfile.results.output.headline}&rdquo;</p>
+                  <p className="text-[13.5px] text-[#4A5568] leading-[1.55]">{displayProfile.summary}</p>
                 </div>
-              )}
+                <div className="grid grid-cols-3 gap-2 md:w-[300px] shrink-0">
+                  <StatTile label="Strategic" value={strategicScore(displayProfile)} accent={displayProfile.color} />
+                  <StatTile label="Work env." value={workEnvScore(displayProfile)} accent={displayProfile.color} />
+                  <StatTile label="Overall" value={overallScore(displayProfile)} accent={displayProfile.color} />
+                </div>
+              </div>
+
+              <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#A0AEC0] mt-6 mb-2.5">What this profile looks like</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                {TRAIT_FIELDS.map(({ key, label, Icon }) => (
+                  <TraitTile key={key} icon={Icon} label={label} bullets={displayProfile.traits[key]} accent={displayProfile.color} />
+                ))}
+                <TraitTile icon={Users} label="AI Perceptions" bullets={displayProfile.perception.insight} accent={displayProfile.color} dashed badge={{ label: perceptionBand.label, color: perceptionBand.color }} />
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Trust line */}
+          <p className="text-[12px] text-[#A0AEC0] leading-[1.6] mt-7 pt-5 text-center" style={{ borderTop: '1px solid #E2E8F0' }}>
+            Answers are analysed in aggregate, typically across 50&ndash;100 respondents, and always paired with follow-up interviews. It's a starting point, not a verdict.
+          </p>
         </div>
 
-        {/* Profile detail + phases + full answers — revealed once a profile is chosen */}
-        {!isPlaceholder && (
-          <>
-            {/* ③ What it means — how we'd collect, what we'd analyse, what to do next */}
-            <div className="rounded-2xl p-6 md:p-8 mb-4" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-              <div className="flex items-center gap-3 mb-1">
-                <span className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[13px] font-bold shrink-0" style={{ backgroundColor: DARK }}>3</span>
-                <h2 className="text-[20px] md:text-[24px] font-bold text-[#1A202C]">What this means, and what to do</h2>
-              </div>
-              <p className="text-[14px] text-[#718096] mb-7 leading-[1.6]">From your profile: how we'd run the assessment, the question your data forces, and the moves that follow.</p>
+        {/* ============ PHASE 2 — YOUR ROADMAP ============ */}
+        <div className="rounded-2xl p-6 md:p-8 mb-4" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+          <div className="flex items-center gap-3 mb-2">
+            <PhaseBadge n={2} />
+            <h2 className="text-[20px] md:text-[24px] font-bold text-[#1A202C]">Your roadmap</h2>
+          </div>
 
-              {/* A — Collection focus (re-weighted per profile) */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center" style={{ backgroundColor: hexA(ACCENT, 0.1) }}>
-                    <Database size={16} style={{ color: ACCENT }} />
-                  </span>
-                  <p className="text-[14px] font-bold text-[#1A202C]">How we'd focus your data collection</p>
-                </div>
-                <p className="text-[13px] text-[#718096] leading-[1.55] mb-3">Same three sources every time, re-weighted to dig hardest where your unknowns are.</p>
-                <div className="flex w-full h-[16px] rounded-full overflow-hidden mb-4">
-                  {displayProfile.results.dataSources.map((d) => (
-                    <div key={d.cluster} style={{ width: `${d.weight}%`, backgroundColor: CLUSTER_COLOR[d.cluster], transition: 'width 0.6s ease' }} title={`${d.cluster} ${d.weight}%`} />
-                  ))}
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {displayProfile.results.dataSources.map((d) => (
-                    <div key={d.cluster} className="rounded-xl p-3.5" style={{ backgroundColor: '#F7FAFC', border: '1px solid #EDF2F7' }}>
-                      <p className="text-[13px] leading-[1.35] mb-1"><span className="font-bold text-[#1A202C]">{d.cluster}</span><span className="font-bold" style={{ color: CLUSTER_COLOR[d.cluster] }}> · {d.weight}%</span></p>
-                      <p className="text-[12.5px] text-[#718096] leading-[1.5] mb-1.5">{d.detail}</p>
-                      <p className="text-[11.5px] text-[#A0AEC0]">Who: {d.who}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* B — Analyse */}
-              <div className="mt-7 pt-7" style={{ borderTop: '1px solid #EDF2F7' }}>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center" style={{ backgroundColor: hexA(ACCENT, 0.1) }}>
-                    <Search size={16} style={{ color: ACCENT }} />
-                  </span>
-                  <p className="text-[14px] font-bold text-[#1A202C]">What we'd analyse</p>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                  <div>
-                    <p className="text-[15px] font-semibold text-[#1A202C] leading-[1.45] mb-3">&ldquo;{displayProfile.results.analysis.centralQuestion}&rdquo;</p>
-                    <ul className="space-y-2">
-                      {displayProfile.results.analysis.computes.map((c, i) => (
-                        <li key={i} className="flex items-start gap-2 text-[13px] text-[#4A5568] leading-[1.5]">
-                          <Check size={15} className="shrink-0 mt-0.5" style={{ color: ACCENT }} />
-                          <span>{c}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <EvidenceCallout evidence={displayProfile.results.analysis.evidence} accent={evidenceAccent} />
-                </div>
-              </div>
-
-              {/* C — Decide */}
-              <div className="mt-7 pt-7" style={{ borderTop: '1px solid #EDF2F7' }}>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center" style={{ backgroundColor: hexA(ACCENT, 0.1) }}>
-                    <Compass size={16} style={{ color: ACCENT }} />
-                  </span>
-                  <p className="text-[14px] font-bold text-[#1A202C]">What to do next</p>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                  <div>
-                    <ol className="space-y-3 mb-4">
-                      {displayProfile.results.decisions.sequence.map((s, i) => (
-                        <li key={i} className="flex items-start gap-2.5">
-                          <span className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-white text-[12px] font-bold" style={{ backgroundColor: ACCENT }}>{i + 1}</span>
-                          <span className="text-[13.5px] text-[#2D3748] leading-[1.5] pt-0.5">{s}</span>
-                        </li>
-                      ))}
-                    </ol>
-                    {displayProfile.results.decisions.guardrail && (
-                      <div className="rounded-lg px-3 py-2" style={{ backgroundColor: '#FFF5F5', border: '1px solid #FED7D7' }}>
-                        <p className="text-[12.5px] text-[#C53030] leading-[1.5]"><span className="font-bold">Guardrail · </span>{displayProfile.results.decisions.guardrail}</p>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <EvidenceCallout evidence={displayProfile.results.decisions.evidence} accent={evidenceAccent} />
-                    <p className="text-[10.5px] uppercase tracking-[0.06em] text-[#A0AEC0] font-bold mt-4 mb-1.5">Routes into</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {displayProfile.results.decisions.routesInto.map((r) => (
-                        <span key={r} className="text-[12px] font-medium rounded-full px-2.5 py-1" style={{ backgroundColor: '#EAF0F8', color: DARK }}>{r}</span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
+          {isPlaceholder ? (
+            <div className="rounded-2xl flex flex-col items-center justify-center text-center px-6 py-14 mt-5" style={{ backgroundColor: '#F7FAFC', border: `1.5px dashed ${PALE_BORDER}` }}>
+              <p className="text-[15px] font-bold text-[#1A202C]">Pick your profile in Phase 1 first</p>
+              <p className="text-[13.5px] text-[#718096] mt-1">Your roadmap depends on where the survey places you.</p>
             </div>
+          ) : (
+            <>
+              <p className="text-[14px] text-[#4A5568] leading-[1.6] mt-1 mb-6 max-w-[760px]">{displayProfile.results.decisions.rationale}</p>
 
-          </>
-        )}
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-3">Where OXYGY can help</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {displayProfile.results.offerings.map((o) => (
+                  <OfferingCard key={o.title} offering={o} accent={displayProfile.color} />
+                ))}
+              </div>
+
+              <div className="rounded-xl p-4 sm:p-5 mt-6" style={{ backgroundColor: '#FFF5F5', border: '1px solid #FED7D7' }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <AlertTriangle size={16} style={{ color: '#C53030' }} />
+                  <p className="text-[13.5px] font-bold" style={{ color: '#C53030' }}>Guardrails — what not to do right now</p>
+                </div>
+                <ul className="space-y-2 mb-4">
+                  {displayProfile.results.decisions.guardrails.map((g, i) => (
+                    <li key={i} className="flex items-start gap-2 text-[12.5px] text-[#742A2A] leading-[1.5]">
+                      <span className="shrink-0 mt-[7px] w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#C53030' }} />
+                      <span>{g}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-[10.5px] font-bold uppercase tracking-[0.06em] mb-2" style={{ color: '#C53030' }}>Why this matters</p>
+                <EvidenceCallout evidence={displayProfile.results.evidence} accent={evidenceAccent} />
+              </div>
+            </>
+          )}
+        </div>
 
         <ArtifactClosing
           summaryText="Knowing where you stand is step zero. The five levels that follow turn that readiness into real, hands-on AI capability across your teams."
           ctaLabel="Continue to Level 1: Prompt Engineering Fundamentals"
           ctaHref="#playground"
+          secondaryCtaLabel="Talk to us about your AI readiness"
+          secondaryCtaHref="mailto:uk@oxygyconsulting.com"
           accentColor={DARK}
         />
       </div>
