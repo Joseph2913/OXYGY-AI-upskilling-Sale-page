@@ -257,54 +257,41 @@ export const GOVERNANCE_TIERS: GovernanceTier[] = [
 ];
 
 /* ---------------------------------------------------------------------------
-   Section 06 — beyond the pilot
+   Section 04 (continued) — the delivery partners on the external side of the
+   governance chart, and the shared outcome everything converges on
    --------------------------------------------------------------------------- */
-export type LegacyIconName = 'map' | 'usersRound' | 'layers';
-
-export interface LegacyCard {
-  icon: LegacyIconName;
-  title: string;
-  description: string;
-}
-
-export const LEGACY_CARDS: LegacyCard[] = [
-  {
-    icon: 'map',
-    title: 'The Transformation Blueprint',
-    description:
-      'Every use case sequenced into quick wins, scale opportunities and longer-term bets — with owners, dependencies, and a costed route from pilot to production.',
-  },
-  {
-    icon: 'usersRound',
-    title: 'Your own transformation team',
-    description:
-      'The business case and mandate for a permanent internal capability, so the momentum stays in the building when the engagement ends.',
-  },
-  {
-    icon: 'layers',
-    title: 'A compounding knowledge layer',
-    description:
-      'AI tools are only as good as what your organisation knows. We help you capture and structure that knowledge, so every use case makes the next one easier to build.',
-  },
-];
-
-/* ---------------------------------------------------------------------------
-   Section 07 — responsible scaling partnership
-   --------------------------------------------------------------------------- */
-export interface PartnerInfo {
+export interface SandboxPartner {
   name: string;
-  pendingApproval: boolean;
+  logo: string;
+  /** rendered logo height in px, tuned per asset so the two wordmarks feel balanced */
+  logoHeight: number;
+  role: string;
   blurb: string;
 }
 
-export const LEGAL_PARTNER: PartnerInfo = {
-  name: 'Specialist legal partner',
-  pendingApproval: true,
-  blurb:
-    'An international law firm specialised in AI regulation works alongside us, so every use case that scales has been through legal-grade review — not a checkbox exercise.',
-};
+export const SANDBOX_PARTNERS: SandboxPartner[] = [
+  {
+    name: 'OXYGY',
+    logo: '/logos/oxygy-logo-darkgray-teal.png',
+    logoHeight: 22,
+    role: 'People, process and adoption',
+    blurb:
+      'Designs the sandbox, coaches the champions, runs the scoring and carries adoption — so the technology actually changes how work gets done.',
+  },
+  {
+    name: 'Bird & Bird',
+    logo: '/logos/birdandbird.svg',
+    logoHeight: 19,
+    role: 'Legal-grade AI governance',
+    blurb:
+      'International law firm specialised in AI and technology regulation. Every use case that scales has been through legal-grade review — not a checkbox exercise.',
+  },
+];
 
 export const COMPLIANCE_CHIPS: string[] = ['EU AI Act', 'Data protection & DPIA', 'NIS2', 'Governance gates'];
+
+export const GOVERNANCE_OUTCOME =
+  'Everything converges on one deliverable: the Transformation Blueprint — your prioritised portfolio, governance model and route to production, owned by your team after we leave.';
 
 /* ---------------------------------------------------------------------------
    Section 08 — proof band

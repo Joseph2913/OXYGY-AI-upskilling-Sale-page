@@ -17,7 +17,6 @@ import {
   SlidersHorizontal,
   Flag,
   Map,
-  Layers,
   Shield,
   ScrollText,
   FileText,
@@ -42,15 +41,14 @@ import {
   FORMULA_TILES,
   METHOD_STAGES,
   GOVERNANCE_TIERS,
-  LEGACY_CARDS,
-  LEGAL_PARTNER,
+  SANDBOX_PARTNERS,
+  GOVERNANCE_OUTCOME,
   COMPLIANCE_CHIPS,
   PROOF_STATS,
   PROOF_FOOTNOTE,
   type LayerIconName,
   type StageIconName,
   type TierIconName,
-  type LegacyIconName,
   type MethodStage,
 } from './sandboxData';
 
@@ -76,12 +74,6 @@ const TIER_ICON: Record<TierIconName, LucideIcon> = {
   landmark: Landmark,
   sliders: SlidersHorizontal,
   flag: Flag,
-};
-
-const LEGACY_ICON: Record<LegacyIconName, LucideIcon> = {
-  map: Map,
-  usersRound: UsersRound,
-  layers: Layers,
 };
 
 /* ---------------------------------------------------------------------------
@@ -641,162 +633,97 @@ const MethodSection: React.FC = () => {
 };
 
 /* ---------------------------------------------------------------------------
-   Section 05 — governance
+   Section 04 — governance chart: client tiers on one side, delivery partners
+   on the other, everything converging on the Blueprint
    --------------------------------------------------------------------------- */
-const GovernanceSection: React.FC = () => (
+const GovernanceChartSection: React.FC = () => (
   <section className="mb-20">
     <SectionHeading
       n="04"
-      eyebrow="Who governs it"
+      eyebrow="Who makes it work"
       title="A sandbox, not a free-for-all"
-      lede="Experimentation without governance produces demos. Three tiers keep the freedom to build and the discipline to scale in the same room."
+      lede="Experimentation without governance produces demos. This is the team that turns it into production value: three tiers inside your organisation, two partners at your side."
     />
-    <div className="flex flex-col items-center gap-0">
-      {GOVERNANCE_TIERS.map((tier, i) => {
-        const Icon = TIER_ICON[tier.icon];
-        return (
-          <React.Fragment key={tier.title}>
-            {i > 0 && <div className="w-px h-5" style={{ backgroundColor: hexA(SBX_ACCENT, 0.3) }} />}
-            <Reveal delay={i * 150} className={`w-full ${tier.widthClass}`}>
-              <div className="rounded-xl p-4 flex items-start gap-3.5" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-                <span className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: hexA(SBX_ACCENT, 0.1) }}>
-                  <Icon size={18} style={{ color: SBX_ACCENT }} />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-[14.5px] font-bold text-[#1A202C]">{tier.title}</p>
-                  <p className="text-[12.5px] text-[#4A5568] leading-[1.55] mt-0.5">{tier.mandate}</p>
+
+    <div className="rounded-2xl p-6 sm:p-8" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start">
+        {/* Client side */}
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-3">Inside your organisation</p>
+          <div className="flex flex-col items-center gap-0">
+            {GOVERNANCE_TIERS.map((tier, i) => {
+              const Icon = TIER_ICON[tier.icon];
+              return (
+                <React.Fragment key={tier.title}>
+                  {i > 0 && <div className="w-px h-4" style={{ backgroundColor: hexA(SBX_ACCENT, 0.35) }} />}
+                  <Reveal delay={i * 130} className="w-full">
+                    <div className="rounded-xl p-4 flex items-start gap-3.5" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+                      <span className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: hexA(SBX_ACCENT, 0.1) }}>
+                        <Icon size={18} style={{ color: SBX_ACCENT }} />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[14.5px] font-bold text-[#1A202C]">{tier.title}</p>
+                        <p className="text-[12.5px] text-[#4A5568] leading-[1.55] mt-0.5">{tier.mandate}</p>
+                      </div>
+                    </div>
+                  </Reveal>
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Partner side */}
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-3">At your side</p>
+          <div className="flex flex-col gap-3">
+            {SANDBOX_PARTNERS.map((partner, i) => (
+              <Reveal key={partner.name} delay={i * 130}>
+                <div className="rounded-xl p-4" style={{ backgroundColor: '#FFFFFF', border: `1px solid ${hexA(SBX_ACCENT, 0.25)}` }}>
+                  <div className="flex items-center justify-between gap-3 mb-2">
+                    <img src={partner.logo} alt={partner.name} style={{ height: partner.logoHeight }} className="w-auto" />
+                    <span className="text-[10px] font-bold uppercase tracking-[0.06em] px-2 py-0.5 rounded-full shrink-0" style={{ backgroundColor: hexA(SBX_ACCENT, 0.08), color: SBX_DARK }}>
+                      {partner.role}
+                    </span>
+                  </div>
+                  <p className="text-[12.5px] text-[#4A5568] leading-[1.6]">{partner.blurb}</p>
                 </div>
+              </Reveal>
+            ))}
+            <Reveal delay={280}>
+              <div className="flex flex-wrap gap-2">
+                {COMPLIANCE_CHIPS.map((chip, i) => (
+                  <span
+                    key={chip}
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11.5px] font-semibold"
+                    style={{ backgroundColor: '#FFFFFF', border: `1px solid ${hexA(SBX_ACCENT, 0.3)}`, color: SBX_DARK }}
+                  >
+                    {i % 2 === 0 ? <Shield size={12} style={{ color: SBX_ACCENT }} /> : <ScrollText size={12} style={{ color: SBX_ACCENT }} />}
+                    {chip}
+                  </span>
+                ))}
               </div>
             </Reveal>
-          </React.Fragment>
-        );
-      })}
-    </div>
-  </section>
-);
-
-/* ---------------------------------------------------------------------------
-   Section 06 — beyond the pilot
-   --------------------------------------------------------------------------- */
-const LegacySection: React.FC = () => {
-  const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.4, triggerOnce: true });
-  const effortPct = useCountUp(40, isIntersecting);
-  return (
-    <section className="mb-20">
-      <SectionHeading
-        n="05"
-        eyebrow="Beyond the pilot"
-        title="What you're left with when we leave"
-        lede="An engagement that ends with a slide deck has failed. The Sandbox ends with assets your organisation owns and keeps compounding."
-      />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {LEGACY_CARDS.map((card, i) => {
-          const Icon = LEGACY_ICON[card.icon];
-          return (
-            <Reveal key={card.title} delay={i * 120}>
-              <div className="rounded-xl p-5 h-full" style={{ backgroundColor: hexA(SBX_ACCENT, 0.04), border: `1px solid ${hexA(SBX_ACCENT, 0.2)}` }}>
-                <span className="w-10 h-10 rounded-lg flex items-center justify-center mb-3" style={{ backgroundColor: hexA(SBX_ACCENT, 0.13) }}>
-                  <Icon size={19} style={{ color: SBX_ACCENT }} />
-                </span>
-                <p className="text-[15px] font-bold text-[#1A202C] mb-2">{card.title}</p>
-                <p className="text-[13px] text-[#4A5568] leading-[1.6]">{card.description}</p>
-              </div>
-            </Reveal>
-          );
-        })}
-      </div>
-
-      {/* Phase 1 -> Phase 2 strip */}
-      <div ref={ref} className="rounded-2xl p-5 sm:p-6" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
-        <div className="flex flex-col md:flex-row items-stretch gap-4">
-          <Reveal className="flex-1">
-            <div className="rounded-xl p-4 h-full" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-              <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#A0AEC0] mb-1">Phase 1</p>
-              <p className="text-[14px] font-bold text-[#1A202C]">Design deep on 2–3 functions</p>
-              <p className="text-[12.5px] text-[#718096] leading-[1.55] mt-1">
-                Build the templates, frameworks and scoring rubric on the functions that matter most.
-              </p>
-            </div>
-          </Reveal>
-          <Reveal delay={150} className="flex items-center justify-center shrink-0">
-            <ArrowRight size={20} className="text-[#A0AEC0] rotate-90 md:rotate-0" />
-          </Reveal>
-          <Reveal delay={250} className="flex-1">
-            <div className="rounded-xl p-4 h-full relative" style={{ backgroundColor: '#FFFFFF', border: `1.5px solid ${SBX_TEAL}` }}>
-              <span className="absolute -top-2.5 right-4 rounded-full px-2.5 py-0.5 text-[10px] font-bold text-white tabular-nums" style={{ backgroundColor: SBX_TEAL }}>
-                ~{effortPct}% less effort
-              </span>
-              <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#A0AEC0] mb-1">Phase 2</p>
-              <p className="text-[14px] font-bold text-[#1A202C]">Scale across the organisation</p>
-              <p className="text-[12.5px] text-[#718096] leading-[1.55] mt-1">
-                Reuse what Phase 1 proved. Every function after the first is faster — <UseCaseChip label="SOP assistant" status="live" /> stays live while the next one ships.
-              </p>
-            </div>
-          </Reveal>
+          </div>
         </div>
       </div>
-    </section>
-  );
-};
 
-/* ---------------------------------------------------------------------------
-   Section 07 — responsible scaling
-   --------------------------------------------------------------------------- */
-const PartnershipSection: React.FC = () => (
-  <section className="mb-20">
-    <SectionHeading
-      n="06"
-      eyebrow="Scaling responsibly"
-      title={
-        <>
-          Scale fast.{' '}
-          <span className="relative inline-block">
-            Scale responsibly.
-            <span className="absolute left-0 -bottom-1 w-full h-[4px] rounded-full opacity-80" style={{ backgroundColor: SBX_TEAL }} />
+      {/* Shared outcome */}
+      <Reveal delay={350}>
+        <div className="flex justify-center my-4">
+          <ArrowDown size={18} className="text-[#A0AEC0]" />
+        </div>
+        <div className="rounded-xl px-5 py-4 flex items-start gap-3" style={{ backgroundColor: hexA(SBX_TEAL, 0.07), border: `1.5px solid ${SBX_TEAL}` }}>
+          <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: hexA(SBX_TEAL, 0.15) }}>
+            <Map size={17} style={{ color: SBX_TEAL }} />
           </span>
-        </>
-      }
-      lede="Every use case that scales passes a governance gate. Compliance, risk and ethical review are built into the blueprint — not bolted on after something breaks."
-    />
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-      <Reveal>
-        <div className="rounded-xl p-5 h-full" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-          <p className="text-[11px] font-bold uppercase tracking-[0.1em] mb-2" style={{ color: SBX_ACCENT }}>
-            OXYGY
-          </p>
-          <p className="text-[14.5px] font-bold text-[#1A202C] mb-1.5">People, process and adoption</p>
-          <p className="text-[13px] text-[#4A5568] leading-[1.6]">
-            Change management is our core craft. We design the sandbox, coach the champions, run the scoring and carry adoption — so the technology actually changes how work gets done.
-          </p>
-        </div>
-      </Reveal>
-      <Reveal delay={130}>
-        <div className="rounded-xl p-5 h-full" style={{ backgroundColor: hexA(SBX_ACCENT, 0.04), border: `1px solid ${hexA(SBX_ACCENT, 0.25)}` }}>
-          <p className="text-[11px] font-bold uppercase tracking-[0.1em] mb-2" style={{ color: SBX_ACCENT }}>
-            {LEGAL_PARTNER.name}
-          </p>
-          <p className="text-[14.5px] font-bold text-[#1A202C] mb-1.5">Legal-grade AI governance</p>
-          <p className="text-[13px] text-[#4A5568] leading-[1.6]">{LEGAL_PARTNER.blurb}</p>
-          {LEGAL_PARTNER.pendingApproval && (
-            <p className="text-[10.5px] text-[#A0AEC0] mt-2.5">Partner name to be announced.</p>
-          )}
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.08em] mb-1" style={{ color: SBX_TEAL }}>The shared outcome</p>
+            <p className="text-[13.5px] text-[#2D3748] leading-[1.6]">{GOVERNANCE_OUTCOME}</p>
+          </div>
         </div>
       </Reveal>
     </div>
-    <Reveal delay={200}>
-      <div className="flex flex-wrap justify-center gap-2">
-        {COMPLIANCE_CHIPS.map((chip, i) => (
-          <span
-            key={chip}
-            className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-semibold"
-            style={{ backgroundColor: '#FFFFFF', border: `1px solid ${hexA(SBX_ACCENT, 0.3)}`, color: SBX_DARK }}
-          >
-            {i % 2 === 0 ? <Shield size={13} style={{ color: SBX_ACCENT }} /> : <ScrollText size={13} style={{ color: SBX_ACCENT }} />}
-            {chip}
-          </span>
-        ))}
-      </div>
-    </Reveal>
   </section>
 );
 
@@ -921,9 +848,7 @@ export const InnovationSandbox: React.FC = () => {
           <UseCasePrioritiser />
         </section>
 
-        <GovernanceSection />
-        <LegacySection />
-        <PartnershipSection />
+        <GovernanceChartSection />
         <ProofSection />
 
         <ArtifactClosing
