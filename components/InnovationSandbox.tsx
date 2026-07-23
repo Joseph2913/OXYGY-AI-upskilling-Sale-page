@@ -3,7 +3,6 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowDown,
-  ChevronRight,
   Cpu,
   Building2,
   GitBranch,
@@ -21,7 +20,10 @@ import {
   Layers,
   Shield,
   ScrollText,
-  Clock,
+  FileText,
+  Hammer,
+  ClipboardCheck,
+  RefreshCw,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { ArtifactClosing } from './ArtifactClosing';
@@ -38,7 +40,6 @@ import {
   FUNNEL_STATS,
   LAYER_CARDS,
   FORMULA_TILES,
-  JOURNEY_STEPS,
   METHOD_STAGES,
   GOVERNANCE_TIERS,
   LEGACY_CARDS,
@@ -355,62 +356,7 @@ const ProblemSection: React.FC = () => {
 };
 
 /* ---------------------------------------------------------------------------
-   Section 02 — where the Sandbox fits
-   --------------------------------------------------------------------------- */
-const JourneySection: React.FC = () => (
-  <section className="mb-20">
-    <SectionHeading
-      n="02"
-      eyebrow="Where it fits"
-      title="One journey, four connected offerings"
-      lede="The Sandbox is where the journey pays off: readiness tells you where you stand, leadership sets the ambition, upskilling builds the muscle — and the Sandbox turns it all into production value."
-    />
-    <div className="flex flex-col lg:flex-row items-stretch gap-3">
-      {JOURNEY_STEPS.map((step, i) => (
-        <React.Fragment key={step.title}>
-          {i > 0 && (
-            <div className="hidden lg:flex items-center shrink-0">
-              <ChevronRight size={20} className="text-[#CBD5E0]" />
-            </div>
-          )}
-          <Reveal delay={i * 120} className="flex-1">
-            {step.isCurrent ? (
-              <div className="rounded-xl p-4 h-full relative" style={{ backgroundColor: hexA(SBX_ACCENT, 0.05), border: `2px solid ${SBX_DARK}` }}>
-                <span
-                  className="absolute -top-2.5 left-4 inline-flex items-center rounded-full px-2.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.08em] text-white"
-                  style={{ backgroundColor: SBX_TEAL }}
-                >
-                  You are here
-                </span>
-                <p className="text-[14.5px] font-bold text-[#1A202C] leading-tight mt-1.5">{step.title}</p>
-                <p className="text-[12.5px] text-[#4A5568] mt-1">{step.tagline}</p>
-                <span className="inline-flex items-center gap-1 text-[10.5px] font-bold uppercase tracking-[0.05em] mt-2.5 px-2 py-0.5 rounded-full" style={{ backgroundColor: hexA(SBX_TEAL, 0.12), color: SBX_TEAL }}>
-                  <Clock size={10} /> {step.duration}
-                </span>
-              </div>
-            ) : (
-              <a
-                href={step.href}
-                className="block rounded-xl p-4 h-full transition-all duration-150 hover:-translate-y-0.5"
-                style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}
-              >
-                <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#A0AEC0] mb-1.5">Step {i + 1}</p>
-                <p className="text-[14.5px] font-bold text-[#2D3748] leading-tight">{step.title}</p>
-                <p className="text-[12.5px] text-[#718096] mt-1">{step.tagline}</p>
-                <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold uppercase tracking-[0.05em] mt-2.5 text-[#A0AEC0]">
-                  <Clock size={10} /> {step.duration}
-                </span>
-              </a>
-            )}
-          </Reveal>
-        </React.Fragment>
-      ))}
-    </div>
-  </section>
-);
-
-/* ---------------------------------------------------------------------------
-   Section 03 — the method (5-stage stepper)
+   Section 02 — the method (5-stage stepper)
    --------------------------------------------------------------------------- */
 
 /* Static mini 2x2 shown in stage 4, teasing the prioritiser below */
@@ -443,10 +389,160 @@ const MiniMatrix: React.FC = () => {
   );
 };
 
+/* Stage 2 visual: bottom-up + top-down streams converging into a chartered list */
+const DefineVisual: React.FC = () => (
+  <div className="rounded-xl p-4" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
+    <div className="grid grid-cols-2 gap-2.5">
+      <div className="rounded-lg p-3 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+        <UsersRound size={16} className="mx-auto mb-1.5" style={{ color: SBX_ACCENT }} />
+        <p className="text-[11.5px] font-bold text-[#1A202C] leading-tight">Bottom-up</p>
+        <p className="text-[10.5px] text-[#718096] leading-[1.4] mt-0.5">Ideas from the people doing the work</p>
+      </div>
+      <div className="rounded-lg p-3 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+        <GitBranch size={16} className="mx-auto mb-1.5" style={{ color: SBX_ACCENT }} />
+        <p className="text-[11.5px] font-bold text-[#1A202C] leading-tight">Top-down</p>
+        <p className="text-[10.5px] text-[#718096] leading-[1.4] mt-0.5">Opportunities from process mapping</p>
+      </div>
+    </div>
+    <div className="flex justify-center py-1.5">
+      <ArrowDown size={16} className="text-[#A0AEC0]" />
+    </div>
+    <div className="rounded-lg p-3" style={{ backgroundColor: hexA(SBX_ACCENT, 0.05), border: `1.5px solid ${SBX_ACCENT}` }}>
+      <div className="flex items-center gap-1.5 mb-2">
+        <FileText size={13} style={{ color: SBX_ACCENT }} />
+        <p className="text-[11px] font-bold uppercase tracking-[0.06em]" style={{ color: SBX_ACCENT }}>
+          One charter per use case
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        <UseCaseChip label="Contract review" status="idea" />
+        <UseCaseChip label="Invoice triage" status="idea" />
+        <UseCaseChip label="Lead scoring" status="idea" />
+      </div>
+      <p className="text-[10.5px] text-[#718096] mt-2 leading-[1.4]">The problem, the user, the data it needs.</p>
+    </div>
+  </div>
+);
+
+/* Stage 3 visual: the build → test → refine clinic loop, with survivors and a park-out */
+const PrototypeVisual: React.FC = () => {
+  const steps = [
+    { icon: Hammer, label: 'Build' },
+    { icon: ClipboardCheck, label: 'Test' },
+    { icon: RefreshCw, label: 'Refine' },
+  ];
+  return (
+    <div className="rounded-xl p-4" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
+      <div className="flex items-center justify-center gap-1.5 mb-1.5">
+        {steps.map((s, i) => (
+          <React.Fragment key={s.label}>
+            {i > 0 && <ArrowRight size={13} className="text-[#A0AEC0] shrink-0" />}
+            <div className="rounded-lg px-3 py-2 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+              <s.icon size={15} className="mx-auto mb-1" style={{ color: SBX_ACCENT }} />
+              <p className="text-[11px] font-bold text-[#1A202C] leading-none">{s.label}</p>
+            </div>
+          </React.Fragment>
+        ))}
+      </div>
+      <p className="text-[10px] text-center font-semibold uppercase tracking-[0.08em] text-[#A0AEC0] mb-3">
+        &#8635; every week, in the clinic
+      </p>
+      <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#A0AEC0] mb-2">After three rounds</p>
+      <div className="flex flex-wrap gap-1.5 mb-2">
+        <UseCaseChip label="Contract review" status="scored" />
+        <UseCaseChip label="Invoice triage" status="scored" />
+        <UseCaseChip label="SOP assistant" status="scored" />
+      </div>
+      <p className="text-[10.5px] text-[#A0AEC0] leading-[1.4]">
+        <span className="line-through">Lead scoring</span> — parked after testing. Failing fast here is cheap; failing in production isn't.
+      </p>
+    </div>
+  );
+};
+
+/* Stage 5 visual: sequenced lanes feeding the production pipeline */
+const ScaleVisual: React.FC = () => {
+  const lanes = [
+    { label: 'Now', chip: 'Contract review', color: SBX_TEAL },
+    { label: 'Next', chip: 'Invoice triage', color: '#C4A934' },
+    { label: 'Later', chip: 'SOP assistant', color: SBX_ACCENT },
+  ];
+  return (
+    <div className="rounded-xl p-4" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
+      <div className="flex items-stretch gap-2.5">
+        <div className="flex-1 space-y-2">
+          {lanes.map((lane) => (
+            <div key={lane.label} className="flex items-center gap-2 rounded-lg px-2.5 py-2" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+              <span className="text-[9.5px] font-bold uppercase tracking-[0.06em] w-9 shrink-0" style={{ color: lane.color }}>
+                {lane.label}
+              </span>
+              <span className="text-[11.5px] font-semibold text-[#2D3748] truncate">{lane.chip}</span>
+              <ArrowRight size={12} className="ml-auto shrink-0 text-[#A0AEC0]" />
+            </div>
+          ))}
+        </div>
+        <div className="w-[92px] shrink-0 rounded-lg flex flex-col items-center justify-center gap-1.5 relative" style={{ backgroundColor: hexA(SBX_TEAL, 0.08), border: `1.5px solid ${SBX_TEAL}` }}>
+          <span className="sbx-live-badge inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold text-white" style={{ backgroundColor: SBX_TEAL }}>
+            <span className="w-1 h-1 rounded-full bg-white" /> LIVE
+          </span>
+          <Rocket size={16} style={{ color: SBX_TEAL }} />
+          <p className="text-[10px] font-bold uppercase tracking-[0.06em] text-center" style={{ color: SBX_TEAL }}>
+            Production
+          </p>
+        </div>
+      </div>
+      <p className="text-[10.5px] text-[#718096] mt-2.5 leading-[1.45]">
+        Each release passes a governance gate before it ships — then the next lane moves up.
+      </p>
+    </div>
+  );
+};
+
+const StageVisualPanel: React.FC<{ stage: MethodStage }> = ({ stage }) => {
+  switch (stage.visual) {
+    case 'agenda':
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          {(stage.agenda ?? []).map((q) => (
+            <div key={q.letter} className="rounded-xl p-3.5" style={{ backgroundColor: hexA(SBX_ACCENT, 0.05), border: `1px solid ${hexA(SBX_ACCENT, 0.2)}` }}>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="w-6 h-6 rounded-md flex items-center justify-center text-[12px] font-bold text-white shrink-0" style={{ backgroundColor: SBX_ACCENT }}>
+                  {q.letter}
+                </span>
+                <p className="text-[12.5px] font-bold text-[#1A202C]">{q.label}</p>
+              </div>
+              <p className="text-[12px] text-[#4A5568] leading-[1.5]">{q.question}</p>
+            </div>
+          ))}
+        </div>
+      );
+    case 'converge':
+      return <DefineVisual />;
+    case 'loop':
+      return <PrototypeVisual />;
+    case 'matrix':
+      return (
+        <div>
+          <MiniMatrix />
+          <button
+            type="button"
+            onClick={() => document.getElementById('prioritiser')?.scrollIntoView({ behavior: REDUCED_MOTION ? 'auto' : 'smooth' })}
+            className="mt-3 w-full inline-flex items-center justify-center gap-1.5 rounded-full py-2.5 text-[13px] font-bold text-white transition-all duration-150 hover:-translate-y-0.5"
+            style={{ backgroundColor: SBX_DARK }}
+          >
+            Try it yourself below <ArrowDown size={14} />
+          </button>
+        </div>
+      );
+    case 'roadmap':
+      return <ScaleVisual />;
+  }
+};
+
 const StagePanel: React.FC<{ stage: MethodStage }> = ({ stage }) => (
   <div key={stage.id} className={REDUCED_MOTION ? '' : 'animate-section-reveal'}>
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
-      <div className={stage.agenda || stage.showsMiniMatrix ? 'lg:col-span-3' : 'lg:col-span-5'}>
+      <div className="lg:col-span-3">
         <p className="text-[15px] text-[#2D3748] leading-[1.65] mb-4">{stage.summary}</p>
         <ul className="space-y-2 mb-5">
           {stage.bullets.map((b, i) => (
@@ -456,18 +552,6 @@ const StagePanel: React.FC<{ stage: MethodStage }> = ({ stage }) => (
             </li>
           ))}
         </ul>
-
-        {stage.showsChips && (
-          <div className="mb-5">
-            <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#A0AEC0] mb-2">Prototypes in the sandbox</p>
-            <div className="flex flex-wrap gap-2">
-              <UseCaseChip label="Contract review" status="scored" />
-              <UseCaseChip label="Invoice triage" status="scored" />
-              <UseCaseChip label="SOP assistant" status="scored" />
-              <UseCaseChip label="Lead scoring" status="idea" />
-            </div>
-          </div>
-        )}
 
         <div className="flex flex-wrap gap-x-8 gap-y-2 pt-4" style={{ borderTop: '1px solid #E2E8F0' }}>
           <div>
@@ -481,35 +565,9 @@ const StagePanel: React.FC<{ stage: MethodStage }> = ({ stage }) => (
         </div>
       </div>
 
-      {stage.agenda && (
-        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          {stage.agenda.map((q) => (
-            <div key={q.letter} className="rounded-xl p-3.5" style={{ backgroundColor: hexA(SBX_ACCENT, 0.05), border: `1px solid ${hexA(SBX_ACCENT, 0.2)}` }}>
-              <div className="flex items-center gap-2 mb-1.5">
-                <span className="w-6 h-6 rounded-md flex items-center justify-center text-[12px] font-bold text-white shrink-0" style={{ backgroundColor: SBX_ACCENT }}>
-                  {q.letter}
-                </span>
-                <p className="text-[12.5px] font-bold text-[#1A202C]">{q.label}</p>
-              </div>
-              <p className="text-[12px] text-[#4A5568] leading-[1.5]">{q.question}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {stage.showsMiniMatrix && (
-        <div className="lg:col-span-2">
-          <MiniMatrix />
-          <button
-            type="button"
-            onClick={() => document.getElementById('prioritiser')?.scrollIntoView({ behavior: REDUCED_MOTION ? 'auto' : 'smooth' })}
-            className="mt-3 w-full inline-flex items-center justify-center gap-1.5 rounded-full py-2.5 text-[13px] font-bold text-white transition-all duration-150 hover:-translate-y-0.5"
-            style={{ backgroundColor: SBX_DARK }}
-          >
-            Try it yourself below <ArrowDown size={14} />
-          </button>
-        </div>
-      )}
+      <div className="lg:col-span-2">
+        <StageVisualPanel stage={stage} />
+      </div>
     </div>
   </div>
 );
@@ -521,10 +579,10 @@ const MethodSection: React.FC = () => {
   return (
     <section className="mb-20">
       <SectionHeading
-        n="03"
+        n="02"
         eyebrow="The method"
         title="Five stages, eight to twelve weeks"
-        lede="A governed path from open questions to a production roadmap. Click through the stages — each one produces something concrete before the next begins."
+        lede="One governed path from open questions to a production roadmap — this is where readiness, leadership alignment and upskilling pay off. Click through the stages: each produces something concrete before the next begins."
       />
 
       {/* Stepper rail */}
@@ -588,7 +646,7 @@ const MethodSection: React.FC = () => {
 const GovernanceSection: React.FC = () => (
   <section className="mb-20">
     <SectionHeading
-      n="05"
+      n="04"
       eyebrow="Who governs it"
       title="A sandbox, not a free-for-all"
       lede="Experimentation without governance produces demos. Three tiers keep the freedom to build and the discipline to scale in the same room."
@@ -626,7 +684,7 @@ const LegacySection: React.FC = () => {
   return (
     <section className="mb-20">
       <SectionHeading
-        n="06"
+        n="05"
         eyebrow="Beyond the pilot"
         title="What you're left with when we leave"
         lede="An engagement that ends with a slide deck has failed. The Sandbox ends with assets your organisation owns and keeps compounding."
@@ -687,7 +745,7 @@ const LegacySection: React.FC = () => {
 const PartnershipSection: React.FC = () => (
   <section className="mb-20">
     <SectionHeading
-      n="07"
+      n="06"
       eyebrow="Scaling responsibly"
       title={
         <>
@@ -849,36 +907,16 @@ export const InnovationSandbox: React.FC = () => {
           </Reveal>
         </div>
 
-        {/* Fun fact */}
-        <div className="mb-16">
-          <div className="relative rounded-2xl px-8 md:px-12 py-8 text-center overflow-hidden" style={{ background: `linear-gradient(135deg, ${hexA(SBX_DARK, 0.12)} 0%, ${hexA(SBX_ACCENT, 0.06)} 50%, ${hexA(SBX_DARK, 0.1)} 100%)`, border: `1.5px solid ${SBX_PALE_BORDER}` }}>
-            <div className="absolute top-3 left-4 flex gap-1.5">
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: SBX_DARK, opacity: 0.4 }} />
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: SBX_ACCENT, opacity: 0.6 }} />
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: SBX_DARK, opacity: 0.3 }} />
-            </div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.1em] mb-3" style={{ color: SBX_DARK }}>Did you know?</p>
-            <p className="text-[17px] md:text-[19px] text-[#2D3748] font-medium leading-[1.6]">
-              <span className="font-bold" style={{ color: SBX_DARK }}>At least 30% of generative-AI projects are abandoned</span> after proof of concept.
-            </p>
-            <p className="text-[15px] text-[#718096] leading-[1.6] mt-2">
-              Not because the technology fails — but because value is unclear, data isn't ready, and risk controls are missing.{' '}
-              <span className="text-[13px] text-[#A0AEC0]">Source: Gartner, 2024.</span>
-            </p>
-          </div>
-        </div>
-
         <ProblemSection />
-        <JourneySection />
         <MethodSection />
 
-        {/* ============ 04 — THE PRIORITISER ============ */}
+        {/* ============ 03 — THE PRIORITISER ============ */}
         <section className="mb-20" id="prioritiser">
           <SectionHeading
-            n="04"
+            n="03"
             eyebrow="Try it yourself"
             title="Prioritise your own use cases"
-            lede="This is the scoring mechanic from stage 4, in miniature. Pick your function, choose the use cases that sound familiar, and watch them land on the matrix."
+            lede="This is the scoring mechanic from stage 4, in miniature. Pick your function and priorities, choose the use cases that sound familiar, and watch them land on the matrix."
           />
           <UseCasePrioritiser />
         </section>

@@ -445,7 +445,8 @@ body {
 }
 .sbx-live-badge { animation: sbx-live-pulse 2s ease-in-out infinite; }
 
-/* Matrix dot entrance: overshoot pop */
+/* Matrix dot entrance: overshoot pop (dots are absolutely positioned, so the
+   translate(-50%,-50%) centring is baked into every keyframe) */
 @keyframes sbx-dot-pop {
   0%   { transform: translate(-50%, -50%) scale(0); opacity: 0; }
   70%  { transform: translate(-50%, -50%) scale(1.25); opacity: 1; }
@@ -453,12 +454,22 @@ body {
 }
 .sbx-dot-pop { animation: sbx-dot-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 
+/* Pop for flex-centred elements (e.g. the selection tick) — scale only, no translate */
+@keyframes sbx-check-pop {
+  0%   { transform: scale(0); opacity: 0; }
+  70%  { transform: scale(1.25); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.sbx-check-pop { animation: sbx-check-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
 @media (prefers-reduced-motion: reduce) {
   .sbx-chip-live,
   .sbx-chip-out,
   .sbx-live-badge,
-  .sbx-dot-pop {
+  .sbx-dot-pop,
+  .sbx-check-pop {
     animation: none !important;
   }
-  .sbx-dot-pop { opacity: 1; }
+  .sbx-dot-pop,
+  .sbx-check-pop { opacity: 1; }
 }

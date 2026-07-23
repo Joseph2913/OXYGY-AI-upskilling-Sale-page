@@ -106,27 +106,12 @@ export const FORMULA_TILES: FormulaTile[] = [
 ];
 
 /* ---------------------------------------------------------------------------
-   Section 02 — where the Sandbox fits
-   --------------------------------------------------------------------------- */
-export interface JourneyStep {
-  title: string;
-  tagline: string;
-  duration: string;
-  href?: string;
-  isCurrent?: boolean;
-}
-
-export const JOURNEY_STEPS: JourneyStep[] = [
-  { title: 'Readiness Assessment', tagline: 'Know where you stand', duration: '~2 weeks', href: '#ai-readiness' },
-  { title: 'Leadership Agenda', tagline: 'Align on ambition', duration: '1 day', href: '#engagement-model' },
-  { title: 'AI Upskilling', tagline: 'Build the capability', duration: '3–6 months', href: '#learning-pathway' },
-  { title: 'Innovation Sandbox & Scale-up', tagline: 'Turn ideas into production', duration: '8–12 weeks', isCurrent: true },
-];
-
-/* ---------------------------------------------------------------------------
-   Section 03 — the method (5-stage stepper)
+   Section 02 — the method (5-stage stepper)
    --------------------------------------------------------------------------- */
 export type StageIconName = 'stethoscope' | 'search' | 'flask' | 'gauge' | 'rocket';
+
+/** which right-column visual a stage renders */
+export type StageVisual = 'agenda' | 'converge' | 'loop' | 'matrix' | 'roadmap';
 
 export interface AgendaQuestion {
   letter: string;
@@ -143,12 +128,9 @@ export interface MethodStage {
   bullets: string[];
   participants: string;
   output: string;
+  visual: StageVisual;
   /** stage 1 only: the four leadership questions */
   agenda?: AgendaQuestion[];
-  /** stage 3: show a row of scored use-case chips */
-  showsChips?: boolean;
-  /** stage 4: show the static mini-matrix teasing the prioritiser */
-  showsMiniMatrix?: boolean;
 }
 
 export const METHOD_STAGES: MethodStage[] = [
@@ -166,6 +148,7 @@ export const METHOD_STAGES: MethodStage[] = [
     ],
     participants: 'Leadership team',
     output: 'A strategic brief, signed off in the room',
+    visual: 'agenda',
     agenda: [
       { letter: 'A', label: 'Ambition', question: 'What is your three-year ambition, and where does AI sit in that story?' },
       { letter: 'F', label: 'Focus', question: 'Where would AI success matter most — which services, clients or pain points?' },
@@ -187,6 +170,7 @@ export const METHOD_STAGES: MethodStage[] = [
     ],
     participants: 'AI champions + process owners',
     output: 'A long list of chartered use cases',
+    visual: 'converge',
   },
   {
     id: 'prototype',
@@ -202,7 +186,7 @@ export const METHOD_STAGES: MethodStage[] = [
     ],
     participants: 'AI champions + subject-matter experts',
     output: 'Working prototypes, tested against real work',
-    showsChips: true,
+    visual: 'loop',
   },
   {
     id: 'score',
@@ -218,7 +202,7 @@ export const METHOD_STAGES: MethodStage[] = [
     ],
     participants: 'Steering committee + function leads',
     output: 'A prioritised portfolio on a single matrix',
-    showsMiniMatrix: true,
+    visual: 'matrix',
   },
   {
     id: 'scale',
@@ -234,6 +218,7 @@ export const METHOD_STAGES: MethodStage[] = [
     ],
     participants: 'Steering committee + delivery teams',
     output: 'The Transformation Blueprint',
+    visual: 'roadmap',
   },
 ];
 
@@ -363,6 +348,55 @@ export const CRITERIA: Criterion[] = [
   { id: 'data', label: 'Data readiness', hint: 'Is the data accessible and reliable', weight: 0.15 },
 ];
 
+/* ---- organisational priorities: each archetype re-weights the scoring ---- */
+
+export type PriorityId = 'balanced' | 'fast-proof' | 'big-swings' | 'people-first';
+export type PriorityIconName = 'pie' | 'zap' | 'mountain' | 'heart';
+
+export interface PriorityProfile {
+  id: PriorityId;
+  label: string;
+  archetype: string;
+  description: string;
+  icon: PriorityIconName;
+  weights: Record<CriterionId, number>;
+}
+
+export const PRIORITY_PROFILES: PriorityProfile[] = [
+  {
+    id: 'fast-proof',
+    label: 'Prove value fast',
+    archetype: 'The Pragmatist',
+    description: 'You need visible wins this quarter to earn the mandate for more.',
+    icon: 'zap',
+    weights: { impact: 0.25, feasibility: 0.4, adoption: 0.15, data: 0.2 },
+  },
+  {
+    id: 'big-swings',
+    label: 'Move the needle',
+    archetype: 'The Transformer',
+    description: 'Incremental savings bore your board. You want use cases that change the P&L.',
+    icon: 'mountain',
+    weights: { impact: 0.5, feasibility: 0.2, adoption: 0.15, data: 0.15 },
+  },
+  {
+    id: 'people-first',
+    label: 'Bring people along',
+    archetype: 'The Adoption-led',
+    description: "You've seen tools die unused. Whatever ships, your teams must actually want it.",
+    icon: 'heart',
+    weights: { impact: 0.25, feasibility: 0.2, adoption: 0.4, data: 0.15 },
+  },
+  {
+    id: 'balanced',
+    label: 'Balanced portfolio',
+    archetype: 'The Portfolio Builder',
+    description: 'Impact-led, but nothing makes the list unless it can actually ship.',
+    icon: 'pie',
+    weights: { impact: 0.35, feasibility: 0.3, adoption: 0.2, data: 0.15 },
+  },
+];
+
 export type FunctionIconName = 'usersRound' | 'scale' | 'calculator' | 'trendingUp' | 'settings';
 
 export interface FunctionOption {
@@ -446,8 +480,9 @@ export const impactAxis = (sc: Scores): number => sc.impact;
 /** X axis: "can we actually do it" — feasibility blended with data readiness */
 export const easeAxis = (sc: Scores): number => (sc.feasibility + sc.data) / 2;
 
-/** weighted composite used for sequencing */
-export const composite = (sc: Scores): number => CRITERIA.reduce((t, c) => t + sc[c.id] * c.weight, 0);
+/** weighted composite used for sequencing; weights default to the balanced profile */
+export const composite = (sc: Scores, weights?: Record<CriterionId, number>): number =>
+  CRITERIA.reduce((t, c) => t + sc[c.id] * (weights ? weights[c.id] : c.weight), 0);
 
 /** quadrant assignment: Y strict (impact must clear the bar), X inclusive */
 export const quadrantOf = (sc: Scores): QuadrantId => {

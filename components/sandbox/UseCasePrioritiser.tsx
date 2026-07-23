@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ArrowRight, Plus, RotateCcw, Check, UsersRound, Scale, Calculator, TrendingUp, Settings, Compass } from 'lucide-react';
+import { ArrowRight, Plus, RotateCcw, Check, UsersRound, Scale, Calculator, TrendingUp, Settings, Compass, Zap, Mountain, HeartHandshake, PieChart } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import {
   SBX_ACCENT,
@@ -10,6 +10,7 @@ import {
   CRITERIA,
   FUNCTIONS,
   PRESETS,
+  PRIORITY_PROFILES,
   QUADRANTS,
   QUADRANT_SEQUENCE,
   impactAxis,
@@ -18,6 +19,8 @@ import {
   quadrantOf,
   type FunctionId,
   type FunctionIconName,
+  type PriorityId,
+  type PriorityIconName,
   type CriterionId,
   type Scores,
 } from '../sandboxData';
@@ -30,6 +33,13 @@ const FUNCTION_ICON: Record<FunctionIconName, LucideIcon> = {
   settings: Settings,
 };
 
+const PRIORITY_ICON: Record<PriorityIconName, LucideIcon> = {
+  zap: Zap,
+  mountain: Mountain,
+  heart: HeartHandshake,
+  pie: PieChart,
+};
+
 interface SelectedUseCase {
   id: string;
   title: string;
@@ -37,7 +47,9 @@ interface SelectedUseCase {
   scores: Scores;
 }
 
-type Step = 'function' | 'select' | 'score' | 'results';
+type Step = 'function' | 'priorities' | 'select' | 'score' | 'results';
+
+const STEP_ORDER: Step[] = ['function', 'priorities', 'select', 'score', 'results'];
 
 const MIN_SELECT = 3;
 const MAX_SELECT = 5;
@@ -45,21 +57,44 @@ const MAX_CUSTOM = 2;
 
 const DEFAULT_CUSTOM_SCORES: Scores = { impact: 3, feasibility: 3, adoption: 3, data: 3 };
 
-/* Step chip for the mini progress header inside the card */
-const StepChip: React.FC<{ n: number; label: string; state: 'done' | 'active' | 'todo' }> = ({ n, label, state }) => (
-  <span
-    className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap"
-    style={
-      state === 'active'
-        ? { backgroundColor: SBX_ACCENT, color: '#FFFFFF' }
-        : state === 'done'
-          ? { backgroundColor: hexA(SBX_ACCENT, 0.1), color: SBX_DARK }
-          : { backgroundColor: '#FFFFFF', color: '#A0AEC0', border: '1px solid #E2E8F0' }
-    }
-  >
-    {state === 'done' ? <Check size={11} /> : <span>{n}.</span>} {label}
-  </span>
-);
+/* Step chip for the mini progress header inside the card.
+   Completed steps are clickable, so users can step back without starting over. */
+const StepChip: React.FC<{ n: number; label: string; state: 'done' | 'active' | 'todo'; onClick?: () => void }> = ({
+  n,
+  label,
+  state,
+  onClick,
+}) => {
+  const style: React.CSSProperties =
+    state === 'active'
+      ? { backgroundColor: SBX_ACCENT, color: '#FFFFFF' }
+      : state === 'done'
+        ? { backgroundColor: hexA(SBX_ACCENT, 0.1), color: SBX_DARK }
+        : { backgroundColor: '#FFFFFF', color: '#A0AEC0', border: '1px solid #E2E8F0' };
+  const content = (
+    <>
+      {state === 'done' ? <Check size={11} /> : <span>{n}.</span>} {label}
+    </>
+  );
+  if (state === 'done' && onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        title={`Back to: ${label}`}
+        className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap transition-all duration-150 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2B4C7E]"
+        style={style}
+      >
+        {content}
+      </button>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap" style={style}>
+      {content}
+    </span>
+  );
+};
 
 /* One slider row: native range input, accent-colored, live value chip */
 const ScoreSlider: React.FC<{ criterion: CriterionId; value: number; onChange: (v: number) => void }> = ({
@@ -222,6 +257,7 @@ const MatrixPlot: React.FC<{
 export const UseCasePrioritiser: React.FC = () => {
   const [step, setStep] = useState<Step>('function');
   const [functionId, setFunctionId] = useState<FunctionId | null>(null);
+  const [priorityId, setPriorityId] = useState<PriorityId | null>(null);
   const [selected, setSelected] = useState<SelectedUseCase[]>([]);
   const [activeDotId, setActiveDotId] = useState<string | null>(null);
   const [customDraft, setCustomDraft] = useState('');
@@ -229,11 +265,19 @@ export const UseCasePrioritiser: React.FC = () => {
 
   const presets = functionId ? PRESETS[functionId] : [];
   const customsSelected = selected.filter((u) => u.isCustom).length;
+  const profile = PRIORITY_PROFILES.find((p) => p.id === priorityId) ?? null;
 
   const pickFunction = (id: FunctionId) => {
+    if (id !== functionId) {
+      setSelected([]);
+      setActiveDotId(null);
+    }
     setFunctionId(id);
-    setSelected([]);
-    setActiveDotId(null);
+    setStep('priorities');
+  };
+
+  const pickPriority = (id: PriorityId) => {
+    setPriorityId(id);
     setStep('select');
   };
 
@@ -264,6 +308,7 @@ export const UseCasePrioritiser: React.FC = () => {
   const startOver = () => {
     setStep('function');
     setFunctionId(null);
+    setPriorityId(null);
     setSelected([]);
     setActiveDotId(null);
     setCustomDraft('');
@@ -272,29 +317,35 @@ export const UseCasePrioritiser: React.FC = () => {
   const dots = useMemo(() => plotDots(selected), [selected]);
   const activeUc = selected.find((u) => u.id === activeDotId) ?? null;
 
-  /* sequencing: quadrant order first, weighted composite within */
+  /* sequencing: quadrant order first, then the priority profile's weighted composite */
   const sequence = useMemo(() => {
-    const ranked = [...selected].sort((a, b) => composite(b.scores) - composite(a.scores));
+    const w = profile?.weights;
+    const ranked = [...selected].sort((a, b) => composite(b.scores, w) - composite(a.scores, w));
     const inPlay = QUADRANT_SEQUENCE.flatMap((q) => ranked.filter((u) => quadrantOf(u.scores) === q));
     const parked = ranked.filter((u) => quadrantOf(u.scores) === 'deprioritise');
     return { inPlay, parked };
-  }, [selected]);
+  }, [selected, profile]);
 
   const stepState = (s: Step): 'done' | 'active' | 'todo' => {
-    const order: Step[] = ['function', 'select', 'score', 'results'];
-    const cur = order.indexOf(step);
-    const idx = order.indexOf(s);
+    const cur = STEP_ORDER.indexOf(step);
+    const idx = STEP_ORDER.indexOf(s);
     return idx < cur ? 'done' : idx === cur ? 'active' : 'todo';
+  };
+
+  const goBackTo = (s: Step) => {
+    setActiveDotId(null);
+    setStep(s);
   };
 
   return (
     <div className="rounded-2xl p-6 sm:p-8" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
-      {/* Step header */}
+      {/* Step header — completed chips navigate back */}
       <div className="flex flex-wrap items-center gap-2 mb-6">
-        <StepChip n={1} label="Your function" state={stepState('function')} />
-        <StepChip n={2} label="Pick use cases" state={stepState('select')} />
-        <StepChip n={3} label="Score them" state={stepState('score')} />
-        <StepChip n={4} label="Your matrix" state={stepState('results')} />
+        <StepChip n={1} label="Your function" state={stepState('function')} onClick={() => goBackTo('function')} />
+        <StepChip n={2} label="Your priorities" state={stepState('priorities')} onClick={() => goBackTo('priorities')} />
+        <StepChip n={3} label="Pick use cases" state={stepState('select')} onClick={() => goBackTo('select')} />
+        <StepChip n={4} label="Score them" state={stepState('score')} onClick={() => goBackTo('score')} />
+        <StepChip n={5} label="Your matrix" state={stepState('results')} />
         {step !== 'function' && (
           <button
             type="button"
@@ -332,7 +383,50 @@ export const UseCasePrioritiser: React.FC = () => {
         </div>
       )}
 
-      {/* ---- STEP 2: select use cases ---- */}
+      {/* ---- STEP 2: priorities / archetype ---- */}
+      {step === 'priorities' && (
+        <div>
+          <p className="text-[14px] text-[#4A5568] mb-1">
+            What matters most to your organisation right now?
+          </p>
+          <p className="text-[12.5px] text-[#A0AEC0] mb-4">
+            The same use case can be a quick win for one organisation and a distraction for another — your priorities re-weight how we score.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {PRIORITY_PROFILES.map((p) => {
+              const Icon = PRIORITY_ICON[p.icon];
+              const isSelected = p.id === priorityId;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => pickPriority(p.id)}
+                  className="rounded-xl p-4 text-left flex flex-col transition-all duration-150 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2B4C7E]"
+                  style={{
+                    backgroundColor: isSelected ? hexA(SBX_ACCENT, 0.06) : '#FFFFFF',
+                    border: isSelected ? `1.5px solid ${SBX_ACCENT}` : '1px solid #E2E8F0',
+                  }}
+                >
+                  <span className="w-10 h-10 rounded-full flex items-center justify-center mb-2.5" style={{ backgroundColor: hexA(SBX_ACCENT, 0.1) }}>
+                    <Icon size={18} style={{ color: SBX_ACCENT }} />
+                  </span>
+                  <span className="text-[14px] font-bold text-[#1A202C] leading-tight">{p.label}</span>
+                  <span className="text-[10.5px] font-bold uppercase tracking-[0.05em] mt-1" style={{ color: SBX_ACCENT }}>
+                    {p.archetype}
+                  </span>
+                  <span className="text-[12px] text-[#718096] leading-[1.5] mt-1.5">{p.description}</span>
+                  <span className="text-[10.5px] text-[#A0AEC0] mt-2.5 pt-2" style={{ borderTop: '1px dashed #E2E8F0' }}>
+                    Weights:{' '}
+                    {CRITERIA.map((c) => `${c.label.split(' ')[0]} ${Math.round(p.weights[c.id] * 100)}%`).join(' · ')}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ---- STEP 3: select use cases ---- */}
       {step === 'select' && functionId && (
         <div>
           <div className="flex flex-wrap items-baseline justify-between gap-2 mb-4">
@@ -363,7 +457,7 @@ export const UseCasePrioritiser: React.FC = () => {
                     className="w-5 h-5 rounded-md shrink-0 flex items-center justify-center mt-0.5"
                     style={{ backgroundColor: isSelected ? SBX_ACCENT : '#FFFFFF', border: isSelected ? 'none' : '1.5px solid #CBD5E0' }}
                   >
-                    {isSelected && <Check size={13} className={`text-white ${REDUCED_MOTION ? '' : 'sbx-dot-pop'}`} style={{ animationDuration: '0.25s' }} />}
+                    {isSelected && <Check size={13} className={`text-white ${REDUCED_MOTION ? '' : 'sbx-check-pop'}`} />}
                   </span>
                   <span className="min-w-0">
                     <span className="block text-[13.5px] font-bold text-[#1A202C] leading-tight">{p.title}</span>
@@ -411,7 +505,7 @@ export const UseCasePrioritiser: React.FC = () => {
         </div>
       )}
 
-      {/* ---- STEP 3: score ---- */}
+      {/* ---- STEP 4: score ---- */}
       {step === 'score' && (
         <div>
           <p className="text-[14px] text-[#4A5568] mb-4">
@@ -446,7 +540,7 @@ export const UseCasePrioritiser: React.FC = () => {
         </div>
       )}
 
-      {/* ---- STEP 4: results ---- */}
+      {/* ---- STEP 5: results ---- */}
       {step === 'results' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           <div>
@@ -501,7 +595,15 @@ export const UseCasePrioritiser: React.FC = () => {
 
             {/* Sequencing */}
             <div className="rounded-xl p-4" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-3">Your sequencing</p>
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0]">Your sequencing</p>
+                {profile && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-bold" style={{ backgroundColor: hexA(SBX_ACCENT, 0.08), color: SBX_DARK }}>
+                    {React.createElement(PRIORITY_ICON[profile.icon], { size: 11 })}
+                    Weighted for {profile.archetype}
+                  </span>
+                )}
+              </div>
               <ol className="space-y-2">
                 {sequence.inPlay.map((uc, i) => {
                   const q = QUADRANTS[quadrantOf(uc.scores)];
