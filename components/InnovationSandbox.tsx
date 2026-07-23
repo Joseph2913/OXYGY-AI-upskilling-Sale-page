@@ -580,6 +580,9 @@ const MethodSection: React.FC = () => {
   const [paused, setPaused] = useState(false);
   const pausedRef = useRef(false);
   pausedRef.current = paused;
+  /* progress mirror for the interval — keeps the state updaters pure, otherwise
+     StrictMode's double-invoked updaters advance the stage twice and skip one */
+  const progressRef = useRef(0);
   const stage = METHOD_STAGES[activeIdx];
 
   /* Auto-advancing tour: the track fills continuously left → right; hovering
@@ -588,21 +591,23 @@ const MethodSection: React.FC = () => {
     if (REDUCED_MOTION) return;
     const id = setInterval(() => {
       if (pausedRef.current) return;
-      setProgress((p) => {
-        const np = p + 100 / STAGE_TOUR_MS;
-        if (np >= 1) {
-          setActiveIdx((i) => (i + 1) % METHOD_STAGES.length);
-          return 0;
-        }
-        return np;
-      });
+      const np = progressRef.current + 100 / STAGE_TOUR_MS;
+      if (np >= 1) {
+        progressRef.current = 0;
+        setProgress(0);
+        setActiveIdx((i) => (i + 1) % METHOD_STAGES.length);
+      } else {
+        progressRef.current = np;
+        setProgress(np);
+      }
     }, 100);
     return () => clearInterval(id);
   }, []);
 
   const goTo = (i: number) => {
-    setActiveIdx(i);
+    progressRef.current = 0;
     setProgress(0);
+    setActiveIdx(i);
   };
 
   const fillPct = Math.min(1, (activeIdx + (REDUCED_MOTION ? 0 : progress)) / (METHOD_STAGES.length - 1)) * 100;
