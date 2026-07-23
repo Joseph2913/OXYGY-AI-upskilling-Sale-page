@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ArrowRight, Plus, RotateCcw, Check, UsersRound, Scale, Calculator, TrendingUp, Settings, Compass, Zap, Mountain, HeartHandshake, PieChart } from 'lucide-react';
+import { ArrowRight, Plus, RotateCcw, Check, UsersRound, Scale, Calculator, TrendingUp, Settings, Compass, Zap, Mountain, HeartHandshake, PieChart, ChevronDown, Sparkles } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import {
   SBX_ACCENT,
@@ -128,6 +128,38 @@ const ScoreSlider: React.FC<{ criterion: CriterionId; value: number; onChange: (
     </div>
   );
 };
+
+/* One row of the what-if score comparison: archetype label, weighted-score bar,
+   value, portfolio rank, and (for the compare row) the delta vs baseline */
+const ScoreCompareRow: React.FC<{
+  label: string;
+  value: number;
+  rank: number;
+  color: string;
+  isBaseline?: boolean;
+  delta?: number;
+}> = ({ label, value, rank, color, isBaseline, delta }) => (
+  <div className="flex items-center gap-2">
+    <span className="w-[118px] shrink-0 text-[10px] font-bold uppercase tracking-[0.03em] leading-tight truncate" style={{ color }} title={label}>
+      {label}
+    </span>
+    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: '#EDF2F7' }}>
+      <div
+        className="h-full rounded-full"
+        style={{ width: `${(value / 5) * 100}%`, backgroundColor: color, transition: 'width 0.4s ease' }}
+      />
+    </div>
+    <span className="w-[30px] text-right text-[12px] font-bold tabular-nums" style={{ color }}>
+      {value.toFixed(1)}
+    </span>
+    <span className="w-[28px] text-center text-[10px] font-bold rounded px-1 py-0.5 tabular-nums shrink-0" style={{ backgroundColor: hexA(color, 0.1), color }}>
+      #{rank}
+    </span>
+    <span className="w-[42px] text-right text-[10.5px] font-bold tabular-nums shrink-0" style={{ color: delta === undefined ? '#A0AEC0' : delta > 0.049 ? '#2C9A94' : delta < -0.049 ? '#D97B4A' : '#A0AEC0' }}>
+      {isBaseline ? 'yours' : delta === undefined ? '' : `${delta > 0 ? '+' : ''}${delta.toFixed(1)}`}
+    </span>
+  </div>
+);
 
 /* Positioned dot data derived per render — no cached state to invalidate */
 interface PlottedDot {
@@ -262,10 +294,13 @@ export const UseCasePrioritiser: React.FC = () => {
   const [activeDotId, setActiveDotId] = useState<string | null>(null);
   const [customDraft, setCustomDraft] = useState('');
   const [customCount, setCustomCount] = useState(0);
+  const [compareOpen, setCompareOpen] = useState(false);
+  const [compareId, setCompareId] = useState<PriorityId | null>(null);
 
   const presets = functionId ? PRESETS[functionId] : [];
   const customsSelected = selected.filter((u) => u.isCustom).length;
   const profile = PRIORITY_PROFILES.find((p) => p.id === priorityId) ?? null;
+  const compareProfile = PRIORITY_PROFILES.find((p) => p.id === compareId) ?? null;
 
   const pickFunction = (id: FunctionId) => {
     if (id !== functionId) {
@@ -278,6 +313,7 @@ export const UseCasePrioritiser: React.FC = () => {
 
   const pickPriority = (id: PriorityId) => {
     setPriorityId(id);
+    if (compareId === id) setCompareId(null);
     setStep('select');
   };
 
@@ -312,7 +348,17 @@ export const UseCasePrioritiser: React.FC = () => {
     setSelected([]);
     setActiveDotId(null);
     setCustomDraft('');
+    setCompareOpen(false);
+    setCompareId(null);
   };
+
+  /* portfolio rank of each use case under a given weight profile */
+  const rankBy = (w?: Record<CriterionId, number>): Map<string, number> => {
+    const order = [...selected].sort((a, b) => composite(b.scores, w) - composite(a.scores, w));
+    return new Map(order.map((u, i) => [u.id, i + 1]));
+  };
+  const baselineRanks = useMemo(() => rankBy(profile?.weights), [selected, profile]); // eslint-disable-line react-hooks/exhaustive-deps
+  const compareRanks = useMemo(() => (compareProfile ? rankBy(compareProfile.weights) : null), [selected, compareProfile]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const dots = useMemo(() => plotDots(selected), [selected]);
   const activeUc = selected.find((u) => u.id === activeDotId) ?? null;
@@ -511,20 +557,92 @@ export const UseCasePrioritiser: React.FC = () => {
           <p className="text-[14px] text-[#4A5568] mb-4">
             We've pre-filled typical scores — adjust anything that doesn't match your reality, or plot straight away.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-            {selected.map((uc) => (
-              <div key={uc.id} className="rounded-xl p-4" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-                <p className="text-[13.5px] font-bold text-[#1A202C] mb-3">
-                  {uc.title}
-                  {uc.isCustom && <span className="text-[10px] font-bold uppercase tracking-[0.05em] text-[#A0AEC0] ml-2">Custom</span>}
-                </p>
-                <div className="space-y-2.5">
-                  {CRITERIA.map((c) => (
-                    <ScoreSlider key={c.id} criterion={c.id} value={uc.scores[c.id]} onChange={(v) => setScore(uc.id, c.id, v)} />
-                  ))}
+
+          {/* What-if: compare the weighted scoring under a different priority archetype */}
+          {profile && (
+            <div className="rounded-xl mb-4 overflow-hidden" style={{ backgroundColor: hexA(SBX_ACCENT, 0.06), border: `1.5px solid ${hexA(SBX_ACCENT, 0.35)}` }}>
+              <button
+                type="button"
+                onClick={() => setCompareOpen((o) => !o)}
+                aria-expanded={compareOpen}
+                className="w-full flex items-center gap-2.5 px-4 py-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2B4C7E]"
+              >
+                <Sparkles size={15} className="shrink-0" style={{ color: SBX_ACCENT }} />
+                <span className="text-[13.5px] font-bold flex-1" style={{ color: SBX_DARK }}>
+                  Curious how this scoring would change with different priorities?
+                </span>
+                <ChevronDown size={16} className="shrink-0" style={{ color: SBX_ACCENT, transform: compareOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }} />
+              </button>
+              {compareOpen && (
+                <div className="px-4 pb-4">
+                  <p className="text-[12px] text-[#4A5568] mb-2.5">
+                    Your baseline stays <span className="font-bold" style={{ color: SBX_DARK }}>{profile.archetype}</span> — toggle another archetype to see both scores side by side:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {PRIORITY_PROFILES.filter((p) => p.id !== profile.id).map((p) => {
+                      const active = p.id === compareId;
+                      const Icon = PRIORITY_ICON[p.icon];
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => setCompareId(active ? null : p.id)}
+                          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold transition-all duration-150 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2B4C7E]"
+                          style={
+                            active
+                              ? { backgroundColor: '#C4A934', color: '#FFFFFF', border: '1.5px solid #C4A934' }
+                              : { backgroundColor: '#FFFFFF', color: '#2D3748', border: '1px solid #E2E8F0' }
+                          }
+                        >
+                          <Icon size={12} /> {p.archetype}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {compareProfile && compareRanks && (() => {
+                    const movers = selected
+                      .map((uc) => ({ uc, delta: composite(uc.scores, compareProfile.weights) - composite(uc.scores, profile.weights) }))
+                      .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+                    const top = movers[0];
+                    if (!top || Math.abs(top.delta) < 0.05) return null;
+                    return (
+                      <p className="text-[12px] text-[#4A5568] mt-3">
+                        Biggest mover: <span className="font-bold text-[#1A202C]">{top.uc.title}</span>{' '}
+                        ({top.delta > 0 ? '+' : ''}{top.delta.toFixed(1)}, #{baselineRanks.get(top.uc.id)} → #{compareRanks.get(top.uc.id)}) — same use cases, different priorities, different plan.
+                      </p>
+                    );
+                  })()}
                 </div>
-              </div>
-            ))}
+              )}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+            {selected.map((uc) => {
+              const base = profile ? composite(uc.scores, profile.weights) : null;
+              const cmp = compareProfile ? composite(uc.scores, compareProfile.weights) : null;
+              return (
+                <div key={uc.id} className="rounded-xl p-4" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+                  <p className="text-[13.5px] font-bold text-[#1A202C] mb-2">
+                    {uc.title}
+                    {uc.isCustom && <span className="text-[10px] font-bold uppercase tracking-[0.05em] text-[#A0AEC0] ml-2">Custom</span>}
+                  </p>
+                  {profile && base !== null && (
+                    <div className="rounded-lg px-2.5 py-2 mb-3 space-y-1.5" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
+                      <ScoreCompareRow label={profile.archetype} value={base} rank={baselineRanks.get(uc.id) ?? 0} color={SBX_ACCENT} isBaseline />
+                      {compareProfile && compareRanks && cmp !== null && (
+                        <ScoreCompareRow label={compareProfile.archetype} value={cmp} rank={compareRanks.get(uc.id) ?? 0} color="#C4A934" delta={cmp - base} />
+                      )}
+                    </div>
+                  )}
+                  <div className="space-y-2.5">
+                    {CRITERIA.map((c) => (
+                      <ScoreSlider key={c.id} criterion={c.id} value={uc.scores[c.id]} onChange={(v) => setScore(uc.id, c.id, v)} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
           <button
             type="button"
