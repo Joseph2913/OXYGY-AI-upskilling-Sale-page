@@ -11,7 +11,7 @@ const AI_TOOLS = [
   { level: 5, emoji: '\uD83C\uDFD7\uFE0F', label: 'Product Architecture Sprint', href: '#product-architecture' },
 ];
 
-const ARTIFACT_HASHES = new Set([...AI_TOOLS.map((t) => t.href), '#learning-pathway', '#user-journey', '#case-studies', '#engagement-model']);
+const ARTIFACT_HASHES = new Set([...AI_TOOLS.map((t) => t.href), '#learning-pathway', '#user-journey', '#case-studies', '#engagement-model', '#innovation-sandbox']);
 
 /* Thin vertical divider between nav items */
 const Divider = () => (
@@ -58,11 +58,12 @@ export const Navbar: React.FC = () => {
   const isOnUserJourney = currentHash === '#user-journey';
   const isOnCaseStudies = currentHash === '#case-studies';
   const isOnEngagementModel = currentHash === '#engagement-model';
+  const isOnSandbox = currentHash === '#innovation-sandbox';
 
   // AI Tools dropdown active if on any artifact tool
   const isDropdownActive = isOnAiTool;
-  // Our Methodology dropdown active if on learner journey or engagement model
-  const isMethodologyActive = isOnUserJourney || isOnEngagementModel;
+  // Our Methodology dropdown active if on learner journey, engagement model or innovation sandbox
+  const isMethodologyActive = isOnUserJourney || isOnEngagementModel || isOnSandbox;
 
   const goHome = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -360,6 +361,28 @@ export const Navbar: React.FC = () => {
                   </span>
                   <span>Engagement Model</span>
                 </a>
+                <div style={{ height: '1px', backgroundColor: '#E2E8F0' }} />
+                <a
+                  href="#innovation-sandbox"
+                  className="flex items-center gap-3 transition-colors duration-150 hover:bg-[#F7FAFC] hover:text-[#38B2AC]"
+                  style={{
+                    padding: '10px 16px',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    color: '#2D3748',
+                    textDecoration: 'none',
+                    background: isOnSandbox ? '#E6FFFA' : undefined,
+                  }}
+                  onClick={() => setMethodologyOpen(false)}
+                >
+                  <span
+                    className="shrink-0 flex items-center justify-center"
+                    style={{ width: '24px', height: '24px', fontSize: '15px' }}
+                  >
+                    🧪
+                  </span>
+                  <span>Innovation Sandbox</span>
+                </a>
               </div>
             </div>
           </div>
@@ -515,6 +538,21 @@ export const Navbar: React.FC = () => {
             >
               <span style={{ fontSize: '15px' }}>🤝</span>
               <span>Engagement Model</span>
+            </a>
+
+            <a
+              href="#innovation-sandbox"
+              className={cn(
+                'flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors',
+                isOnSandbox
+                  ? 'bg-[#E6FFFA] text-[#2C9A94]'
+                  : 'hover:bg-[#F7FAFC] text-[#2D3748]',
+              )}
+              style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
+              onClick={() => setMobileOpen(false)}
+            >
+              <span style={{ fontSize: '15px' }}>🧪</span>
+              <span>Innovation Sandbox</span>
             </a>
 
             <div className="h-px bg-gray-100 my-2" />

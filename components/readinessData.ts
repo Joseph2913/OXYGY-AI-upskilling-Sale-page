@@ -135,6 +135,8 @@ export interface Offering {
   description: string;
   /** Specific to this quadrant — what it does for an organisation in this exact situation */
   valueAdd: string;
+  /** Optional deep-link to the offering's own page */
+  href?: string;
 }
 
 export interface ProfileTraits {
@@ -312,6 +314,7 @@ export const PROFILES: Profile[] = [
           duration: '8–12 weeks',
           description: 'A structured, safe space where teams can test AI ideas quickly, with a fast-tracked path to real approval.',
           valueAdd: 'Gives ideas a way through, instead of stalling in layers of sign-off.',
+          href: '#innovation-sandbox',
         },
         {
           title: 'Change Management Programme',

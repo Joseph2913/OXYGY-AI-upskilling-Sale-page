@@ -352,6 +352,11 @@ const OfferingCard: React.FC<{ offering: Offering; accent: string }> = ({ offeri
         <p className="text-[10px] font-bold uppercase tracking-[0.06em] mb-1" style={{ color: accent }}>For you</p>
         <p className="text-[12.5px] text-[#2D3748] leading-[1.5]">{offering.valueAdd}</p>
       </div>
+      {offering.href && (
+        <a href={offering.href} className="inline-flex items-center gap-1 text-[12px] font-bold mt-3 hover:underline" style={{ color: accent }}>
+          Explore this offering &rarr;
+        </a>
+      )}
     </div>
   );
 };

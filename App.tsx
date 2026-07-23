@@ -16,12 +16,14 @@ import { CaseStudiesSection, CaseStudiesPage } from './components/CaseStudies';
 import { UserJourney } from './components/UserJourney';
 import { PartnershipBanner } from './components/PartnershipBanner';
 import { ReadinessAssessment } from './components/ReadinessAssessment';
+import { InnovationSandbox } from './components/InnovationSandbox';
 
-type Page = 'home' | 'ai-readiness' | 'playground' | 'agent-builder' | 'workflow-designer' | 'product-architecture' | 'dashboard-design' | 'learning-pathway' | 'engagement-model' | 'case-studies' | 'user-journey';
+type Page = 'home' | 'ai-readiness' | 'innovation-sandbox' | 'playground' | 'agent-builder' | 'workflow-designer' | 'product-architecture' | 'dashboard-design' | 'learning-pathway' | 'engagement-model' | 'case-studies' | 'user-journey';
 
 function getPageFromHash(): Page {
   const hash = window.location.hash;
   if (hash === '#ai-readiness') return 'ai-readiness';
+  if (hash === '#innovation-sandbox') return 'innovation-sandbox';
   if (hash === '#playground') return 'playground';
   if (hash === '#agent-builder') return 'agent-builder';
   if (hash === '#workflow-designer') return 'workflow-designer';
@@ -62,6 +64,7 @@ function App() {
         </>
       )}
       {currentPage === 'ai-readiness' && <ReadinessAssessment />}
+      {currentPage === 'innovation-sandbox' && <InnovationSandbox />}
       {currentPage === 'playground' && <PromptPlayground />}
       {currentPage === 'agent-builder' && <AgentBuilder />}
       {currentPage === 'workflow-designer' && <WorkflowDesigner />}

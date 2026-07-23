@@ -410,3 +410,55 @@ body {
     animation: none !important;
   }
 }
+/* ─────────────────────────── Innovation Sandbox ─────────────────────────── */
+
+/* Hero funnel: chip that survives to production (levels up to teal LIVE) */
+@keyframes sbx-chip-travel {
+  0%   { transform: translateX(0); opacity: 0; }
+  6%   { opacity: 1; }
+  22%  { transform: translateX(0); }
+  34%  { transform: translateX(var(--sbx-x1)); }
+  58%  { transform: translateX(var(--sbx-x1)); }
+  70%  { transform: translateX(var(--sbx-x2)); background-color: #2C9A94; border-color: #2C9A94; color: #FFFFFF; }
+  88%  { transform: translateX(var(--sbx-x2)); background-color: #2C9A94; border-color: #2C9A94; color: #FFFFFF; opacity: 1; }
+  100% { transform: translateX(var(--sbx-x2)); background-color: #2C9A94; border-color: #2C9A94; color: #FFFFFF; opacity: 0; }
+}
+
+/* Hero funnel: chip that gets filtered out in the sandbox (sinks and fades) */
+@keyframes sbx-chip-filtered {
+  0%   { transform: translateX(0); opacity: 0; }
+  6%   { opacity: 1; }
+  22%  { transform: translateX(0); }
+  34%  { transform: translateX(var(--sbx-x1)); }
+  60%  { transform: translateX(var(--sbx-x1)); opacity: 1; }
+  72%  { transform: translateX(var(--sbx-x1)) translateY(16px); opacity: 0; }
+  100% { transform: translateX(var(--sbx-x1)) translateY(16px); opacity: 0; }
+}
+
+.sbx-chip-live { animation: sbx-chip-travel 9s linear infinite; }
+.sbx-chip-out  { animation: sbx-chip-filtered 9s linear infinite; }
+
+/* Pulsing ring on the LIVE badge (box-shadow ring idiom, not a card shadow) */
+@keyframes sbx-live-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(44, 154, 148, 0.35); }
+  50%      { box-shadow: 0 0 0 7px rgba(44, 154, 148, 0); }
+}
+.sbx-live-badge { animation: sbx-live-pulse 2s ease-in-out infinite; }
+
+/* Matrix dot entrance: overshoot pop */
+@keyframes sbx-dot-pop {
+  0%   { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+  70%  { transform: translate(-50%, -50%) scale(1.25); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+.sbx-dot-pop { animation: sbx-dot-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sbx-chip-live,
+  .sbx-chip-out,
+  .sbx-live-badge,
+  .sbx-dot-pop {
+    animation: none !important;
+  }
+  .sbx-dot-pop { opacity: 1; }
+}
