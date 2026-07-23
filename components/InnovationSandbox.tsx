@@ -351,7 +351,8 @@ const ProblemSection: React.FC = () => {
    Section 02 — the method (5-stage stepper)
    --------------------------------------------------------------------------- */
 
-/* Static mini 2x2 shown in stage 4, teasing the prioritiser below */
+/* Static mini 2x2 shown in stage 4, teasing the prioritiser below.
+   Height-driven: fills its parent's height and derives width from the aspect ratio. */
 const MiniMatrix: React.FC = () => {
   const dots = [
     { left: '72%', top: '22%', color: SBX_TEAL },
@@ -360,7 +361,7 @@ const MiniMatrix: React.FC = () => {
     { left: '24%', top: '78%', color: '#A0AEC0' },
   ];
   return (
-    <div className="relative rounded-xl overflow-hidden" style={{ border: '1px solid #E2E8F0', aspectRatio: '4 / 3', backgroundColor: '#FFFFFF' }}>
+    <div className="relative rounded-xl overflow-hidden h-full max-w-full mx-auto" style={{ border: '1px solid #E2E8F0', aspectRatio: '4 / 3', backgroundColor: '#FFFFFF' }}>
       <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
         <div style={{ borderRight: '1px dashed #E2E8F0', borderBottom: '1px dashed #E2E8F0' }} />
         <div style={{ borderBottom: '1px dashed #E2E8F0', backgroundColor: hexA(SBX_TEAL, 0.05) }} />
@@ -383,24 +384,24 @@ const MiniMatrix: React.FC = () => {
 
 /* Stage 2 visual: bottom-up + top-down streams converging into a chartered list */
 const DefineVisual: React.FC = () => (
-  <div className="rounded-xl p-4 h-full flex flex-col justify-center" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
-    <div className="grid grid-cols-2 gap-2.5">
-      <div className="rounded-lg p-3 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-        <UsersRound size={16} className="mx-auto mb-1.5" style={{ color: SBX_ACCENT }} />
+  <div className="rounded-xl p-3.5 h-full flex flex-col justify-center" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
+    <div className="grid grid-cols-2 gap-2">
+      <div className="rounded-lg p-2.5 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+        <UsersRound size={15} className="mx-auto mb-1" style={{ color: SBX_ACCENT }} />
         <p className="text-[11.5px] font-bold text-[#1A202C] leading-tight">Bottom-up</p>
-        <p className="text-[10.5px] text-[#718096] leading-[1.4] mt-0.5">Ideas from the people doing the work</p>
+        <p className="text-[10.5px] text-[#718096] leading-[1.35] mt-0.5">Ideas from the people doing the work</p>
       </div>
-      <div className="rounded-lg p-3 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-        <GitBranch size={16} className="mx-auto mb-1.5" style={{ color: SBX_ACCENT }} />
+      <div className="rounded-lg p-2.5 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+        <GitBranch size={15} className="mx-auto mb-1" style={{ color: SBX_ACCENT }} />
         <p className="text-[11.5px] font-bold text-[#1A202C] leading-tight">Top-down</p>
-        <p className="text-[10.5px] text-[#718096] leading-[1.4] mt-0.5">Opportunities from process mapping</p>
+        <p className="text-[10.5px] text-[#718096] leading-[1.35] mt-0.5">Opportunities from process mapping</p>
       </div>
     </div>
-    <div className="flex justify-center py-1.5">
-      <ArrowDown size={16} className="text-[#A0AEC0]" />
+    <div className="flex justify-center py-1">
+      <ArrowDown size={15} className="text-[#A0AEC0]" />
     </div>
-    <div className="rounded-lg p-3" style={{ backgroundColor: hexA(SBX_ACCENT, 0.05), border: `1.5px solid ${SBX_ACCENT}` }}>
-      <div className="flex items-center gap-1.5 mb-2">
+    <div className="rounded-lg p-2.5" style={{ backgroundColor: hexA(SBX_ACCENT, 0.05), border: `1.5px solid ${SBX_ACCENT}` }}>
+      <div className="flex items-center gap-1.5 mb-1.5">
         <FileText size={13} style={{ color: SBX_ACCENT }} />
         <p className="text-[11px] font-bold uppercase tracking-[0.06em]" style={{ color: SBX_ACCENT }}>
           One charter per use case
@@ -411,7 +412,7 @@ const DefineVisual: React.FC = () => (
         <UseCaseChip label="Invoice triage" status="idea" />
         <UseCaseChip label="Lead scoring" status="idea" />
       </div>
-      <p className="text-[10.5px] text-[#718096] mt-2 leading-[1.4]">The problem, the user, the data it needs.</p>
+      <p className="text-[10.5px] text-[#718096] mt-1.5 leading-[1.4]">The problem, the user, the data it needs.</p>
     </div>
   </div>
 );
@@ -514,12 +515,14 @@ const StageVisualPanel: React.FC<{ stage: MethodStage }> = ({ stage }) => {
       return <PrototypeVisual />;
     case 'matrix':
       return (
-        <div className="h-full flex flex-col justify-center">
-          <MiniMatrix />
+        <div className="h-full flex flex-col gap-3">
+          <div className="flex-1 min-h-0 flex justify-center">
+            <MiniMatrix />
+          </div>
           <button
             type="button"
             onClick={() => document.getElementById('prioritiser')?.scrollIntoView({ behavior: REDUCED_MOTION ? 'auto' : 'smooth' })}
-            className="mt-3 w-full inline-flex items-center justify-center gap-1.5 rounded-full py-2.5 text-[13px] font-bold text-white transition-all duration-150 hover:-translate-y-0.5"
+            className="w-full inline-flex items-center justify-center gap-1.5 rounded-full py-2.5 text-[13px] font-bold text-white transition-all duration-150 hover:-translate-y-0.5"
             style={{ backgroundColor: SBX_DARK }}
           >
             Try it yourself below <ArrowDown size={14} />
@@ -533,14 +536,14 @@ const StageVisualPanel: React.FC<{ stage: MethodStage }> = ({ stage }) => {
 
 /* Fixed panel height on desktop so the card never resizes between stages;
    the text footer pins to the bottom and every visual stretches to the same box */
-const STAGE_PANEL_H = 'lg:h-[400px]';
+const STAGE_PANEL_H = 'lg:h-[280px]';
 
 const StagePanel: React.FC<{ stage: MethodStage }> = ({ stage }) => (
   <div key={stage.id} className={REDUCED_MOTION ? '' : 'animate-section-reveal'}>
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-stretch">
       <div className={`lg:col-span-3 flex flex-col ${STAGE_PANEL_H}`}>
-        <p className="text-[15px] text-[#2D3748] leading-[1.65] mb-4">{stage.summary}</p>
-        <ul className="space-y-2 mb-5">
+        <p className="text-[14px] text-[#2D3748] leading-[1.6] mb-3">{stage.summary}</p>
+        <ul className="space-y-1.5 mb-4">
           {stage.bullets.map((b, i) => (
             <li key={i} className="flex items-start gap-2 text-[13.5px] text-[#4A5568] leading-[1.55]">
               <span className="shrink-0 mt-[7px] w-1.5 h-1.5 rounded-full" style={{ backgroundColor: SBX_ACCENT }} />
@@ -568,9 +571,41 @@ const StagePanel: React.FC<{ stage: MethodStage }> = ({ stage }) => (
   </div>
 );
 
+/* How long each stage stays on screen before the tour auto-advances */
+const STAGE_TOUR_MS = 7000;
+
 const MethodSection: React.FC = () => {
   const [activeIdx, setActiveIdx] = useState(0);
+  const [progress, setProgress] = useState(0); // 0..1 within the current stage
+  const [paused, setPaused] = useState(false);
+  const pausedRef = useRef(false);
+  pausedRef.current = paused;
   const stage = METHOD_STAGES[activeIdx];
+
+  /* Auto-advancing tour: the track fills continuously left → right; hovering
+     the card (or the rail) freezes both the fill and the stage transition. */
+  useEffect(() => {
+    if (REDUCED_MOTION) return;
+    const id = setInterval(() => {
+      if (pausedRef.current) return;
+      setProgress((p) => {
+        const np = p + 100 / STAGE_TOUR_MS;
+        if (np >= 1) {
+          setActiveIdx((i) => (i + 1) % METHOD_STAGES.length);
+          return 0;
+        }
+        return np;
+      });
+    }, 100);
+    return () => clearInterval(id);
+  }, []);
+
+  const goTo = (i: number) => {
+    setActiveIdx(i);
+    setProgress(0);
+  };
+
+  const fillPct = Math.min(1, (activeIdx + (REDUCED_MOTION ? 0 : progress)) / (METHOD_STAGES.length - 1)) * 100;
 
   return (
     <section className="mb-20">
@@ -578,59 +613,61 @@ const MethodSection: React.FC = () => {
         n="02"
         eyebrow="The method"
         title="Five stages, eight to twelve weeks"
-        lede="One governed path from open questions to a production roadmap — this is where readiness, leadership alignment and upskilling pay off. Click through the stages: each produces something concrete before the next begins."
+        lede="One governed path from open questions to a production roadmap — this is where readiness, leadership alignment and upskilling pay off. The tour walks through the stages on its own; hover to pause, click to jump."
       />
 
-      {/* Stepper rail */}
-      <div className="overflow-x-auto no-scrollbar mb-6">
-        <div className="relative min-w-[560px] px-2">
-          {/* Track */}
-          <div className="absolute left-8 right-8 h-[3px] rounded-full" style={{ top: 21, backgroundColor: '#E2E8F0' }}>
-            <div
-              className="h-full rounded-full"
-              style={{
-                width: `${(activeIdx / (METHOD_STAGES.length - 1)) * 100}%`,
-                backgroundColor: SBX_ACCENT,
-                transition: REDUCED_MOTION ? 'none' : 'width 0.4s ease',
-              }}
-            />
-          </div>
-          <div className="relative flex justify-between">
-            {METHOD_STAGES.map((s, i) => {
-              const Icon = STAGE_ICON[s.icon];
-              const active = i === activeIdx;
-              const passed = i < activeIdx;
-              return (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setActiveIdx(i)}
-                  className="flex flex-col items-center gap-2 group focus:outline-none"
-                  aria-label={`Stage ${s.n}: ${s.title}`}
-                  aria-current={active ? 'step' : undefined}
-                >
-                  <span
-                    className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 group-hover:scale-[1.08] group-focus-visible:ring-2 group-focus-visible:ring-[#2B4C7E] group-focus-visible:ring-offset-2"
-                    style={{
-                      backgroundColor: active ? SBX_ACCENT : '#FFFFFF',
-                      border: `2px solid ${active || passed ? SBX_ACCENT : '#E2E8F0'}`,
-                    }}
+      <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+        {/* Stepper rail */}
+        <div className="overflow-x-auto no-scrollbar mb-6">
+          <div className="relative min-w-[560px] px-2 pt-2">
+            {/* Track — fills continuously as the tour moves across the five stages */}
+            <div className="absolute left-8 right-8 h-[3px] rounded-full" style={{ top: 28, backgroundColor: '#E2E8F0' }}>
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${fillPct}%`,
+                  backgroundColor: SBX_ACCENT,
+                  transition: REDUCED_MOTION ? 'none' : 'width 0.15s linear',
+                }}
+              />
+            </div>
+            <div className="relative flex justify-between">
+              {METHOD_STAGES.map((s, i) => {
+                const Icon = STAGE_ICON[s.icon];
+                const active = i === activeIdx;
+                const passed = i < activeIdx;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => goTo(i)}
+                    className="flex flex-col items-center gap-2 group focus:outline-none"
+                    aria-label={`Stage ${s.n}: ${s.title}`}
+                    aria-current={active ? 'step' : undefined}
                   >
-                    <Icon size={18} style={{ color: active ? '#FFFFFF' : passed ? SBX_ACCENT : '#A0AEC0' }} />
-                  </span>
-                  <span className="text-[12px] font-bold" style={{ color: active ? SBX_DARK : '#718096' }}>
-                    {s.n}. {s.title}
-                  </span>
-                </button>
-              );
-            })}
+                    <span
+                      className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 group-hover:scale-[1.08] group-focus-visible:ring-2 group-focus-visible:ring-[#2B4C7E] group-focus-visible:ring-offset-2"
+                      style={{
+                        backgroundColor: active ? SBX_ACCENT : '#FFFFFF',
+                        border: `2px solid ${active || passed ? SBX_ACCENT : '#E2E8F0'}`,
+                      }}
+                    >
+                      <Icon size={18} style={{ color: active ? '#FFFFFF' : passed ? SBX_ACCENT : '#A0AEC0' }} />
+                    </span>
+                    <span className="text-[12px] font-bold" style={{ color: active ? SBX_DARK : '#718096' }}>
+                      {s.n}. {s.title}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Detail panel — key remount per stage for the reveal animation */}
-      <div className="rounded-2xl p-6 sm:p-8" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-        <StagePanel stage={stage} />
+        {/* Detail panel — key remount per stage for the reveal animation */}
+        <div className="rounded-2xl p-5 sm:p-6" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+          <StagePanel stage={stage} />
+        </div>
       </div>
     </section>
   );
