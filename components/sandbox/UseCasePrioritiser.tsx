@@ -21,6 +21,7 @@ import {
   type FunctionIconName,
   type PriorityId,
   type PriorityIconName,
+  type PriorityProfile,
   type CriterionId,
   type Scores,
 } from '../sandboxData';
@@ -160,6 +161,57 @@ const ScoreCompareRow: React.FC<{
     </span>
   </div>
 );
+
+/* Compact score row for step 4: title + weighted score line(s), with a
+   collapsible breakdown revealing the four criterion sliders */
+const UseCaseScoreCard: React.FC<{
+  uc: SelectedUseCase;
+  profile: PriorityProfile;
+  compareProfile: PriorityProfile | null;
+  baselineRank: number;
+  compareRank: number | null;
+  onScoreChange: (criterion: CriterionId, value: number) => void;
+}> = ({ uc, profile, compareProfile, baselineRank, compareRank, onScoreChange }) => {
+  const [open, setOpen] = useState(false);
+  const base = composite(uc.scores, profile.weights);
+  const cmp = compareProfile ? composite(uc.scores, compareProfile.weights) : null;
+  return (
+    <div className="rounded-xl" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="w-full text-left p-3.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2B4C7E] rounded-xl"
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <p className="text-[13.5px] font-bold text-[#1A202C] flex-1 leading-tight">
+            {uc.title}
+            {uc.isCustom && <span className="text-[10px] font-bold uppercase tracking-[0.05em] text-[#A0AEC0] ml-2">Custom</span>}
+          </p>
+          <span className="text-[10.5px] font-semibold text-[#A0AEC0] shrink-0 hidden sm:inline">
+            {open ? 'Hide breakdown' : 'See breakdown'}
+          </span>
+          <span className="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: hexA(SBX_ACCENT, open ? 0.16 : 0.08) }}>
+            <ChevronDown size={14} style={{ color: SBX_ACCENT, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }} />
+          </span>
+        </div>
+        <div className="space-y-1.5">
+          <ScoreCompareRow label={profile.archetype} value={base} rank={baselineRank} color={SBX_ACCENT} isBaseline />
+          {compareProfile && cmp !== null && compareRank !== null && (
+            <ScoreCompareRow label={compareProfile.archetype} value={cmp} rank={compareRank} color="#C4A934" delta={cmp - base} />
+          )}
+        </div>
+      </button>
+      {open && (
+        <div className="px-3.5 pb-3.5 pt-2.5 space-y-2.5" style={{ borderTop: '1px solid #E2E8F0' }}>
+          {CRITERIA.map((c) => (
+            <ScoreSlider key={c.id} criterion={c.id} value={uc.scores[c.id]} onChange={(v) => onScoreChange(c.id, v)} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 /* Positioned dot data derived per render — no cached state to invalidate */
 interface PlottedDot {
@@ -617,32 +669,19 @@ export const UseCasePrioritiser: React.FC = () => {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-            {selected.map((uc) => {
-              const base = profile ? composite(uc.scores, profile.weights) : null;
-              const cmp = compareProfile ? composite(uc.scores, compareProfile.weights) : null;
-              return (
-                <div key={uc.id} className="rounded-xl p-4" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-                  <p className="text-[13.5px] font-bold text-[#1A202C] mb-2">
-                    {uc.title}
-                    {uc.isCustom && <span className="text-[10px] font-bold uppercase tracking-[0.05em] text-[#A0AEC0] ml-2">Custom</span>}
-                  </p>
-                  {profile && base !== null && (
-                    <div className="rounded-lg px-2.5 py-2 mb-3 space-y-1.5" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
-                      <ScoreCompareRow label={profile.archetype} value={base} rank={baselineRanks.get(uc.id) ?? 0} color={SBX_ACCENT} isBaseline />
-                      {compareProfile && compareRanks && cmp !== null && (
-                        <ScoreCompareRow label={compareProfile.archetype} value={cmp} rank={compareRanks.get(uc.id) ?? 0} color="#C4A934" delta={cmp - base} />
-                      )}
-                    </div>
-                  )}
-                  <div className="space-y-2.5">
-                    {CRITERIA.map((c) => (
-                      <ScoreSlider key={c.id} criterion={c.id} value={uc.scores[c.id]} onChange={(v) => setScore(uc.id, c.id, v)} />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 items-start">
+            {profile &&
+              selected.map((uc) => (
+                <UseCaseScoreCard
+                  key={uc.id}
+                  uc={uc}
+                  profile={profile}
+                  compareProfile={compareProfile}
+                  baselineRank={baselineRanks.get(uc.id) ?? 0}
+                  compareRank={compareRanks ? (compareRanks.get(uc.id) ?? 0) : null}
+                  onScoreChange={(c, v) => setScore(uc.id, c, v)}
+                />
+              ))}
           </div>
           <button
             type="button"
