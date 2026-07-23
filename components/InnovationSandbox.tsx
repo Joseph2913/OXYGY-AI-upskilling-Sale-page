@@ -383,7 +383,7 @@ const MiniMatrix: React.FC = () => {
 
 /* Stage 2 visual: bottom-up + top-down streams converging into a chartered list */
 const DefineVisual: React.FC = () => (
-  <div className="rounded-xl p-4" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
+  <div className="rounded-xl p-4 h-full flex flex-col justify-center" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
     <div className="grid grid-cols-2 gap-2.5">
       <div className="rounded-lg p-3 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
         <UsersRound size={16} className="mx-auto mb-1.5" style={{ color: SBX_ACCENT }} />
@@ -424,7 +424,7 @@ const PrototypeVisual: React.FC = () => {
     { icon: RefreshCw, label: 'Refine' },
   ];
   return (
-    <div className="rounded-xl p-4" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
+    <div className="rounded-xl p-4 h-full flex flex-col justify-center" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
       <div className="flex items-center justify-center gap-1.5 mb-1.5">
         {steps.map((s, i) => (
           <React.Fragment key={s.label}>
@@ -460,7 +460,7 @@ const ScaleVisual: React.FC = () => {
     { label: 'Later', chip: 'SOP assistant', color: SBX_ACCENT },
   ];
   return (
-    <div className="rounded-xl p-4" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
+    <div className="rounded-xl p-4 h-full flex flex-col justify-center" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
       <div className="flex items-stretch gap-2.5">
         <div className="flex-1 space-y-2">
           {lanes.map((lane) => (
@@ -494,7 +494,7 @@ const StageVisualPanel: React.FC<{ stage: MethodStage }> = ({ stage }) => {
   switch (stage.visual) {
     case 'agenda':
       return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <div className="h-full grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           {(stage.agenda ?? []).map((q) => (
             <div key={q.letter} className="rounded-xl p-3.5" style={{ backgroundColor: hexA(SBX_ACCENT, 0.05), border: `1px solid ${hexA(SBX_ACCENT, 0.2)}` }}>
               <div className="flex items-center gap-2 mb-1.5">
@@ -514,7 +514,7 @@ const StageVisualPanel: React.FC<{ stage: MethodStage }> = ({ stage }) => {
       return <PrototypeVisual />;
     case 'matrix':
       return (
-        <div>
+        <div className="h-full flex flex-col justify-center">
           <MiniMatrix />
           <button
             type="button"
@@ -531,10 +531,14 @@ const StageVisualPanel: React.FC<{ stage: MethodStage }> = ({ stage }) => {
   }
 };
 
+/* Fixed panel height on desktop so the card never resizes between stages;
+   the text footer pins to the bottom and every visual stretches to the same box */
+const STAGE_PANEL_H = 'lg:h-[400px]';
+
 const StagePanel: React.FC<{ stage: MethodStage }> = ({ stage }) => (
   <div key={stage.id} className={REDUCED_MOTION ? '' : 'animate-section-reveal'}>
-    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
-      <div className="lg:col-span-3">
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-stretch">
+      <div className={`lg:col-span-3 flex flex-col ${STAGE_PANEL_H}`}>
         <p className="text-[15px] text-[#2D3748] leading-[1.65] mb-4">{stage.summary}</p>
         <ul className="space-y-2 mb-5">
           {stage.bullets.map((b, i) => (
@@ -545,7 +549,7 @@ const StagePanel: React.FC<{ stage: MethodStage }> = ({ stage }) => (
           ))}
         </ul>
 
-        <div className="flex flex-wrap gap-x-8 gap-y-2 pt-4" style={{ borderTop: '1px solid #E2E8F0' }}>
+        <div className="lg:mt-auto flex flex-wrap gap-x-8 gap-y-2 pt-4" style={{ borderTop: '1px solid #E2E8F0' }}>
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#A0AEC0]">Who's in the room</p>
             <p className="text-[13px] font-semibold text-[#2D3748] mt-0.5">{stage.participants}</p>
@@ -557,7 +561,7 @@ const StagePanel: React.FC<{ stage: MethodStage }> = ({ stage }) => (
         </div>
       </div>
 
-      <div className="lg:col-span-2">
+      <div className={`lg:col-span-2 ${STAGE_PANEL_H}`}>
         <StageVisualPanel stage={stage} />
       </div>
     </div>
