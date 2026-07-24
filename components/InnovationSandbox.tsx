@@ -27,7 +27,6 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { ArtifactClosing } from './ArtifactClosing';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
-import { HeroFunnel } from './sandbox/HeroFunnel';
 import { UseCasePrioritiser } from './sandbox/UseCasePrioritiser';
 import {
   SBX_ACCENT,
@@ -219,7 +218,7 @@ const LayerFlipCard: React.FC<{ icon: LayerIconName; title: string; hook: string
     <button
       type="button"
       className="relative w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2B4C7E] focus-visible:ring-offset-2 rounded-xl"
-      style={{ perspective: '900px', height: 168 }}
+      style={{ perspective: '900px', height: 128 }}
       onClick={() => setFlipped((f) => !f)}
       onMouseEnter={() => setFlipped(true)}
       onMouseLeave={() => setFlipped(false)}
@@ -235,7 +234,7 @@ const LayerFlipCard: React.FC<{ icon: LayerIconName; title: string; hook: string
       >
         {/* Front */}
         <div
-          className="absolute inset-0 rounded-xl p-4 flex flex-col"
+          className="absolute inset-0 rounded-xl p-3.5 flex flex-col"
           style={{
             ...faceBase,
             backgroundColor: '#FFFFFF',
@@ -244,16 +243,20 @@ const LayerFlipCard: React.FC<{ icon: LayerIconName; title: string; hook: string
             transition: REDUCED_MOTION ? 'opacity 0.2s ease' : undefined,
           }}
         >
-          <span className="w-10 h-10 rounded-lg flex items-center justify-center mb-3" style={{ backgroundColor: hexA(SBX_ACCENT, 0.1) }}>
-            <Icon size={19} style={{ color: SBX_ACCENT }} />
-          </span>
-          <p className="text-[15px] font-bold text-[#1A202C] leading-tight">{title}</p>
-          <p className="text-[12.5px] text-[#718096] mt-1 leading-[1.45]">{hook}</p>
+          <div className="flex items-start gap-2.5">
+            <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: hexA(SBX_ACCENT, 0.1) }}>
+              <Icon size={17} style={{ color: SBX_ACCENT }} />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[14.5px] font-bold text-[#1A202C] leading-tight">{title}</p>
+              <p className="text-[12px] text-[#718096] mt-0.5 leading-[1.4]">{hook}</p>
+            </div>
+          </div>
           <span className="mt-auto text-[10.5px] font-semibold uppercase tracking-[0.06em] text-[#A0AEC0]">The trap →</span>
         </div>
         {/* Back */}
         <div
-          className="absolute inset-0 rounded-xl p-4 flex flex-col"
+          className="absolute inset-0 rounded-xl p-3.5 flex flex-col"
           style={{
             ...faceBase,
             transform: REDUCED_MOTION ? 'none' : 'rotateY(180deg)',
@@ -264,10 +267,10 @@ const LayerFlipCard: React.FC<{ icon: LayerIconName; title: string; hook: string
             pointerEvents: 'none',
           }}
         >
-          <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] mb-2" style={{ color: SBX_ACCENT }}>
+          <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] mb-1.5" style={{ color: SBX_ACCENT }}>
             {title} — the trap
           </p>
-          <p className="text-[12.5px] text-[#2D3748] leading-[1.55]">{trap}</p>
+          <p className="text-[12px] text-[#2D3748] leading-[1.45]">{trap}</p>
         </div>
       </div>
     </button>
@@ -835,48 +838,43 @@ export const InnovationSandbox: React.FC = () => {
         </a>
 
         {/* ============ HERO ============ */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center mb-10">
-          <div>
-            <Reveal>
-              <div className="inline-block text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-1.5 rounded-full mb-6" style={{ backgroundColor: '#EAF0F8', color: SBX_DARK, border: `1px solid ${SBX_PALE_BORDER}` }}>
-                AI Innovation Sandbox &mdash; 8&ndash;12 weeks
-              </div>
-              <h1 className="text-[36px] md:text-[48px] font-bold text-[#1A202C] leading-[1.15] mb-5">
-                From AI experiments
-                <br />
-                to{' '}
-                <span className="relative inline-block">
-                  production value
-                  <span className="absolute left-0 -bottom-1 w-full h-[4px] rounded-full opacity-80" style={{ backgroundColor: SBX_TEAL }} />
-                </span>
-              </h1>
-            </Reveal>
-            <Reveal delay={100}>
-              <p className="text-[16px] md:text-[17px] text-[#4A5568] leading-[1.65] mb-7 max-w-[520px]">
-                A safe, governed space where your teams define, prototype, score and scale AI use cases — with a clear route from pilot to production, and the support to get there.
-              </p>
-            </Reveal>
-            <Reveal delay={200}>
-              <div className="flex flex-wrap items-center gap-3">
-                <a
-                  href="#ai-readiness"
-                  className="inline-flex items-center gap-2 text-white font-semibold rounded-full px-7 py-3.5 text-[15px] transition-all duration-150 hover:-translate-y-0.5"
-                  style={{ backgroundColor: SBX_DARK }}
-                >
-                  Take the readiness assessment <ArrowRight size={16} />
-                </a>
-                <a
-                  href="mailto:uk@oxygyconsulting.com"
-                  className="inline-flex items-center gap-2 font-semibold rounded-full px-7 py-3.5 text-[15px] transition-all duration-150 hover:-translate-y-0.5"
-                  style={{ backgroundColor: 'transparent', color: '#1A202C', border: '1px solid #1A202C' }}
-                >
-                  Book a discovery workshop
-                </a>
-              </div>
-            </Reveal>
-          </div>
-          <Reveal delay={150}>
-            <HeroFunnel />
+        <div className="text-center mb-16">
+          <Reveal>
+            <div className="inline-block text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-1.5 rounded-full mb-6" style={{ backgroundColor: '#EAF0F8', color: SBX_DARK, border: `1px solid ${SBX_PALE_BORDER}` }}>
+              AI Innovation Sandbox &mdash; 8&ndash;12 weeks
+            </div>
+            <h1 className="text-[36px] md:text-[48px] font-bold text-[#1A202C] leading-[1.15] mb-5">
+              From AI experiments
+              <br />
+              to{' '}
+              <span className="relative inline-block">
+                production value
+                <span className="absolute left-0 -bottom-1 w-full h-[4px] rounded-full opacity-80" style={{ backgroundColor: SBX_TEAL }} />
+              </span>
+            </h1>
+          </Reveal>
+          <Reveal delay={100}>
+            <p className="text-[16px] md:text-[17px] text-[#4A5568] leading-[1.65] mb-7 max-w-[620px] mx-auto">
+              A safe, governed space where your teams define, prototype, score and scale AI use cases — with a clear route from pilot to production, and the support to get there.
+            </p>
+          </Reveal>
+          <Reveal delay={200}>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <a
+                href="#ai-readiness"
+                className="inline-flex items-center gap-2 text-white font-semibold rounded-full px-7 py-3.5 text-[15px] transition-all duration-150 hover:-translate-y-0.5"
+                style={{ backgroundColor: SBX_DARK }}
+              >
+                Take the readiness assessment <ArrowRight size={16} />
+              </a>
+              <a
+                href="mailto:uk@oxygyconsulting.com"
+                className="inline-flex items-center gap-2 font-semibold rounded-full px-7 py-3.5 text-[15px] transition-all duration-150 hover:-translate-y-0.5"
+                style={{ backgroundColor: 'transparent', color: '#1A202C', border: '1px solid #1A202C' }}
+              >
+                Book a discovery workshop
+              </a>
+            </div>
           </Reveal>
         </div>
 
