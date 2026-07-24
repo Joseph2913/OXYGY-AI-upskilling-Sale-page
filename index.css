@@ -462,14 +462,26 @@ body {
 }
 .sbx-check-pop { animation: sbx-check-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 
+/* Dissemination ripple: a ring expands from the cohort seed and fades, like
+   value spreading outward. Centred with translate(-50%,-50%) baked in so the
+   scale grows from the middle. Multiple rings stagger via inline animation-delay. */
+@keyframes sbx-ripple-pulse {
+  0%   { transform: translate(-50%, -50%) scale(0.26); opacity: 0.5; }
+  70%  { opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+.sbx-ripple-pulse { animation: sbx-ripple-pulse 3.6s ease-out infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   .sbx-chip-live,
   .sbx-chip-out,
   .sbx-live-badge,
   .sbx-dot-pop,
-  .sbx-check-pop {
+  .sbx-check-pop,
+  .sbx-ripple-pulse {
     animation: none !important;
   }
   .sbx-dot-pop,
   .sbx-check-pop { opacity: 1; }
+  .sbx-ripple-pulse { opacity: 0; }
 }
