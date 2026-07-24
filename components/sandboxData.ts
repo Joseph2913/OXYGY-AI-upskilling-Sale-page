@@ -223,42 +223,82 @@ export const METHOD_STAGES: MethodStage[] = [
 ];
 
 /* ---------------------------------------------------------------------------
-   Section 05 — governance tiers
-   --------------------------------------------------------------------------- */
-export type TierIconName = 'landmark' | 'sliders' | 'flag';
+   Section 04 — the cohort experience
 
-export interface GovernanceTier {
-  icon: TierIconName;
+   The sandbox runs as a cohort. This section tells the people story: a
+   community of practice builds together, the strongest emerge as change
+   champions, the scoring measures real adoption and value, and the results
+   travel outward from the cohort to the whole organisation.
+   --------------------------------------------------------------------------- */
+export type CohortIconName = 'community' | 'ikea' | 'champion';
+
+export interface CohortPillar {
+  icon: CohortIconName;
   title: string;
-  mandate: string;
-  /** max-width class controlling the narrowing stack */
-  widthClass: string;
+  /** optional small tag rendered next to the title, e.g. a "research-backed" flag */
+  tag?: string;
+  body: string;
 }
 
-export const GOVERNANCE_TIERS: GovernanceTier[] = [
+/** LEFT column — the engine: why people commit and keep building */
+export const COHORT_ENGINE: CohortPillar[] = [
   {
-    icon: 'landmark',
-    title: 'Steering Committee',
-    mandate: 'Sets the ambition and the success criteria. Decides what scaling means and owns the go / no-go calls.',
-    widthClass: 'max-w-md',
+    icon: 'community',
+    title: 'A community of practice',
+    body: 'One cohort, building in the open. Practitioners from across teams learn alongside each other, so what works on one desk is shared with all of them and nobody solves the same problem twice.',
   },
   {
-    icon: 'sliders',
-    title: 'Function Leads',
-    mandate: 'Define the scoring framework, so use cases are judged on what actually matters to the business.',
-    widthClass: 'max-w-2xl',
+    icon: 'ikea',
+    title: 'The IKEA effect',
+    tag: 'Research-backed',
+    body: 'People place more value on things they helped build. When teams shape their own tools, ownership does the work that top-down adoption programmes usually have to beg for.',
   },
   {
-    icon: 'flag',
-    title: 'AI Champions',
-    mandate: 'Hands-on builders inside each team. They prototype, gather feedback and carry adoption with their peers.',
-    widthClass: 'max-w-4xl',
+    icon: 'champion',
+    title: 'Champions emerge',
+    body: 'We do not appoint champions on a slide. The cohort reveals them: the builders whose tools actually get used are the ones who carry deployment into their teams at scale.',
   },
 ];
 
+/* RIGHT column, panel 1 — scoring as adoption measurement.
+   These describe WHAT the scoring tracks, not a claimed client result. The
+   `fill` values are illustrative weights for the bars only. */
+export interface MeasureDimension {
+  label: string;
+  detail: string;
+  /** 0-1, illustrative bar width — not a reported metric */
+  fill: number;
+}
+
+export const MEASURE_DIMENSIONS: MeasureDimension[] = [
+  { label: 'Adoption', detail: 'Is the tool used day to day, or only in the demo?', fill: 0.82 },
+  { label: 'Effectiveness', detail: 'Does it change the outcome, not just the workflow?', fill: 0.68 },
+  { label: 'Value per user', detail: 'What is it worth to the people who rely on it?', fill: 0.74 },
+];
+
+export const MEASURE_CAPTION =
+  'Scoring measures deployment, not just ideas. Every cohort sets its own thresholds, and the measured results are what convince the rest of the business.';
+
+/* RIGHT column, panel 2 — the ripple: value travels outward from the cohort.
+   Ordered from the seed (index 0) outward to the whole organisation. */
+export interface RippleRing {
+  label: string;
+  note: string;
+}
+
+export const RIPPLE_RINGS: RippleRing[] = [
+  { label: 'Cohort', note: 'the seed' },
+  { label: 'Champions', note: 'carry it out' },
+  { label: 'Teams', note: 'adopt it' },
+  { label: 'Whole organisation', note: 'the shift' },
+];
+
+export const COHORT_CONCLUSION =
+  'Participation in the sandbox is the start. The measured results are what spread it to the rest of the organisation.';
+
 /* ---------------------------------------------------------------------------
-   Section 04 (continued) — the delivery partners on the external side of the
-   governance chart, and the shared outcome everything converges on
+   Delivery band (now homed at the close) — the delivery partners and the
+   Transformation Blueprint outcome the engagement converges on.
    --------------------------------------------------------------------------- */
 export interface SandboxPartner {
   name: string;

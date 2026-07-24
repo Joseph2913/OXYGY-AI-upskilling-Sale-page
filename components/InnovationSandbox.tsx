@@ -13,9 +13,9 @@ import {
   FlaskConical,
   Gauge,
   Rocket,
-  Landmark,
-  SlidersHorizontal,
   Flag,
+  Activity,
+  TrendingUp,
   Map,
   Shield,
   ScrollText,
@@ -39,7 +39,11 @@ import {
   LAYER_CARDS,
   FORMULA_TILES,
   METHOD_STAGES,
-  GOVERNANCE_TIERS,
+  COHORT_ENGINE,
+  MEASURE_DIMENSIONS,
+  MEASURE_CAPTION,
+  RIPPLE_RINGS,
+  COHORT_CONCLUSION,
   SANDBOX_PARTNERS,
   GOVERNANCE_OUTCOME,
   COMPLIANCE_CHIPS,
@@ -47,7 +51,8 @@ import {
   PROOF_FOOTNOTE,
   type LayerIconName,
   type StageIconName,
-  type TierIconName,
+  type CohortIconName,
+  type MeasureDimension,
   type MethodStage,
 } from './sandboxData';
 
@@ -69,10 +74,10 @@ const STAGE_ICON: Record<StageIconName, LucideIcon> = {
   rocket: Rocket,
 };
 
-const TIER_ICON: Record<TierIconName, LucideIcon> = {
-  landmark: Landmark,
-  sliders: SlidersHorizontal,
-  flag: Flag,
+const COHORT_ICON: Record<CohortIconName, LucideIcon> = {
+  community: UsersRound,
+  ikea: Hammer,
+  champion: Flag,
 };
 
 /* ---------------------------------------------------------------------------
@@ -682,92 +687,216 @@ const MethodSection: React.FC = () => {
 };
 
 /* ---------------------------------------------------------------------------
-   Section 04 — governance chart: client tiers on one side, delivery partners
-   on the other, everything converging on the Blueprint
+   Section 04 — the cohort experience.
+   LEFT: the engine (community of practice, IKEA effect, champions emerge).
+   RIGHT: the measure (scoring = adoption measurement) + the ripple (value
+   travels outward from the cohort to the whole organisation).
    --------------------------------------------------------------------------- */
-const GovernanceChartSection: React.FC = () => (
+
+/* icons for the three measurement dimensions, in data order */
+const MEASURE_ICONS: LucideIcon[] = [Gauge, Activity, TrendingUp];
+
+/* one measurement dimension: label, an illustrative bar (NOT a reported
+   client metric — see MEASURE_CAPTION), and a one-line descriptor */
+const MeasureBar: React.FC<{ dim: MeasureDimension; Icon: LucideIcon; delay: number }> = ({ dim, Icon, delay }) => {
+  const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.4, triggerOnce: true });
+  const shown = REDUCED_MOTION || isIntersecting;
+  return (
+    <div ref={ref}>
+      <div className="flex items-center gap-2 mb-1.5">
+        <Icon size={14} style={{ color: SBX_ACCENT }} />
+        <span className="text-[13px] font-semibold text-[#1A202C]">{dim.label}</span>
+      </div>
+      <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: '#E2E8F0' }}>
+        <div
+          className="h-full rounded-full"
+          style={{
+            width: shown ? `${dim.fill * 100}%` : '0%',
+            backgroundColor: SBX_ACCENT,
+            transition: REDUCED_MOTION ? 'none' : `width 1s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`,
+          }}
+        />
+      </div>
+      <p className="text-[12px] text-[#718096] leading-[1.5] mt-1.5">{dim.detail}</p>
+    </div>
+  );
+};
+
+/* concentric ripple: cohort seed at the centre, value radiating outward.
+   Built inner -> outer so each ring wraps the previous one. */
+const RIPPLE_BG = [null, 0.13, 0.08, 0.04];
+const RIPPLE_BORDER = [null, 0.3, 0.22, 0.15];
+
+const CohortRipple: React.FC = () => {
+  const rings = RIPPLE_RINGS.reduce<React.ReactNode>((child, ring, idx) => {
+    if (idx === 0) {
+      return (
+        <div className="rounded-2xl py-3 px-4 text-center mx-auto" style={{ backgroundColor: SBX_ACCENT }}>
+          <p className="text-[12.5px] font-bold text-white leading-none">{ring.label}</p>
+          <p className="text-[10.5px] mt-1" style={{ color: hexA('#FFFFFF', 0.75) }}>{ring.note}</p>
+        </div>
+      );
+    }
+    return (
+      <div
+        className="rounded-[26px] pt-2 pb-3 px-3"
+        style={{ backgroundColor: hexA(SBX_ACCENT, RIPPLE_BG[idx]!), border: `1px solid ${hexA(SBX_ACCENT, RIPPLE_BORDER[idx]!)}` }}
+      >
+        <p className="text-center text-[10px] font-bold uppercase tracking-[0.08em] mb-2" style={{ color: SBX_DARK }}>
+          {ring.label} <span className="font-medium normal-case tracking-normal text-[#718096]">· {ring.note}</span>
+        </p>
+        {child}
+      </div>
+    );
+  }, null);
+  return <>{rings}</>;
+};
+
+const CohortSection: React.FC = () => (
   <section className="mb-20">
     <SectionHeading
       n="04"
-      eyebrow="Who makes it work"
-      title="A sandbox, not a free-for-all"
-      lede="Experimentation without governance produces demos. This is the team that turns it into production value: three tiers inside your organisation, two partners at your side."
+      eyebrow="The cohort effect"
+      title={
+        <>
+          Built together,{' '}
+          <span className="relative inline-block">
+            owned
+            <span className="absolute left-0 -bottom-1 w-full h-[4px] rounded-full opacity-80" style={{ backgroundColor: SBX_ACCENT }} />
+          </span>{' '}
+          by everyone
+        </>
+      }
+      lede="The Sandbox runs as a cohort. Practitioners build alongside each other, the strongest emerge as your change champions, and the scores they generate are what carry adoption to the rest of the organisation."
     />
 
     <div className="rounded-2xl p-6 sm:p-8" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start">
-        {/* Client side */}
+        {/* LEFT — the engine */}
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-3">Inside your organisation</p>
-          <div className="flex flex-col items-center gap-0">
-            {GOVERNANCE_TIERS.map((tier, i) => {
-              const Icon = TIER_ICON[tier.icon];
+          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">The engine</p>
+          <div className="flex flex-col gap-3.5">
+            {COHORT_ENGINE.map((pillar, i) => {
+              const Icon = COHORT_ICON[pillar.icon];
               return (
-                <React.Fragment key={tier.title}>
-                  {i > 0 && <div className="w-px h-4" style={{ backgroundColor: hexA(SBX_ACCENT, 0.35) }} />}
-                  <Reveal delay={i * 130} className="w-full">
-                    <div className="rounded-xl p-4 flex items-start gap-3.5" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-                      <span className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: hexA(SBX_ACCENT, 0.1) }}>
-                        <Icon size={18} style={{ color: SBX_ACCENT }} />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-[14.5px] font-bold text-[#1A202C]">{tier.title}</p>
-                        <p className="text-[12.5px] text-[#4A5568] leading-[1.55] mt-0.5">{tier.mandate}</p>
+                <Reveal key={pillar.title} delay={i * 120}>
+                  <div className="rounded-xl p-4 flex items-start gap-3.5" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+                    <span className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: hexA(SBX_ACCENT, 0.1) }}>
+                      <Icon size={18} style={{ color: SBX_ACCENT }} />
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex items-center flex-wrap gap-2">
+                        <p className="text-[14.5px] font-bold text-[#1A202C]">{pillar.title}</p>
+                        {pillar.tag && (
+                          <span className="text-[9.5px] font-bold uppercase tracking-[0.06em] px-1.5 py-0.5 rounded-full" style={{ backgroundColor: hexA(SBX_ACCENT, 0.1), color: SBX_DARK }}>
+                            {pillar.tag}
+                          </span>
+                        )}
                       </div>
+                      <p className="text-[12.5px] text-[#4A5568] leading-[1.55] mt-1">{pillar.body}</p>
                     </div>
-                  </Reveal>
-                </React.Fragment>
+                  </div>
+                </Reveal>
               );
             })}
           </div>
         </div>
 
-        {/* Partner side */}
-        <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-3">At your side</p>
-          <div className="flex flex-col gap-3">
-            {SANDBOX_PARTNERS.map((partner, i) => (
-              <Reveal key={partner.name} delay={i * 130}>
-                <div className="rounded-xl p-4" style={{ backgroundColor: '#FFFFFF', border: `1px solid ${hexA(SBX_ACCENT, 0.25)}` }}>
-                  <div className="flex items-center justify-between gap-3 mb-2">
-                    <img src={partner.logo} alt={partner.name} style={{ height: partner.logoHeight }} className="w-auto" />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.06em] px-2 py-0.5 rounded-full shrink-0" style={{ backgroundColor: hexA(SBX_ACCENT, 0.08), color: SBX_DARK }}>
-                      {partner.role}
-                    </span>
-                  </div>
-                  <p className="text-[12.5px] text-[#4A5568] leading-[1.6]">{partner.blurb}</p>
-                </div>
-              </Reveal>
-            ))}
-            <Reveal delay={280}>
-              <div className="flex flex-wrap gap-2">
-                {COMPLIANCE_CHIPS.map((chip, i) => (
-                  <span
-                    key={chip}
-                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11.5px] font-semibold"
-                    style={{ backgroundColor: '#FFFFFF', border: `1px solid ${hexA(SBX_ACCENT, 0.3)}`, color: SBX_DARK }}
-                  >
-                    {i % 2 === 0 ? <Shield size={12} style={{ color: SBX_ACCENT }} /> : <ScrollText size={12} style={{ color: SBX_ACCENT }} />}
-                    {chip}
-                  </span>
+        {/* RIGHT — the measure + the ripple */}
+        <div className="flex flex-col gap-4">
+          <Reveal>
+            <div className="rounded-xl p-5" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">What the scoring measures</p>
+              <div className="flex flex-col gap-4">
+                {MEASURE_DIMENSIONS.map((dim, i) => (
+                  <MeasureBar key={dim.label} dim={dim} Icon={MEASURE_ICONS[i]} delay={i * 150} />
                 ))}
               </div>
-            </Reveal>
-          </div>
+              <p className="text-[11.5px] text-[#718096] leading-[1.55] mt-4 pt-4" style={{ borderTop: '1px solid #EDF2F7' }}>
+                {MEASURE_CAPTION}
+              </p>
+            </div>
+          </Reveal>
+
+          <Reveal delay={120}>
+            <div className="rounded-xl p-5" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">How it travels</p>
+              <CohortRipple />
+            </div>
+          </Reveal>
         </div>
       </div>
 
-      {/* Shared outcome */}
-      <Reveal delay={350}>
+      {/* The result travels — value, so teal */}
+      <Reveal delay={200}>
         <div className="flex justify-center my-4">
           <ArrowDown size={18} className="text-[#A0AEC0]" />
         </div>
         <div className="rounded-xl px-5 py-4 flex items-start gap-3" style={{ backgroundColor: hexA(SBX_TEAL, 0.07), border: `1.5px solid ${SBX_TEAL}` }}>
           <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: hexA(SBX_TEAL, 0.15) }}>
+            <TrendingUp size={17} style={{ color: SBX_TEAL }} />
+          </span>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.08em] mb-1" style={{ color: SBX_TEAL }}>The result travels</p>
+            <p className="text-[13.5px] text-[#2D3748] leading-[1.6]">{COHORT_CONCLUSION}</p>
+          </div>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+);
+
+/* ---------------------------------------------------------------------------
+   Delivery band — the partners and the Transformation Blueprint outcome,
+   re-homed at the close (formerly part of the section 04 governance chart).
+   --------------------------------------------------------------------------- */
+const DeliveryBand: React.FC = () => (
+  <section className="mb-16">
+    <Reveal className="text-center mb-6">
+      <p className="text-[11px] font-bold uppercase tracking-[0.15em]" style={{ color: SBX_ACCENT }}>
+        Delivered with you, owned by you
+      </p>
+    </Reveal>
+
+    <div className="rounded-2xl p-6 sm:p-8" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {SANDBOX_PARTNERS.map((partner, i) => (
+          <Reveal key={partner.name} delay={i * 120}>
+            <div className="rounded-xl p-4 h-full" style={{ backgroundColor: '#FFFFFF', border: `1px solid ${hexA(SBX_ACCENT, 0.25)}` }}>
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <img src={partner.logo} alt={partner.name} style={{ height: partner.logoHeight }} className="w-auto" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.06em] px-2 py-0.5 rounded-full shrink-0" style={{ backgroundColor: hexA(SBX_ACCENT, 0.08), color: SBX_DARK }}>
+                  {partner.role}
+                </span>
+              </div>
+              <p className="text-[12.5px] text-[#4A5568] leading-[1.6]">{partner.blurb}</p>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+
+      <Reveal delay={200}>
+        <div className="flex flex-wrap gap-2 mt-3">
+          {COMPLIANCE_CHIPS.map((chip, i) => (
+            <span
+              key={chip}
+              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11.5px] font-semibold"
+              style={{ backgroundColor: '#FFFFFF', border: `1px solid ${hexA(SBX_ACCENT, 0.3)}`, color: SBX_DARK }}
+            >
+              {i % 2 === 0 ? <Shield size={12} style={{ color: SBX_ACCENT }} /> : <ScrollText size={12} style={{ color: SBX_ACCENT }} />}
+              {chip}
+            </span>
+          ))}
+        </div>
+      </Reveal>
+
+      <Reveal delay={280}>
+        <div className="rounded-xl px-5 py-4 flex items-start gap-3 mt-4" style={{ backgroundColor: hexA(SBX_TEAL, 0.07), border: `1.5px solid ${SBX_TEAL}` }}>
+          <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: hexA(SBX_TEAL, 0.15) }}>
             <Map size={17} style={{ color: SBX_TEAL }} />
           </span>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.08em] mb-1" style={{ color: SBX_TEAL }}>The shared outcome</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.08em] mb-1" style={{ color: SBX_TEAL }}>The deliverable you keep</p>
             <p className="text-[13.5px] text-[#2D3748] leading-[1.6]">{GOVERNANCE_OUTCOME}</p>
           </div>
         </div>
@@ -892,8 +1021,9 @@ export const InnovationSandbox: React.FC = () => {
           <UseCasePrioritiser />
         </section>
 
-        <GovernanceChartSection />
+        <CohortSection />
         <ProofSection />
+        <DeliveryBand />
 
         <ArtifactClosing
           summaryText="The Sandbox turns scattered AI experiments into a governed portfolio with a route to production. It starts with knowing where you stand."
