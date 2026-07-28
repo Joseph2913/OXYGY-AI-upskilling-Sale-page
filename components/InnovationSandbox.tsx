@@ -41,8 +41,6 @@ import {
   MEASURE_CAPTION,
   RIPPLE_RINGS,
   COHORT_CONCLUSION,
-  PROOF_STATS,
-  PROOF_FOOTNOTE,
   type LayerIconName,
   type StageIconName,
   type CohortIconName,
@@ -867,49 +865,6 @@ const CohortSection: React.FC = () => (
   </section>
 );
 
-/* ---------------------------------------------------------------------------
-   Section 08 — proof band
-   --------------------------------------------------------------------------- */
-const ProofTile: React.FC<{ countTo: number; prefix?: string; suffix?: string; caption: string; active: boolean }> = ({
-  countTo,
-  prefix,
-  suffix,
-  caption,
-  active,
-}) => {
-  const n = useCountUp(countTo, active);
-  return (
-    <div className="text-center">
-      <p className="text-[36px] md:text-[42px] font-bold leading-none tabular-nums" style={{ color: '#7EDCD6' }}>
-        {prefix ?? ''}
-        {n}
-        {suffix ?? ''}
-      </p>
-      <p className="text-[13px] leading-[1.5] mt-2 max-w-[220px] mx-auto" style={{ color: '#B8C9E8' }}>
-        {caption}
-      </p>
-    </div>
-  );
-};
-
-const ProofSection: React.FC = () => {
-  const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.4, triggerOnce: true });
-  return (
-    <section className="mb-16">
-      <div ref={ref} className="rounded-2xl px-6 py-8 sm:px-10" style={{ backgroundColor: SBX_DARK }}>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-4">
-          {PROOF_STATS.map((stat) => (
-            <ProofTile key={stat.caption} countTo={stat.countTo} prefix={stat.prefix} suffix={stat.suffix} caption={stat.caption} active={isIntersecting} />
-          ))}
-        </div>
-        <p className="text-[10.5px] text-center mt-6" style={{ color: hexA('#B8C9E8', 0.55) }}>
-          {PROOF_FOOTNOTE}
-        </p>
-      </div>
-    </section>
-  );
-};
-
 /* ===========================================================================
    Page
    =========================================================================== */
@@ -984,7 +939,6 @@ export const InnovationSandbox: React.FC = () => {
         </section>
 
         <CohortSection />
-        <ProofSection />
 
         <ArtifactClosing
           summaryText="The Sandbox turns scattered AI experiments into a governed portfolio with a route to production. It starts with knowing where you stand."
