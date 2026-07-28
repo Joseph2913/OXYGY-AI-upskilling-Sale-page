@@ -722,13 +722,6 @@ const MeasureBar: React.FC<{ dim: MeasureDimension; Icon: LucideIcon; delay: num
   );
 };
 
-/* Small section label used to head each of the three stacked bands. */
-const BandLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-center mb-6" style={{ color: SBX_ACCENT }}>
-    {children}
-  </p>
-);
-
 /* Animated concentric ripple: the cohort seed at the centre, value radiating
    outward to the whole organisation. Rings are sized as a % of a square
    container so the whole diagram scales. Expanding pulse rings emanate from
@@ -796,99 +789,85 @@ const CohortSection: React.FC = () => (
       lede="The Sandbox runs as a cohort. Practitioners build alongside each other, the strongest emerge as your change champions, and the scores they generate are what carry adoption to the rest of the organisation."
     />
 
-    {/* BAND 1 — the engine: three cards, full width */}
-    <Reveal>
-      <BandLabel>The engine</BandLabel>
-    </Reveal>
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      {COHORT_ENGINE.map((pillar, i) => {
-        const Icon = COHORT_ICON[pillar.icon];
-        return (
-          <Reveal key={pillar.title} delay={i * 120}>
-            <div className="rounded-2xl p-5 h-full" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-              <span className="w-11 h-11 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: hexA(SBX_ACCENT, 0.1) }}>
-                <Icon size={20} style={{ color: SBX_ACCENT }} />
-              </span>
-              <div className="flex items-center flex-wrap gap-2 mb-1.5">
-                <p className="text-[16px] font-bold text-[#1A202C]">{pillar.title}</p>
-                {pillar.tag && (
-                  <span className="text-[9.5px] font-bold uppercase tracking-[0.06em] px-1.5 py-0.5 rounded-full" style={{ backgroundColor: hexA(SBX_ACCENT, 0.1), color: SBX_DARK }}>
-                    {pillar.tag}
-                  </span>
-                )}
-              </div>
-              <p className="text-[13px] text-[#4A5568] leading-[1.6]">{pillar.body}</p>
-            </div>
-          </Reveal>
-        );
-      })}
-    </div>
-
-    {/* BAND 2 — how it travels: animated ripple, full width */}
-    <Reveal className="mt-14">
-      <BandLabel>How it travels</BandLabel>
-    </Reveal>
-    <Reveal>
-      <div className="rounded-2xl p-6 sm:p-10" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-6 items-center">
-          {/* intro */}
-          <div>
-            <p className="text-[17px] font-bold text-[#1A202C] leading-[1.35] mb-2">Value spreads outward from the cohort.</p>
-            <p className="text-[13.5px] text-[#4A5568] leading-[1.65]">
-              What the cohort proves does not stay in the cohort. Champions carry it into their teams, and proven adoption ripples out until it reaches the whole organisation.
-            </p>
-          </div>
-          {/* diagram */}
-          <CohortRipple />
-          {/* legend */}
-          <div className="flex flex-col gap-2.5">
-            {RIPPLE_RINGS.map((ring, i) => (
-              <div key={ring.label} className="flex items-center gap-3">
-                <span
-                  className="w-3.5 h-3.5 rounded-full shrink-0"
-                  style={{
-                    backgroundColor: i === 0 ? SBX_ACCENT : hexA(SBX_ACCENT, RIPPLE_LEGEND_FILL[i]),
-                    border: `1px solid ${hexA(SBX_ACCENT, 0.35)}`,
-                  }}
-                />
-                <p className="text-[13px] text-[#2D3748]">
-                  <span className="font-bold text-[#1A202C]">{ring.label}</span>
-                  <span className="text-[#718096]"> · {ring.note}</span>
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </Reveal>
-
-    {/* BAND 3 — what the scoring measures: full width, three columns */}
-    <Reveal className="mt-14">
-      <BandLabel>What the scoring measures</BandLabel>
-    </Reveal>
+    {/* One compact panel: engine | how it travels | what we measure */}
     <Reveal>
       <div className="rounded-2xl p-6 sm:p-8" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
-          {MEASURE_DIMENSIONS.map((dim, i) => (
-            <MeasureBar key={dim.label} dim={dim} Icon={MEASURE_ICONS[i]} delay={i * 150} />
-          ))}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-0">
+          {/* COLUMN 1 — the engine */}
+          <div className="lg:pr-8">
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] mb-5" style={{ color: SBX_ACCENT }}>The engine</p>
+            <div className="flex flex-col gap-4">
+              {COHORT_ENGINE.map((pillar) => {
+                const Icon = COHORT_ICON[pillar.icon];
+                return (
+                  <div key={pillar.title} className="flex items-start gap-3">
+                    <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: hexA(SBX_ACCENT, 0.1) }}>
+                      <Icon size={17} style={{ color: SBX_ACCENT }} />
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex items-center flex-wrap gap-1.5">
+                        <p className="text-[13.5px] font-bold text-[#1A202C]">{pillar.title}</p>
+                        {pillar.tag && (
+                          <span className="text-[8.5px] font-bold uppercase tracking-[0.06em] px-1.5 py-0.5 rounded-full" style={{ backgroundColor: hexA(SBX_ACCENT, 0.1), color: SBX_DARK }}>
+                            {pillar.tag}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[12px] text-[#4A5568] leading-[1.5] mt-0.5">{pillar.body}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* COLUMN 2 — how it travels */}
+          <div className="lg:px-8 lg:border-l" style={{ borderColor: '#E2E8F0' }}>
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] mb-5" style={{ color: SBX_ACCENT }}>How it travels</p>
+            <CohortRipple />
+            <div className="flex flex-col gap-1.5 mt-5">
+              {RIPPLE_RINGS.map((ring, i) => (
+                <div key={ring.label} className="flex items-center gap-2.5">
+                  <span
+                    className="w-3 h-3 rounded-full shrink-0"
+                    style={{
+                      backgroundColor: i === 0 ? SBX_ACCENT : hexA(SBX_ACCENT, RIPPLE_LEGEND_FILL[i]),
+                      border: `1px solid ${hexA(SBX_ACCENT, 0.35)}`,
+                    }}
+                  />
+                  <p className="text-[12px] text-[#2D3748]">
+                    <span className="font-bold text-[#1A202C]">{ring.label}</span>
+                    <span className="text-[#718096]"> · {ring.note}</span>
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* COLUMN 3 — what we measure */}
+          <div className="lg:pl-8 lg:border-l" style={{ borderColor: '#E2E8F0' }}>
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] mb-5" style={{ color: SBX_ACCENT }}>What scoring measures</p>
+            <div className="flex flex-col gap-4">
+              {MEASURE_DIMENSIONS.map((dim, i) => (
+                <MeasureBar key={dim.label} dim={dim} Icon={MEASURE_ICONS[i]} delay={i * 150} />
+              ))}
+            </div>
+            <p className="text-[11.5px] text-[#718096] leading-[1.55] mt-4 pt-4" style={{ borderTop: '1px solid #EDF2F7' }}>
+              {MEASURE_CAPTION}
+            </p>
+          </div>
         </div>
-        <p className="text-[12.5px] text-[#718096] leading-[1.6] mt-6 pt-6 max-w-[720px]" style={{ borderTop: '1px solid #EDF2F7' }}>
-          {MEASURE_CAPTION}
-        </p>
       </div>
     </Reveal>
 
     {/* The result travels — value, so teal */}
-    <Reveal delay={120} className="mt-6">
-      <div className="rounded-xl px-5 py-4 flex items-start gap-3" style={{ backgroundColor: hexA(SBX_TEAL, 0.07), border: `1.5px solid ${SBX_TEAL}` }}>
-        <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: hexA(SBX_TEAL, 0.15) }}>
-          <TrendingUp size={17} style={{ color: SBX_TEAL }} />
-        </span>
-        <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.08em] mb-1" style={{ color: SBX_TEAL }}>The result travels</p>
-          <p className="text-[13.5px] text-[#2D3748] leading-[1.6]">{COHORT_CONCLUSION}</p>
-        </div>
+    <Reveal delay={100} className="mt-4">
+      <div className="rounded-xl px-5 py-3.5 flex items-center gap-3" style={{ backgroundColor: hexA(SBX_TEAL, 0.07), border: `1.5px solid ${SBX_TEAL}` }}>
+        <TrendingUp size={17} className="shrink-0" style={{ color: SBX_TEAL }} />
+        <p className="text-[13px] text-[#2D3748] leading-[1.5]">
+          <span className="font-bold" style={{ color: SBX_TEAL }}>The result travels: </span>
+          {COHORT_CONCLUSION}
+        </p>
       </div>
     </Reveal>
   </section>
