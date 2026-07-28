@@ -16,9 +16,6 @@ import {
   Flag,
   Activity,
   TrendingUp,
-  Map,
-  Shield,
-  ScrollText,
   FileText,
   Hammer,
   ClipboardCheck,
@@ -44,9 +41,6 @@ import {
   MEASURE_CAPTION,
   RIPPLE_RINGS,
   COHORT_CONCLUSION,
-  SANDBOX_PARTNERS,
-  GOVERNANCE_OUTCOME,
-  COMPLIANCE_CHIPS,
   PROOF_STATS,
   PROOF_FOOTNOTE,
   type LayerIconName,
@@ -874,65 +868,6 @@ const CohortSection: React.FC = () => (
 );
 
 /* ---------------------------------------------------------------------------
-   Delivery band — the partners and the Transformation Blueprint outcome,
-   re-homed at the close (formerly part of the section 04 governance chart).
-   --------------------------------------------------------------------------- */
-const DeliveryBand: React.FC = () => (
-  <section className="mb-16">
-    <Reveal className="text-center mb-6">
-      <p className="text-[11px] font-bold uppercase tracking-[0.15em]" style={{ color: SBX_ACCENT }}>
-        Delivered with you, owned by you
-      </p>
-    </Reveal>
-
-    <div className="rounded-2xl p-6 sm:p-8" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {SANDBOX_PARTNERS.map((partner, i) => (
-          <Reveal key={partner.name} delay={i * 120}>
-            <div className="rounded-xl p-4 h-full" style={{ backgroundColor: '#FFFFFF', border: `1px solid ${hexA(SBX_ACCENT, 0.25)}` }}>
-              <div className="flex items-center justify-between gap-3 mb-2">
-                <img src={partner.logo} alt={partner.name} style={{ height: partner.logoHeight }} className="w-auto" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.06em] px-2 py-0.5 rounded-full shrink-0" style={{ backgroundColor: hexA(SBX_ACCENT, 0.08), color: SBX_DARK }}>
-                  {partner.role}
-                </span>
-              </div>
-              <p className="text-[12.5px] text-[#4A5568] leading-[1.6]">{partner.blurb}</p>
-            </div>
-          </Reveal>
-        ))}
-      </div>
-
-      <Reveal delay={200}>
-        <div className="flex flex-wrap gap-2 mt-3">
-          {COMPLIANCE_CHIPS.map((chip, i) => (
-            <span
-              key={chip}
-              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11.5px] font-semibold"
-              style={{ backgroundColor: '#FFFFFF', border: `1px solid ${hexA(SBX_ACCENT, 0.3)}`, color: SBX_DARK }}
-            >
-              {i % 2 === 0 ? <Shield size={12} style={{ color: SBX_ACCENT }} /> : <ScrollText size={12} style={{ color: SBX_ACCENT }} />}
-              {chip}
-            </span>
-          ))}
-        </div>
-      </Reveal>
-
-      <Reveal delay={280}>
-        <div className="rounded-xl px-5 py-4 flex items-start gap-3 mt-4" style={{ backgroundColor: hexA(SBX_TEAL, 0.07), border: `1.5px solid ${SBX_TEAL}` }}>
-          <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: hexA(SBX_TEAL, 0.15) }}>
-            <Map size={17} style={{ color: SBX_TEAL }} />
-          </span>
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.08em] mb-1" style={{ color: SBX_TEAL }}>The deliverable you keep</p>
-            <p className="text-[13.5px] text-[#2D3748] leading-[1.6]">{GOVERNANCE_OUTCOME}</p>
-          </div>
-        </div>
-      </Reveal>
-    </div>
-  </section>
-);
-
-/* ---------------------------------------------------------------------------
    Section 08 — proof band
    --------------------------------------------------------------------------- */
 const ProofTile: React.FC<{ countTo: number; prefix?: string; suffix?: string; caption: string; active: boolean }> = ({
@@ -1050,7 +985,6 @@ export const InnovationSandbox: React.FC = () => {
 
         <CohortSection />
         <ProofSection />
-        <DeliveryBand />
 
         <ArtifactClosing
           summaryText="The Sandbox turns scattered AI experiments into a governed portfolio with a route to production. It starts with knowing where you stand."
