@@ -5,9 +5,29 @@ import {
   SURVEY_CATEGORY_LABELS,
   questionsForCategory,
   SurveyAnswers,
+  SurveyQuestion,
 } from '../../data/innovationReadinessQuestions';
 import { ProgressBar } from './ProgressBar';
-import { LikertQuestion, LikertMultiQuestion, SingleSelectQuestion, OpenTextQuestion, AnswerValue } from './QuestionInputs';
+import { LikertTable, LikertMultiQuestion, SingleSelectQuestion, OpenTextQuestion, AnswerValue, LikertTableRow } from './QuestionInputs';
+
+/** Groups consecutive Likert questions into one run, so they can render as a single table with
+ * the 1–5 scale labels shown once, instead of one card (and one set of labels) per question. */
+type RenderGroup = { kind: 'likert-group'; questions: SurveyQuestion[] } | { kind: 'single'; question: SurveyQuestion };
+
+function groupQuestions(questions: SurveyQuestion[]): RenderGroup[] {
+  const groups: RenderGroup[] = [];
+  for (const q of questions) {
+    const last = groups[groups.length - 1];
+    if (q.type === 'likert' && last?.kind === 'likert-group') {
+      last.questions.push(q);
+    } else if (q.type === 'likert') {
+      groups.push({ kind: 'likert-group', questions: [q] });
+    } else {
+      groups.push({ kind: 'single', question: q });
+    }
+  }
+  return groups;
+}
 
 const ACCENT = '#2B4C7E';
 const DARK = '#1E3A5F';
@@ -43,6 +63,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({ initialAnswers, demoLabe
     return typeof triggerValue === 'number' && triggerValue >= (q.conditionalMinValue ?? 4);
   });
   const isLastStep = stepIndex === SURVEY_CATEGORY_ORDER.length - 1;
+  const renderGroups = groupQuestions(questions);
 
   const setAnswer = (id: string, value: AnswerValue) => setAnswers((prev) => ({ ...prev, [id]: value }));
 
@@ -72,19 +93,19 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({ initialAnswers, demoLabe
       <ProgressBar stepIndex={stepIndex} totalSteps={SURVEY_CATEGORY_ORDER.length} stepLabel={SURVEY_CATEGORY_LABELS[categoryId]} />
 
       <div className="space-y-4">
-        {questions.map((q) => {
-          if (q.type === 'likert') {
-            return (
-              <LikertQuestion
-                key={q.id}
-                label={q.label}
-                value={answers[q.id]}
-                scored={q.scored}
-                allowNotApplicable={q.allowNotApplicable}
-                onChange={(v) => setAnswer(q.id, v)}
-              />
-            );
+        {renderGroups.map((group) => {
+          if (group.kind === 'likert-group') {
+            const rows: LikertTableRow[] = group.questions.map((q) => ({
+              id: q.id,
+              label: q.label,
+              value: answers[q.id],
+              scored: q.scored,
+              allowNotApplicable: q.allowNotApplicable,
+            }));
+            return <LikertTable key={group.questions[0].id} rows={rows} onChange={setAnswer} />;
           }
+
+          const q = group.question;
           if (q.type === 'likert_multi') {
             return (
               <LikertMultiQuestion

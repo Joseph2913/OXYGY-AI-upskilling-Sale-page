@@ -14,7 +14,7 @@ const hexA = (hex: string, a: number) => {
 
 /** Small badge shown on questions that are captured but never fed into a category/axis score. */
 const ContextOnlyTag: React.FC = () => (
-  <span className="inline-block text-[10px] font-bold uppercase tracking-[0.05em] text-[#A0AEC0] mb-2">Context only &mdash; not scored</span>
+  <span className="block text-[9.5px] font-bold uppercase tracking-[0.05em] text-[#A0AEC0] mb-1">Context only &mdash; not scored</span>
 );
 
 interface QuestionCardProps {
@@ -31,63 +31,98 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ label, scored, children }) 
   </div>
 );
 
-interface LikertRowProps {
-  value: AnswerValue;
-  allowNotApplicable?: boolean;
-  onChange: (value: AnswerValue) => void;
-}
-
-const LikertRow: React.FC<LikertRowProps> = ({ value, allowNotApplicable, onChange }) => (
-  <div className="flex flex-wrap gap-2">
-    {LIKERT_LABELS.map((likertLabel, i) => {
-      const score = i + 1;
-      const active = value === score;
-      return (
-        <button
-          key={score}
-          type="button"
-          onClick={() => onChange(score)}
-          className="flex-1 min-w-[92px] rounded-lg px-2 py-2.5 text-center transition-all"
-          style={{
-            backgroundColor: active ? hexA(ACCENT, 0.14) : '#F7FAFC',
-            border: active ? `1.5px solid ${ACCENT}` : '1px solid #E2E8F0',
-          }}
-        >
-          <span className="block text-[13px] font-bold" style={{ color: active ? DARK : '#4A5568' }}>{score}</span>
-          <span className="block text-[10px] leading-[1.3] mt-0.5" style={{ color: active ? DARK : '#A0AEC0' }}>{likertLabel}</span>
-        </button>
-      );
-    })}
-    {allowNotApplicable && (
-      <button
-        type="button"
-        onClick={() => onChange(null)}
-        className="rounded-lg px-3 py-2.5 text-[12px] font-semibold transition-all"
-        style={{
-          backgroundColor: value === null ? hexA('#A0AEC0', 0.18) : '#F7FAFC',
-          border: value === null ? '1.5px solid #A0AEC0' : '1px solid #E2E8F0',
-          color: value === null ? '#4A5568' : '#A0AEC0',
-        }}
-      >
-        Not Applicable
-      </button>
-    )}
-  </div>
-);
-
-interface LikertQuestionProps {
+export interface LikertTableRow {
+  id: string;
   label: string;
   value: AnswerValue;
   scored: boolean;
   allowNotApplicable?: boolean;
-  onChange: (value: AnswerValue) => void;
 }
 
-export const LikertQuestion: React.FC<LikertQuestionProps> = ({ label, value, scored, allowNotApplicable, onChange }) => (
-  <QuestionCard label={label} scored={scored}>
-    <LikertRow value={value} allowNotApplicable={allowNotApplicable} onChange={onChange} />
-  </QuestionCard>
-);
+interface LikertTableProps {
+  rows: LikertTableRow[];
+  onChange: (id: string, value: AnswerValue) => void;
+}
+
+/** A block of Likert questions rendered as one table: the 1–5 scale labels (and "N/A") appear
+ * once in the header instead of repeating under every question. */
+export const LikertTable: React.FC<LikertTableProps> = ({ rows, onChange }) => {
+  const showNA = rows.some((r) => r.allowNotApplicable);
+
+  return (
+    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #E2E8F0', backgroundColor: '#FFFFFF' }}>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse" style={{ minWidth: showNA ? 620 : 540 }}>
+          <thead>
+            <tr style={{ backgroundColor: '#F7FAFC' }}>
+              <th className="text-left px-4 py-3" />
+              {LIKERT_LABELS.map((l, i) => (
+                <th key={l} className="px-1.5 py-3 text-center align-bottom" style={{ borderLeft: '1px solid #E2E8F0', width: 74 }}>
+                  <span className="block text-[11px] font-bold text-[#4A5568]">{i + 1}</span>
+                  <span className="block text-[9px] font-semibold text-[#A0AEC0] leading-[1.25] mt-0.5">{l}</span>
+                </th>
+              ))}
+              {showNA && (
+                <th className="px-1.5 py-3 text-center align-bottom" style={{ borderLeft: '1px solid #E2E8F0', width: 56 }}>
+                  <span className="block text-[9px] font-bold uppercase text-[#A0AEC0]">N/A</span>
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.id} style={{ borderTop: '1px solid #E2E8F0' }}>
+                <td className="px-4 py-3 align-middle max-w-[280px] sm:max-w-[360px]">
+                  {!row.scored && <ContextOnlyTag />}
+                  <span className="text-[13px] font-semibold text-[#2D3748] leading-[1.4]">{row.label}</span>
+                </td>
+                {[1, 2, 3, 4, 5].map((score) => {
+                  const active = row.value === score;
+                  return (
+                    <td key={score} className="text-center align-middle" style={{ borderLeft: '1px solid #E2E8F0' }}>
+                      <button
+                        type="button"
+                        onClick={() => onChange(row.id, score)}
+                        aria-label={`${row.label}: ${LIKERT_LABELS[score - 1]}`}
+                        className="w-8 h-8 rounded-full mx-auto flex items-center justify-center text-[12px] font-bold transition-all"
+                        style={{
+                          backgroundColor: active ? ACCENT : '#F7FAFC',
+                          border: active ? `1.5px solid ${ACCENT}` : '1px solid #E2E8F0',
+                          color: active ? '#FFFFFF' : '#A0AEC0',
+                        }}
+                      >
+                        {score}
+                      </button>
+                    </td>
+                  );
+                })}
+                {showNA && (
+                  <td className="text-center align-middle" style={{ borderLeft: '1px solid #E2E8F0' }}>
+                    {row.allowNotApplicable && (
+                      <button
+                        type="button"
+                        onClick={() => onChange(row.id, null)}
+                        aria-label={`${row.label}: Not Applicable`}
+                        className="w-8 h-8 rounded-full mx-auto flex items-center justify-center text-[10px] font-bold transition-all"
+                        style={{
+                          backgroundColor: row.value === null ? '#A0AEC0' : '#F7FAFC',
+                          border: row.value === null ? '1.5px solid #A0AEC0' : '1px solid #E2E8F0',
+                          color: row.value === null ? '#FFFFFF' : '#CBD5E0',
+                        }}
+                      >
+                        &ndash;
+                      </button>
+                    )}
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
 
 interface LikertMultiQuestionProps {
   label: string;
@@ -99,18 +134,12 @@ interface LikertMultiQuestionProps {
 /** One Likert row per item (e.g. one per AI tool), rolled up into a single tool→rating map answer. */
 export const LikertMultiQuestion: React.FC<LikertMultiQuestionProps> = ({ label, items, value, onChange }) => {
   const record = value && typeof value === 'object' ? (value as Record<string, number | null>) : {};
+  const rows: LikertTableRow[] = items.map((item) => ({ id: item, label: item, value: record[item] ?? undefined, scored: true, allowNotApplicable: true }));
   const setItem = (item: string, v: AnswerValue) => onChange({ ...record, [item]: typeof v === 'number' ? v : null });
 
   return (
     <QuestionCard label={label} scored>
-      <div className="space-y-3">
-        {items.map((item) => (
-          <div key={item}>
-            <p className="text-[12.5px] font-semibold text-[#4A5568] mb-2">{item}</p>
-            <LikertRow value={record[item] ?? undefined} allowNotApplicable onChange={(v) => setItem(item, v)} />
-          </div>
-        ))}
-      </div>
+      <LikertTable rows={rows} onChange={setItem} />
     </QuestionCard>
   );
 };
