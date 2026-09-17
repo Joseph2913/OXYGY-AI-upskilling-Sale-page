@@ -95,9 +95,9 @@ export const LikertTable: React.FC<LikertTableProps> = ({ rows, onChange }) => {
                         aria-label={`${row.label}: Not Applicable`}
                         className="w-10 h-10 rounded-full mx-auto flex items-center justify-center text-[12px] font-bold transition-all"
                         style={{
-                          backgroundColor: row.value === null ? '#A0AEC0' : '#F7FAFC',
-                          border: row.value === null ? '1.5px solid #A0AEC0' : '1px solid #E2E8F0',
-                          color: row.value === null ? '#FFFFFF' : '#CBD5E0',
+                          backgroundColor: row.value === null ? ACCENT : '#F7FAFC',
+                          border: row.value === null ? `1.5px solid ${ACCENT}` : '1px solid #E2E8F0',
+                          color: row.value === null ? '#FFFFFF' : '#A0AEC0',
                         }}
                       >
                         &ndash;
