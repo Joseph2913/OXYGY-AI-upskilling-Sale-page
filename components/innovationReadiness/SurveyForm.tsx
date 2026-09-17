@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle2, Sparkles } from 'lucide-react';
 import {
   SURVEY_CATEGORY_ORDER,
   SURVEY_CATEGORY_LABELS,
@@ -9,21 +9,32 @@ import {
 import { ProgressBar } from './ProgressBar';
 import { LikertQuestion, LikertMultiQuestion, SingleSelectQuestion, OpenTextQuestion, AnswerValue } from './QuestionInputs';
 
+const ACCENT = '#2B4C7E';
 const DARK = '#1E3A5F';
 const PALE_BORDER = '#C7D3E8';
 
+const hexA = (hex: string, a: number) => {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+};
+
 interface SurveyFormProps {
+  /** Pre-fills the form (e.g. from a demo persona) — still fully editable before submit. */
+  initialAnswers?: SurveyAnswers;
+  /** When set, shows a small banner noting the form was pre-filled from this persona. */
+  demoLabel?: string;
   onSubmit: (answers: SurveyAnswers) => void;
 }
 
 /**
  * Captures input state for every category in `SURVEY_CATEGORY_ORDER`. Not wired to real scoring —
- * submitting hands the raw answers up to the parent, which shows a placeholder confirmation
- * rather than a results dashboard (see InnovationReadinessAssessment).
+ * submitting hands the raw answers up to the parent. For a plain walkthrough that's a placeholder
+ * confirmation; for a demo persona (`initialAnswers` set) the parent computes results from
+ * whatever ends up in the form and shows the dashboard (see InnovationReadinessAssessment).
  */
-export const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit }) => {
+export const SurveyForm: React.FC<SurveyFormProps> = ({ initialAnswers, demoLabel, onSubmit }) => {
   const [stepIndex, setStepIndex] = useState(0);
-  const [answers, setAnswers] = useState<SurveyAnswers>({});
+  const [answers, setAnswers] = useState<SurveyAnswers>(() => initialAnswers ?? {});
 
   const categoryId = SURVEY_CATEGORY_ORDER[stepIndex];
   const questions = questionsForCategory(categoryId).filter((q) => {
@@ -52,6 +63,12 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit }) => {
 
   return (
     <div className="rounded-2xl p-6 sm:p-8" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
+      {demoLabel && (
+        <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold mb-5" style={{ backgroundColor: hexA(ACCENT, 0.1), border: `1.5px solid ${ACCENT}`, color: DARK }}>
+          <Sparkles size={13} style={{ color: ACCENT }} />
+          Pre-filled from: {demoLabel} &mdash; edit any answer before submitting
+        </div>
+      )}
       <ProgressBar stepIndex={stepIndex} totalSteps={SURVEY_CATEGORY_ORDER.length} stepLabel={SURVEY_CATEGORY_LABELS[categoryId]} />
 
       <div className="space-y-4">

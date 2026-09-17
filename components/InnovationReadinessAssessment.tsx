@@ -4,13 +4,15 @@ import { ArtifactClosing } from './ArtifactClosing';
 import { SurveyForm } from './innovationReadiness/SurveyForm';
 import { ResultsDashboard } from './innovationReadiness/ResultsDashboard';
 import { SurveyAnswers } from '../data/innovationReadinessQuestions';
-import { DEMO_PERSONAS, AssessmentResult } from '../data/innovationReadinessPersonas';
+import { DEMO_PERSONA_INPUTS, DemoPersonaInput, AssessmentResult, computeAssessmentResult } from '../data/innovationReadinessPersonas';
 
 const DARK = '#1E3A5F';
 const ACCENT = '#2B4C7E';
 const PALE_BORDER = '#C7D3E8';
 
-type ViewState = { mode: 'survey' } | { mode: 'submitted' } | { mode: 'results'; result: AssessmentResult };
+/** `demo` carries the persona whose answers pre-filled the form, if any — submitting a demo-backed
+ * form computes real results from whatever ended up in it; a blank form just shows a placeholder. */
+type ViewState = { mode: 'survey'; demo?: DemoPersonaInput } | { mode: 'submitted' } | { mode: 'results'; result: AssessmentResult };
 
 const hexA = (hex: string, a: number) => {
   const n = parseInt(hex.slice(1), 16);
@@ -27,6 +29,14 @@ export const InnovationReadinessAssessment: React.FC = () => {
   };
 
   const resetToSurvey = () => setView({ mode: 'survey' });
+
+  const handleSubmit = (answers: SurveyAnswers, demo?: DemoPersonaInput) => {
+    if (demo) {
+      setView({ mode: 'results', result: computeAssessmentResult({ ...demo, answers }) });
+    } else {
+      setView({ mode: 'submitted' });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white pt-24 pb-16">
@@ -51,15 +61,17 @@ export const InnovationReadinessAssessment: React.FC = () => {
           </p>
         </div>
 
-        {/* Demo mode — one pill per persona in DEMO_PERSONAS, no UI change needed to add more */}
+        {/* Demo mode — one pill per persona in DEMO_PERSONA_INPUTS, no UI change needed to add more.
+            Clicking a pill pre-fills the survey with that persona's answers so it can be clicked
+            through (and edited) before landing on the results dashboard on submit. */}
         <div className="flex flex-col items-center gap-2.5 mb-10">
-          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0]">See a populated example instead</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0]">Click through a populated example instead</p>
           <div className="flex flex-wrap justify-center gap-2.5">
-            {DEMO_PERSONAS.map((persona) => (
+            {DEMO_PERSONA_INPUTS.map((persona) => (
               <button
                 key={persona.id}
                 type="button"
-                onClick={() => setView({ mode: 'results', result: persona })}
+                onClick={() => setView({ mode: 'survey', demo: persona })}
                 className="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-[13.5px] font-bold transition-transform hover:-translate-y-0.5"
                 style={{ backgroundColor: hexA(ACCENT, 0.1), border: `1.5px solid ${ACCENT}`, color: DARK }}
               >
@@ -71,7 +83,14 @@ export const InnovationReadinessAssessment: React.FC = () => {
         </div>
 
         <div className="rounded-2xl p-6 sm:p-8 mb-6" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-          {view.mode === 'survey' && <SurveyForm onSubmit={(_answers: SurveyAnswers) => setView({ mode: 'submitted' })} />}
+          {view.mode === 'survey' && (
+            <SurveyForm
+              key={view.demo?.id ?? 'blank'}
+              initialAnswers={view.demo?.answers}
+              demoLabel={view.demo?.personaLabel}
+              onSubmit={(answers) => handleSubmit(answers, view.demo)}
+            />
+          )}
 
           {view.mode === 'submitted' && (
             <div className="rounded-2xl flex flex-col items-center justify-center text-center px-6 py-16" style={{ backgroundColor: '#F7FAFC', border: `1.5px dashed ${PALE_BORDER}` }}>
@@ -80,7 +99,7 @@ export const InnovationReadinessAssessment: React.FC = () => {
               </span>
               <p className="text-[16px] font-bold text-[#1A202C]">Responses captured</p>
               <p className="text-[13.5px] text-[#718096] mt-1.5 max-w-[420px]">
-                In this pass, answers aren't scored yet &mdash; that's the next build. Once the scoring engine is wired up, submitting here will land on the same results dashboard shown by the demo pill above.
+                This blank walkthrough isn't wired to real scoring yet &mdash; that's the next build. Try one of the demo pills above to see pre-filled answers score through to the same results dashboard a real submission will eventually reach.
               </p>
               <button
                 type="button"

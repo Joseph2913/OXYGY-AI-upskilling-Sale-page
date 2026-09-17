@@ -111,10 +111,30 @@ export function computeAxisScores(answers: SurveyAnswers): { strategicContext: n
   return { strategicContext, workEnvironment };
 }
 
+/** Reads the four demographic answers straight out of the survey state, so a respondent's own
+ * edits during a demo walkthrough are reflected on the results dashboard. */
+function respondentFromAnswers(answers: SurveyAnswers): AssessmentRespondent {
+  const asString = (value: AnswerValue, fallback: string) => (typeof value === 'string' && value.trim() ? value : fallback);
+  return {
+    roleLevel: asString(answers.demo_role_level, 'Not specified'),
+    department: asString(answers.demo_department, 'Not specified'),
+    tenure: asString(answers.demo_tenure, 'Not specified'),
+    location: asString(answers.demo_location, 'Not specified'),
+  };
+}
+
+export interface DemoPersonaInput {
+  id: string;
+  /** Label shown on the demo pill. */
+  personaLabel: string;
+  /** Pre-filled answers the survey form loads when this pill is clicked — editable before submit. */
+  answers: SurveyAnswers;
+  recommendations: string[];
+}
+
 export function computeAssessmentResult(input: {
   id: string;
   personaLabel: string;
-  respondent: AssessmentRespondent;
   answers: SurveyAnswers;
   recommendations: string[];
 }): AssessmentResult {
@@ -122,7 +142,7 @@ export function computeAssessmentResult(input: {
   return {
     id: input.id,
     personaLabel: input.personaLabel,
-    respondent: input.respondent,
+    respondent: respondentFromAnswers(input.answers),
     axisScores,
     categoryScores: computeCategoryScores(input.answers),
     quadrant: quadrantForScores(axisScores.strategicContext, axisScores.workEnvironment),
@@ -131,20 +151,15 @@ export function computeAssessmentResult(input: {
 }
 
 /**
- * Demo personas. Each entry here becomes one pill in the UI automatically — add a new persona
- * (e.g. "Junior AI Skeptic", "Senior Leadership Champion") by adding another `computeAssessmentResult`
- * call below, and it renders without any changes to the dashboard or pill-row components.
+ * Demo personas. Each entry here becomes one pill in the UI automatically — clicking it loads
+ * these answers into the survey so they can be clicked through (and edited) before landing on the
+ * results dashboard. Add a new persona (e.g. "Junior AI Skeptic", "Senior Leadership Champion") by
+ * adding another entry below; no dashboard or pill-row changes needed.
  */
-export const DEMO_PERSONAS: AssessmentResult[] = [
-  computeAssessmentResult({
+export const DEMO_PERSONA_INPUTS: DemoPersonaInput[] = [
+  {
     id: 'mid-level-ai-enthusiast',
     personaLabel: 'Mid-Level AI Enthusiast',
-    respondent: {
-      roleLevel: 'Team lead / supervisor',
-      department: 'Technology / IT',
-      tenure: '1–3 years',
-      location: 'London, UK',
-    },
     answers: {
       demo_role_level: 'Team lead / supervisor',
       demo_department: 'Technology / IT',
@@ -189,9 +204,9 @@ export const DEMO_PERSONAS: AssessmentResult[] = [
       'Find or start a lightweight way to share what you\'re building with other early adopters nearby — strong individual skill stays trapped without a channel to spread it.',
       "Push for a small amount of protected, sanctioned time to experiment, rather than relying on personal initiative alone — that's what turns individual momentum into something the organisation can point at and scale.",
     ],
-  }),
+  },
 ];
 
-export function getDemoPersona(id: string): AssessmentResult | undefined {
-  return DEMO_PERSONAS.find((p) => p.id === id);
+export function getDemoPersonaInput(id: string): DemoPersonaInput | undefined {
+  return DEMO_PERSONA_INPUTS.find((p) => p.id === id);
 }
