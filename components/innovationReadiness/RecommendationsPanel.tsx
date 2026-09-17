@@ -68,10 +68,7 @@ export const RecommendationsPanel: React.FC<RecommendationsPanelProps> = ({ quad
   const quadrantColor = QUADRANT_INFO[quadrant].color;
 
   return (
-    <div
-      className="rounded-xl p-5"
-      style={{ background: `linear-gradient(135deg, ${hexA(quadrantColor, 0.1)} 0%, ${hexA(quadrantColor, 0.03)} 60%)`, border: `1.5px solid ${hexA(quadrantColor, 0.3)}` }}
-    >
+    <div className="rounded-xl p-5" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
       <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
         <p className="text-[12px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0]">Recommended offerings</p>
         <span className="text-[11.5px] font-bold px-3 py-1 rounded-full text-white" style={{ backgroundColor: quadrantColor }}>
