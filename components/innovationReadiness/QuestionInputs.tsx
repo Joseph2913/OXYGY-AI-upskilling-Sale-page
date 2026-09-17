@@ -134,37 +134,59 @@ export const LikertMultiQuestion: React.FC<LikertMultiQuestionProps> = ({ label,
   );
 };
 
+const isPleaseSpecify = (option: string) => /please specify/i.test(option);
+
 interface SingleSelectQuestionProps {
   label: string;
   options: string[];
   value: AnswerValue;
   onChange: (value: AnswerValue) => void;
+  /** Free-text value for whichever option asks the respondent to specify — a separate answer, not
+   * a replacement for the selected option itself. */
+  otherValue?: AnswerValue;
+  onOtherChange?: (value: AnswerValue) => void;
 }
 
-export const SingleSelectQuestion: React.FC<SingleSelectQuestionProps> = ({ label, options, value, onChange }) => (
-  <QuestionCard label={label}>
-    <div className="flex flex-wrap gap-2">
-      {options.map((option) => {
-        const active = value === option;
-        return (
-          <button
-            key={option}
-            type="button"
-            onClick={() => onChange(option)}
-            className="rounded-full px-4 py-2 text-[13px] font-semibold transition-all"
-            style={{
-              backgroundColor: active ? hexA(ACCENT, 0.14) : '#F7FAFC',
-              border: active ? `1.5px solid ${ACCENT}` : `1px solid ${PALE_BORDER}`,
-              color: active ? DARK : '#4A5568',
-            }}
-          >
-            {option}
-          </button>
-        );
-      })}
-    </div>
-  </QuestionCard>
-);
+export const SingleSelectQuestion: React.FC<SingleSelectQuestionProps> = ({ label, options, value, onChange, otherValue, onOtherChange }) => {
+  const selectedNeedsSpecify = typeof value === 'string' && isPleaseSpecify(value);
+  return (
+    <QuestionCard label={label}>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => {
+          const active = value === option;
+          return (
+            <button
+              key={option}
+              type="button"
+              onClick={() => onChange(option)}
+              className="rounded-full px-4 py-2 text-[13px] font-semibold transition-all"
+              style={{
+                backgroundColor: active ? hexA(ACCENT, 0.14) : '#F7FAFC',
+                border: active ? `1.5px solid ${ACCENT}` : `1px solid ${PALE_BORDER}`,
+                color: active ? DARK : '#4A5568',
+              }}
+            >
+              {option}
+            </button>
+          );
+        })}
+      </div>
+      {selectedNeedsSpecify && onOtherChange && (
+        <input
+          type="text"
+          value={typeof otherValue === 'string' ? otherValue : ''}
+          onChange={(e) => onOtherChange(e.target.value)}
+          placeholder="Please specify..."
+          autoFocus
+          className="w-full mt-3 rounded-lg px-3 py-2 text-[13px] text-[#2D3748] focus:outline-none"
+          style={{ border: `1.5px solid ${PALE_BORDER}`, backgroundColor: '#F7FAFC' }}
+          onFocus={(e) => (e.currentTarget.style.borderColor = ACCENT)}
+          onBlur={(e) => (e.currentTarget.style.borderColor = PALE_BORDER)}
+        />
+      )}
+    </QuestionCard>
+  );
+};
 
 interface OpenTextQuestionProps {
   label: string;

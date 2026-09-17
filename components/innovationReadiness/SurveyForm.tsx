@@ -128,6 +128,8 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({ initialAnswers, demoLabe
                 options={q.options ?? []}
                 value={answers[q.id]}
                 onChange={(v) => setAnswer(q.id, v)}
+                otherValue={answers[`${q.id}_other`]}
+                onOtherChange={(v) => setAnswer(`${q.id}_other`, v)}
               />
             );
           }
