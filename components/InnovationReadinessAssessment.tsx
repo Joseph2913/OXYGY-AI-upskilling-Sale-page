@@ -65,11 +65,10 @@ export const InnovationReadinessAssessment: React.FC = () => {
             AI Change & Innovation Readiness
           </div>
           <h1 className="text-[36px] md:text-[48px] font-bold text-[#1A202C] leading-[1.15] mb-6">
-            Where do you stand,<br />
-            as an <span className="relative inline-block">
-              individual
+            Where does your <span className="relative inline-block">
+              organisation
               <span className="absolute left-0 -bottom-1 w-full h-[4px] rounded-full opacity-80" style={{ backgroundColor: DARK }} />
-            </span>?
+            </span> stand?
           </h1>
           <p className="text-[16px] md:text-[18px] text-[#4A5568] text-center max-w-[620px] mx-auto mb-2 leading-[1.6]">
             A short survey that places you on the AI Innovator Profile Matrix &mdash; how curious and capable you are with AI, set against how ready your organisation is to back it.
