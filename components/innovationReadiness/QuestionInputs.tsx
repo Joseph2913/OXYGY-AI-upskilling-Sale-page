@@ -44,18 +44,18 @@ export const LikertTable: React.FC<LikertTableProps> = ({ rows, onChange }) => {
   return (
     <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #E2E8F0', backgroundColor: '#FFFFFF' }}>
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse" style={{ minWidth: showNA ? 860 : 750 }}>
+        <table className="w-full border-collapse" style={{ minWidth: showNA ? 960 : 840 }}>
           <thead>
             <tr style={{ backgroundColor: '#F7FAFC' }}>
               <th className="text-left px-5 py-5" />
               {LIKERT_LABELS.map((l) => (
-                <th key={l} className="px-2 py-5 text-center align-bottom" style={{ width: 108 }}>
-                  <span className="block text-[13px] font-semibold text-[#4A5568] leading-[1.35]">{l}</span>
+                <th key={l} className="px-2 py-5 text-center align-bottom" style={{ width: 128 }}>
+                  <span className="block text-[15px] font-semibold text-[#4A5568] leading-[1.35]">{l}</span>
                 </th>
               ))}
               {showNA && (
-                <th className="px-2 py-5 text-center align-bottom" style={{ width: 68 }}>
-                  <span className="block text-[12px] font-bold uppercase text-[#A0AEC0]">N/A</span>
+                <th className="px-2 py-5 text-center align-bottom" style={{ width: 78 }}>
+                  <span className="block text-[14px] font-bold uppercase text-[#A0AEC0]">N/A</span>
                 </th>
               )}
             </tr>
@@ -64,7 +64,7 @@ export const LikertTable: React.FC<LikertTableProps> = ({ rows, onChange }) => {
             {rows.map((row, i) => (
               <tr key={row.id} style={{ backgroundColor: i % 2 === 1 ? '#EDF2F7' : 'transparent' }}>
                 <td className="px-5 py-7 align-middle max-w-[280px] sm:max-w-[360px]">
-                  <span className="text-[14.5px] font-semibold text-[#2D3748] leading-[1.45]">{row.label}</span>
+                  <span className="text-[16.5px] font-semibold text-[#2D3748] leading-[1.45]">{row.label}</span>
                 </td>
                 {[1, 2, 3, 4, 5].map((score) => {
                   const active = row.value === score;
@@ -74,7 +74,7 @@ export const LikertTable: React.FC<LikertTableProps> = ({ rows, onChange }) => {
                         type="button"
                         onClick={() => onChange(row.id, score)}
                         aria-label={`${row.label}: ${LIKERT_LABELS[score - 1]}`}
-                        className="w-9 h-9 rounded-full mx-auto flex items-center justify-center text-[13px] font-bold transition-all"
+                        className="w-10 h-10 rounded-full mx-auto flex items-center justify-center text-[14px] font-bold transition-all"
                         style={{
                           backgroundColor: active ? ACCENT : '#F7FAFC',
                           border: active ? `1.5px solid ${ACCENT}` : '1px solid #E2E8F0',
@@ -93,7 +93,7 @@ export const LikertTable: React.FC<LikertTableProps> = ({ rows, onChange }) => {
                         type="button"
                         onClick={() => onChange(row.id, null)}
                         aria-label={`${row.label}: Not Applicable`}
-                        className="w-9 h-9 rounded-full mx-auto flex items-center justify-center text-[11px] font-bold transition-all"
+                        className="w-10 h-10 rounded-full mx-auto flex items-center justify-center text-[12px] font-bold transition-all"
                         style={{
                           backgroundColor: row.value === null ? '#A0AEC0' : '#F7FAFC',
                           border: row.value === null ? '1.5px solid #A0AEC0' : '1px solid #E2E8F0',
