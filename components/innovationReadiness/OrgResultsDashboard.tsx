@@ -37,7 +37,7 @@ interface FilterChipGroupProps {
 const FilterChipGroup: React.FC<FilterChipGroupProps> = ({ label, options, selected, onToggle }) => (
   <div>
     <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#A0AEC0] mb-2">{label}</p>
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col items-start gap-1.5">
       {options.map((option) => {
         const active = selected.has(option);
         return (
@@ -45,7 +45,7 @@ const FilterChipGroup: React.FC<FilterChipGroupProps> = ({ label, options, selec
             key={option}
             type="button"
             onClick={() => onToggle(option)}
-            className="w-full text-left rounded-lg px-3 py-1.5 text-[12px] font-semibold transition-all truncate"
+            className="self-start rounded-full px-3 py-1 text-[12px] font-semibold transition-all truncate max-w-full"
             style={{
               backgroundColor: active ? hexA(ACCENT, 0.14) : '#F7FAFC',
               border: active ? `1.5px solid ${ACCENT}` : `1px solid ${PALE_BORDER}`,
