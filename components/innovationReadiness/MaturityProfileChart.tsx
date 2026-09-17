@@ -35,11 +35,11 @@ export const MaturityProfileChart: React.FC<MaturityProfileChartProps> = ({ poin
     <div className="flex gap-2">
       {/* Y axis */}
       <div className="flex flex-col items-center justify-between py-1">
-        <span className="text-[10px] font-semibold text-[#A0AEC0]">Defined</span>
-        <span className="text-[10px] font-bold tracking-[0.08em] text-[#4A5568] whitespace-nowrap" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
+        <span className="text-[12px] font-semibold text-[#A0AEC0]">Defined</span>
+        <span className="text-[12px] font-bold tracking-[0.08em] text-[#4A5568] whitespace-nowrap" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
           STRATEGIC CONTEXT
         </span>
-        <span className="text-[10px] font-semibold text-[#A0AEC0]">Unclear</span>
+        <span className="text-[12px] font-semibold text-[#A0AEC0]">Unclear</span>
       </div>
 
       <div className="relative flex-1" style={{ maxWidth: 420 }}>
@@ -75,9 +75,9 @@ export const MaturityProfileChart: React.FC<MaturityProfileChartProps> = ({ poin
     </div>
 
     <div className="flex justify-between items-center mt-2 pl-8">
-      <span className="text-[10px] font-semibold text-[#A0AEC0]">Conventional</span>
-      <span className="text-[10px] font-bold tracking-[0.08em] text-[#4A5568]">WORK ENVIRONMENT</span>
-      <span className="text-[10px] font-semibold text-[#A0AEC0]">Innovative</span>
+      <span className="text-[12px] font-semibold text-[#A0AEC0]">Conventional</span>
+      <span className="text-[12px] font-bold tracking-[0.08em] text-[#4A5568]">WORK ENVIRONMENT</span>
+      <span className="text-[12px] font-semibold text-[#A0AEC0]">Innovative</span>
     </div>
   </div>
 );
