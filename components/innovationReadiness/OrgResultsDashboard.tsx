@@ -1,10 +1,14 @@
 import React, { useMemo, useState } from 'react';
-import { Users } from 'lucide-react';
+import { Users, ChevronRight, ChevronLeft } from 'lucide-react';
 import { AssessmentResult, AssessmentRespondent, CategoryScore, quadrantForScores } from '../../data/innovationReadinessPersonas';
 import { MaturityProfileChart } from './MaturityProfileChart';
 import { CategoryBreakdownChart } from './CategoryBreakdownChart';
 import { SummaryStatsRow } from './SummaryStatsRow';
 import { RecommendationsPanel } from './RecommendationsPanel';
+import { RoadmapPanel } from './RoadmapPanel';
+import { ProgressBar } from './ProgressBar';
+
+type OrgStep = 'data' | 'recommendations';
 
 const ACCENT = '#2B4C7E';
 const DARK = '#1E3A5F';
@@ -72,6 +76,7 @@ interface OrgResultsDashboardProps {
  * location) — since those are the same fields the individual survey already collects.
  */
 export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ results }) => {
+  const [step, setStep] = useState<OrgStep>('data');
   const [filters, setFilters] = useState<Record<FilterDim, Set<string>>>({
     roleLevel: new Set(),
     department: new Set(),
@@ -143,60 +148,89 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
         </span>
       </div>
 
-      {/* Filters */}
-      <div className="rounded-xl p-4 sm:p-5 mb-6" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0]">Segment by</p>
-          {activeFilterCount > 0 && (
-            <button type="button" onClick={clearFilters} className="text-[12px] font-semibold" style={{ color: ACCENT }}>
-              Clear filters
-            </button>
-          )}
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {FILTER_DIMS.map(({ key, label }) => (
-            <FilterChipGroup key={key} label={label} options={optionsFor(key)} selected={filters[key]} onToggle={(v) => toggleFilter(key, v)} />
-          ))}
-        </div>
-      </div>
+      <ProgressBar stepIndex={step === 'data' ? 0 : 1} totalSteps={2} stepLabel={step === 'data' ? 'Data' : 'Recommendations & Roadmap'} />
 
-      {filtered.length === 0 ? (
-        <div className="rounded-2xl flex flex-col items-center justify-center text-center px-6 py-14" style={{ backgroundColor: '#F7FAFC', border: `1.5px dashed ${PALE_BORDER}` }}>
-          <p className="text-[15px] font-bold text-[#1A202C]">No respondents match these filters</p>
-          <p className="text-[13.5px] text-[#718096] mt-1">Try clearing one or more segments.</p>
-        </div>
-      ) : (
+      {step === 'data' ? (
         <>
-          <div className="mb-6">
-            <RecommendationsPanel quadrant={groupQuadrant} />
+          {/* Filters */}
+          <div className="rounded-xl p-4 sm:p-5 mb-6" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0]">Segment by</p>
+              {activeFilterCount > 0 && (
+                <button type="button" onClick={clearFilters} className="text-[12px] font-semibold" style={{ color: ACCENT }}>
+                  Clear filters
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {FILTER_DIMS.map(({ key, label }) => (
+                <FilterChipGroup key={key} label={label} options={optionsFor(key)} selected={filters[key]} onToggle={(v) => toggleFilter(key, v)} />
+              ))}
+            </div>
           </div>
 
-          <SummaryStatsRow
-            stats={[
-              { label: 'Overall score', value: `${overall.toFixed(1)} / 5` },
-              { label: 'Strongest area', value: strongest?.label ?? '—' },
-              { label: 'Biggest gap', value: gap?.label ?? '—' },
-              { label: 'Response rate', value: `${responseRate}%` },
-            ]}
-          />
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-            {/* Left: category averages */}
-            <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
-              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Score by category (group average)</p>
-              <CategoryBreakdownChart categories={categoryAverages} />
+          {filtered.length === 0 ? (
+            <div className="rounded-2xl flex flex-col items-center justify-center text-center px-6 py-14" style={{ backgroundColor: '#F7FAFC', border: `1.5px dashed ${PALE_BORDER}` }}>
+              <p className="text-[15px] font-bold text-[#1A202C]">No respondents match these filters</p>
+              <p className="text-[13.5px] text-[#718096] mt-1">Try clearing one or more segments.</p>
             </div>
-
-            {/* Right: maturity scatter */}
-            <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
-              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Maturity profile</p>
-              <MaturityProfileChart
-                points={[{ id: 'group-average', strategicContext: meanStrategic, workEnvironment: meanWork, color: DARK, size: 'lg' as const, title: 'Group average' }]}
+          ) : (
+            <>
+              <SummaryStatsRow
+                stats={[
+                  { label: 'Overall score', value: `${overall.toFixed(1)} / 5` },
+                  { label: 'Strongest area', value: strongest?.label ?? '—' },
+                  { label: 'Biggest gap', value: gap?.label ?? '—' },
+                  { label: 'Response rate', value: `${responseRate}%` },
+                ]}
               />
-              <p className="text-[11px] font-semibold text-[#A0AEC0] text-center mt-4">
-                Average across the {filtered.length} selected respondent{filtered.length === 1 ? '' : 's'} &mdash; moves as filters change
-              </p>
-            </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start mb-6">
+                {/* Left: category averages */}
+                <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Score by category (group average)</p>
+                  <CategoryBreakdownChart categories={categoryAverages} />
+                </div>
+
+                {/* Right: maturity scatter */}
+                <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Maturity profile</p>
+                  <MaturityProfileChart
+                    points={[{ id: 'group-average', strategicContext: meanStrategic, workEnvironment: meanWork, color: DARK, size: 'lg' as const, title: 'Group average' }]}
+                  />
+                  <p className="text-[11px] font-semibold text-[#A0AEC0] text-center mt-4">
+                    Average across the {filtered.length} selected respondent{filtered.length === 1 ? '' : 's'} &mdash; moves as filters change
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setStep('recommendations')}
+                  className="inline-flex items-center gap-1.5 text-[13.5px] font-bold text-white px-5 py-2.5 rounded-full transition-transform hover:-translate-y-0.5"
+                  style={{ backgroundColor: DARK }}
+                >
+                  Next: Recommendations <ChevronRight size={16} />
+                </button>
+              </div>
+            </>
+          )}
+        </>
+      ) : (
+        <>
+          <button
+            type="button"
+            onClick={() => setStep('data')}
+            className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-4 py-2 rounded-full transition-colors mb-6"
+            style={{ color: DARK, border: `1px solid ${PALE_BORDER}` }}
+          >
+            <ChevronLeft size={16} /> Back to data
+          </button>
+
+          <div className="space-y-6">
+            <RecommendationsPanel quadrant={groupQuadrant} />
+            <RoadmapPanel quadrant={groupQuadrant} />
           </div>
         </>
       )}
