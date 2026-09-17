@@ -63,7 +63,7 @@ export const LikertTable: React.FC<LikertTableProps> = ({ rows, onChange }) => {
           <tbody>
             {rows.map((row, i) => (
               <tr key={row.id} style={{ backgroundColor: i % 2 === 1 ? '#EDF2F7' : 'transparent' }}>
-                <td className="px-5 py-7 align-middle max-w-[280px] sm:max-w-[360px]">
+                <td className="px-5 py-5 align-middle max-w-[280px] sm:max-w-[360px]">
                   <span className="text-[14px] font-semibold text-[#2D3748] leading-[1.45]">{row.label}</span>
                 </td>
                 {[1, 2, 3, 4, 5].map((score) => {

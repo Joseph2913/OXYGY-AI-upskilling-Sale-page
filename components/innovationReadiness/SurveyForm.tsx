@@ -92,7 +92,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({ initialAnswers, demoLabe
       )}
       <ProgressBar stepIndex={stepIndex} totalSteps={SURVEY_CATEGORY_ORDER.length} stepLabel={SURVEY_CATEGORY_LABELS[categoryId]} />
 
-      <div className="space-y-6">
+      <div className="space-y-5">
         {renderGroups.map((group) => {
           if (group.kind === 'likert-group') {
             const rows: LikertTableRow[] = group.questions.map((q) => ({
