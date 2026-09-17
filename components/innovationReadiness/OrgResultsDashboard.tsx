@@ -32,10 +32,12 @@ interface FilterChipGroupProps {
   onToggle: (value: string) => void;
 }
 
+/** Fixed at 3 rows regardless of how many options a dimension has, so every filter column takes
+ * up the same amount of space — options beyond the top 3 (by frequency) aren't shown as chips. */
 const FilterChipGroup: React.FC<FilterChipGroupProps> = ({ label, options, selected, onToggle }) => (
   <div>
     <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#A0AEC0] mb-2">{label}</p>
-    <div className="flex flex-wrap gap-1.5">
+    <div className="flex flex-col gap-1.5">
       {options.map((option) => {
         const active = selected.has(option);
         return (
@@ -43,7 +45,7 @@ const FilterChipGroup: React.FC<FilterChipGroupProps> = ({ label, options, selec
             key={option}
             type="button"
             onClick={() => onToggle(option)}
-            className="rounded-full px-3 py-1.5 text-[12px] font-semibold transition-all"
+            className="w-full text-left rounded-lg px-3 py-1.5 text-[12px] font-semibold transition-all truncate"
             style={{
               backgroundColor: active ? hexA(ACCENT, 0.14) : '#F7FAFC',
               border: active ? `1.5px solid ${ACCENT}` : `1px solid ${PALE_BORDER}`,
@@ -76,9 +78,18 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
     location: new Set(),
   });
 
+  /** Top 3 values by respondent count, not every distinct value — keeps each filter column the
+   * same fixed height instead of growing with however many departments/locations exist. */
   const optionsFor = (dim: FilterDim): string[] => {
-    const values: string[] = results.map((r) => r.respondent[dim]);
-    return Array.from(new Set(values)).sort();
+    const counts = new Map<string, number>();
+    results.forEach((r) => {
+      const value = r.respondent[dim];
+      counts.set(value, (counts.get(value) ?? 0) + 1);
+    });
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([value]) => value);
   };
 
   const toggleFilter = (dim: FilterDim, value: string) => {
