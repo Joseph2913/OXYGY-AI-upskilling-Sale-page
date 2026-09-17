@@ -1,12 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import { Users } from 'lucide-react';
 import { AssessmentResult, AssessmentRespondent, QUADRANT_INFO, ProfileId, CategoryScore } from '../../data/innovationReadinessPersonas';
-import { OrgQuadrantChart } from './OrgQuadrantChart';
+import { MaturityProfileChart } from './MaturityProfileChart';
 import { CategoryBreakdownChart } from './CategoryBreakdownChart';
+import { SummaryStatsRow } from './SummaryStatsRow';
 
 const ACCENT = '#2B4C7E';
 const DARK = '#1E3A5F';
 const PALE_BORDER = '#C7D3E8';
+const BORDER = '#CBD5E0';
 
 const hexA = (hex: string, a: number) => {
   const n = parseInt(hex.slice(1), 16);
@@ -101,6 +103,7 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
 
   const meanStrategic = mean(filtered.map((r) => r.axisScores.strategicContext));
   const meanWork = mean(filtered.map((r) => r.axisScores.workEnvironment));
+  const overall = (meanStrategic + meanWork) / 2;
 
   const categoryAverages: CategoryScore[] = useMemo(() => {
     if (filtered.length === 0) return [];
@@ -110,6 +113,10 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
       return { category, label: matching[0]?.label ?? category, score: mean(matching.map((c) => c.score)) };
     });
   }, [filtered]);
+
+  const strongest = categoryAverages.length > 0 ? categoryAverages.reduce((a, b) => (b.score > a.score ? b : a)) : null;
+  const gap = categoryAverages.length > 0 ? categoryAverages.reduce((a, b) => (b.score < a.score ? b : a)) : null;
+  const responseRate = results.length === 0 ? 0 : Math.round((filtered.length / results.length) * 100);
 
   const quadrantCounts = useMemo(() => {
     const counts: Record<ProfileId, number> = { 'sitting-duck': 0, 'disconnected-antenna': 0, 'island-of-creativity': 0, 'systematic-innovator': 0 };
@@ -154,60 +161,65 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
           <p className="text-[13.5px] text-[#718096] mt-1">Try clearing one or more segments.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-          {/* Left: axis averages + quadrant scatter */}
-          <div>
-            <div className="grid grid-cols-2 gap-3 mb-5">
-              <div className="rounded-xl p-4" style={{ backgroundColor: hexA(ACCENT, 0.07), border: `1px solid ${hexA(ACCENT, 0.22)}` }}>
-                <p className="text-[10.5px] uppercase tracking-[0.06em] text-[#A0AEC0] font-bold">Avg. Strategic Context</p>
-                <div className="flex items-baseline gap-1.5 mt-1.5">
-                  <span className="text-[26px] font-bold" style={{ color: ACCENT }}>{meanStrategic.toFixed(1)}</span>
-                  <span className="text-[12px] text-[#A0AEC0]">/ 5</span>
-                </div>
-              </div>
-              <div className="rounded-xl p-4" style={{ backgroundColor: hexA(ACCENT, 0.07), border: `1px solid ${hexA(ACCENT, 0.22)}` }}>
-                <p className="text-[10.5px] uppercase tracking-[0.06em] text-[#A0AEC0] font-bold">Avg. Work Environment</p>
-                <div className="flex items-baseline gap-1.5 mt-1.5">
-                  <span className="text-[26px] font-bold" style={{ color: ACCENT }}>{meanWork.toFixed(1)}</span>
-                  <span className="text-[12px] text-[#A0AEC0]">/ 5</span>
-                </div>
-              </div>
+        <>
+          <SummaryStatsRow
+            stats={[
+              { label: 'Overall score', value: `${overall.toFixed(1)} / 5` },
+              { label: 'Strongest area', value: strongest?.label ?? '—' },
+              { label: 'Biggest gap', value: gap?.label ?? '—' },
+              { label: 'Response rate', value: `${responseRate}%` },
+            ]}
+          />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            {/* Left: category averages */}
+            <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Score by category (group average)</p>
+              <CategoryBreakdownChart categories={categoryAverages} />
             </div>
 
-            <OrgQuadrantChart
-              points={filtered.map((r) => ({ id: r.id, label: r.personaLabel, strategicContext: r.axisScores.strategicContext, workEnvironment: r.axisScores.workEnvironment, quadrant: r.quadrant }))}
-              mean={{ strategicContext: meanStrategic, workEnvironment: meanWork }}
-            />
+            {/* Right: maturity scatter + quadrant distribution */}
+            <div>
+              <MaturityProfileChart
+                points={[
+                  ...filtered.map((r) => ({ id: r.id, strategicContext: r.axisScores.strategicContext, workEnvironment: r.axisScores.workEnvironment, color: QUADRANT_INFO[r.quadrant].color, title: r.personaLabel })),
+                  { id: 'group-average', strategicContext: meanStrategic, workEnvironment: meanWork, color: DARK, size: 'lg' as const, title: 'Group average' },
+                ]}
+              />
+              <div className="flex items-center gap-4 mt-3 flex-wrap justify-center">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: DARK }} />
+                  <span className="text-[11px] font-semibold text-[#4A5568]">Group average</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#A0AEC0' }} />
+                  <span className="text-[11px] font-semibold text-[#4A5568]">Individual respondent</span>
+                </div>
+              </div>
 
-            {/* Quadrant distribution */}
-            <div className="rounded-xl p-4 mt-5" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-3">Quadrant distribution</p>
-              <div className="space-y-2">
-                {(Object.keys(QUADRANT_INFO) as ProfileId[]).map((id) => {
-                  const info = QUADRANT_INFO[id];
-                  const count = quadrantCounts[id];
-                  const pct = filtered.length === 0 ? 0 : (count / filtered.length) * 100;
-                  return (
-                    <div key={id} className="flex items-center gap-3">
-                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: info.color }} />
-                      <span className="text-[12.5px] font-semibold text-[#2D3748] w-[150px] shrink-0">{info.name}</span>
-                      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: '#E2E8F0' }}>
-                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: info.color }} />
+              <div className="rounded-xl p-4 mt-4" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+                <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-3">Quadrant distribution</p>
+                <div className="space-y-2">
+                  {(Object.keys(QUADRANT_INFO) as ProfileId[]).map((id) => {
+                    const info = QUADRANT_INFO[id];
+                    const count = quadrantCounts[id];
+                    const pct = filtered.length === 0 ? 0 : (count / filtered.length) * 100;
+                    return (
+                      <div key={id} className="flex items-center gap-3">
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: info.color }} />
+                        <span className="text-[12.5px] font-semibold text-[#2D3748] w-[150px] shrink-0">{info.name}</span>
+                        <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: '#E2E8F0' }}>
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: info.color }} />
+                        </div>
+                        <span className="text-[12px] font-bold text-[#4A5568] w-[42px] text-right shrink-0">{count}</span>
                       </div>
-                      <span className="text-[12px] font-bold text-[#4A5568] w-[42px] text-right shrink-0">{count}</span>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Right: per-category breakdown, averaged across the filtered group */}
-          <div className="rounded-xl p-5" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Category breakdown (group average)</p>
-            <CategoryBreakdownChart categories={categoryAverages} />
-          </div>
-        </div>
+        </>
       )}
     </div>
   );

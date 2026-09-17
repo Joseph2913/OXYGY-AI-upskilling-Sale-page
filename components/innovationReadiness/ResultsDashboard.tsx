@@ -2,32 +2,18 @@ import React from 'react';
 import { Sparkles, User, Building2, Clock, MapPin } from 'lucide-react';
 import type { AssessmentResult } from '../../data/innovationReadinessPersonas';
 import { QUADRANT_INFO } from '../../data/innovationReadinessPersonas';
-import { QuadrantChart } from './QuadrantChart';
+import { MaturityProfileChart } from './MaturityProfileChart';
 import { CategoryBreakdownChart } from './CategoryBreakdownChart';
+import { SummaryStatsRow } from './SummaryStatsRow';
 
 const ACCENT = '#2B4C7E';
 const DARK = '#1E3A5F';
 const PALE_BORDER = '#C7D3E8';
+const BORDER = '#CBD5E0';
 
 const hexA = (hex: string, a: number) => {
   const n = parseInt(hex.slice(1), 16);
   return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
-};
-
-const band = (v: number) => (v <= 2 ? { label: 'Weak', color: '#D97B4A' } : v === 3 ? { label: 'Mixed', color: '#C4A934' } : { label: 'Strong', color: '#38A169' });
-
-const AxisTile: React.FC<{ label: string; value: number; accent: string }> = ({ label, value, accent }) => {
-  const b = band(value);
-  return (
-    <div className="rounded-xl p-4" style={{ backgroundColor: hexA(accent, 0.07), border: `1px solid ${hexA(accent, 0.22)}` }}>
-      <p className="text-[10.5px] uppercase tracking-[0.06em] text-[#A0AEC0] font-bold">{label}</p>
-      <div className="flex items-baseline gap-1.5 mt-1.5">
-        <span className="text-[26px] font-bold" style={{ color: accent }}>{value.toFixed(1)}</span>
-        <span className="text-[12px] text-[#A0AEC0]">/ 5</span>
-      </div>
-      <p className="text-[12.5px] font-bold mt-1" style={{ color: b.color }}>{b.label}</p>
-    </div>
-  );
 };
 
 const RespondentChip: React.FC<{ icon: React.ReactNode; text: string }> = ({ icon, text }) => (
@@ -43,6 +29,9 @@ interface ResultsDashboardProps {
 
 export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onBack }) => {
   const quadrant = QUADRANT_INFO[result.quadrant];
+  const overall = (result.axisScores.strategicContext + result.axisScores.workEnvironment) / 2;
+  const strongest = result.categoryScores.reduce((a, b) => (b.score > a.score ? b : a));
+  const gap = result.categoryScores.reduce((a, b) => (b.score < a.score ? b : a));
 
   return (
     <div>
@@ -61,24 +50,31 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onBa
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-8">
+      <div className="flex flex-wrap gap-2 mb-6">
         <RespondentChip icon={<User size={13} />} text={result.respondent.roleLevel} />
         <RespondentChip icon={<Building2 size={13} />} text={result.respondent.department} />
         <RespondentChip icon={<Clock size={13} />} text={result.respondent.tenure} />
         <RespondentChip icon={<MapPin size={13} />} text={result.respondent.location} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start mb-8">
-        {/* Left: axis scores + quadrant matrix */}
+      <SummaryStatsRow
+        stats={[
+          { label: 'Overall score', value: `${overall.toFixed(1)} / 5` },
+          { label: 'Strongest area', value: strongest.label },
+          { label: 'Biggest gap', value: gap.label },
+          { label: 'Profile', value: quadrant.name },
+        ]}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start mb-8">
+        <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
+          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Score by category</p>
+          <CategoryBreakdownChart categories={result.categoryScores} />
+        </div>
+
         <div>
-          <div className="grid grid-cols-2 gap-3 mb-5">
-            <AxisTile label="Strategic Context" value={result.axisScores.strategicContext} accent={ACCENT} />
-            <AxisTile label="Work Environment" value={result.axisScores.workEnvironment} accent={ACCENT} />
-          </div>
-          <QuadrantChart
-            strategicContext={result.axisScores.strategicContext}
-            workEnvironment={result.axisScores.workEnvironment}
-            quadrant={result.quadrant}
+          <MaturityProfileChart
+            points={[{ id: result.id, strategicContext: result.axisScores.strategicContext, workEnvironment: result.axisScores.workEnvironment, color: quadrant.color, size: 'lg', title: quadrant.name }]}
           />
           <div className="rounded-xl p-4 mt-4 flex items-start gap-3" style={{ backgroundColor: hexA(quadrant.color, 0.06), border: `1px solid ${hexA(quadrant.color, 0.22)}` }}>
             <span className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center" style={{ backgroundColor: hexA(quadrant.color, 0.15) }}>
@@ -89,12 +85,6 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onBa
               <p className="text-[12px] text-[#718096]">{quadrant.tag}</p>
             </div>
           </div>
-        </div>
-
-        {/* Right: per-category breakdown */}
-        <div className="rounded-xl p-5" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Category breakdown</p>
-          <CategoryBreakdownChart categories={result.categoryScores} />
         </div>
       </div>
 
