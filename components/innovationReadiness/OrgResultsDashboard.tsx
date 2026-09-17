@@ -123,7 +123,7 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-1">Org View &mdash; built from the walkthrough (mock respondents)</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-1">Org View &mdash; your response within the wider organisation (mock data)</p>
           <h2 className="text-[22px] md:text-[26px] font-bold text-[#1A202C]">Where the organisation stands</h2>
         </div>
         <span className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12.5px] font-bold" style={{ backgroundColor: '#EAF0F8', color: DARK, border: `1px solid ${PALE_BORDER}` }}>
