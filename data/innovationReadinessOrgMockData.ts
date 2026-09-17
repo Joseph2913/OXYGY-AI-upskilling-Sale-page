@@ -1,11 +1,13 @@
-// Synthetic multi-respondent dataset for the "Org View" tab — a stand-in for a real batch of
-// submissions once the survey is actually collecting responses. Deliberately spans a spread of
-// departments, role levels, tenures and quadrant placements so filtering by any demographic cut
-// produces a visibly different picture; a real dataset (the deck mentions 50-100 respondents per
-// assessment) would obviously be far larger and not this evenly distributed.
+// Synthetic multi-respondent queue for the "Org View" tab. Org View only shows an aggregated
+// dashboard once every respondent in this queue has been clicked through (pre-filled, editable,
+// same as the individual demo flow) and submitted — it isn't a static mock dashboard, it's built
+// from whatever answers actually got submitted during the walkthrough. Deliberately spans a
+// spread of departments, role levels, tenures and quadrant placements so filtering by any
+// demographic cut produces a visibly different picture; a real dataset (the deck mentions 50-100
+// respondents per assessment) would obviously be far larger and not this evenly distributed.
 
 import { QUESTION_BANK, SurveyCategoryId, SurveyAnswers } from './innovationReadinessQuestions';
-import { computeAssessmentResult, AssessmentResult } from './innovationReadinessPersonas';
+import { DemoPersonaInput } from './innovationReadinessPersonas';
 
 /** The four scored categories — demographics is excluded since it isn't a score. */
 type ScoredCategoryId = Exclude<SurveyCategoryId, 'demographics'>;
@@ -135,11 +137,9 @@ const SPECS: SyntheticRespondentSpec[] = [
   },
 ];
 
-export const ORG_MOCK_RESULTS: AssessmentResult[] = SPECS.map((spec) =>
-  computeAssessmentResult({
-    id: spec.id,
-    personaLabel: spec.personaLabel,
-    answers: flatAnswers(spec),
-    recommendations: [],
-  })
-);
+export const ORG_MOCK_QUEUE: DemoPersonaInput[] = SPECS.map((spec) => ({
+  id: spec.id,
+  personaLabel: spec.personaLabel,
+  answers: flatAnswers(spec),
+  recommendations: [],
+}));

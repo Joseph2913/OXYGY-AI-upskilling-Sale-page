@@ -4,9 +4,10 @@ import { ArtifactClosing } from './ArtifactClosing';
 import { SurveyForm } from './innovationReadiness/SurveyForm';
 import { ResultsDashboard } from './innovationReadiness/ResultsDashboard';
 import { OrgResultsDashboard } from './innovationReadiness/OrgResultsDashboard';
+import { OrgWalkthroughQueue } from './innovationReadiness/OrgWalkthroughQueue';
 import { SurveyAnswers } from '../data/innovationReadinessQuestions';
 import { DEMO_PERSONA_INPUTS, DemoPersonaInput, AssessmentResult, computeAssessmentResult } from '../data/innovationReadinessPersonas';
-import { ORG_MOCK_RESULTS } from '../data/innovationReadinessOrgMockData';
+import { ORG_MOCK_QUEUE } from '../data/innovationReadinessOrgMockData';
 
 const DARK = '#1E3A5F';
 const ACCENT = '#2B4C7E';
@@ -27,6 +28,12 @@ export const InnovationReadinessAssessment: React.FC = () => {
   const [tab, setTab] = useState<Tab>('individual');
   const [view, setView] = useState<ViewState>({ mode: 'survey' });
 
+  // Org View walkthrough: the aggregated dashboard only appears once every respondent in
+  // ORG_MOCK_QUEUE has been clicked through and submitted — `orgCompleted` holds the real computed
+  // result for each one submitted so far, and `orgActive` is whichever respondent's form is open.
+  const [orgCompleted, setOrgCompleted] = useState<Record<string, AssessmentResult>>({});
+  const [orgActive, setOrgActive] = useState<DemoPersonaInput | null>(null);
+
   const goHome = (e: React.MouseEvent) => {
     e.preventDefault();
     window.location.hash = '';
@@ -42,6 +49,20 @@ export const InnovationReadinessAssessment: React.FC = () => {
       setView({ mode: 'submitted' });
     }
   };
+
+  const handleOrgSubmit = (answers: SurveyAnswers) => {
+    if (!orgActive) return;
+    const result = computeAssessmentResult({ ...orgActive, answers });
+    setOrgCompleted((prev) => ({ ...prev, [orgActive.id]: result }));
+    setOrgActive(null);
+  };
+
+  const resetOrgWalkthrough = () => {
+    setOrgCompleted({});
+    setOrgActive(null);
+  };
+
+  const orgAllDone = ORG_MOCK_QUEUE.every((p) => orgCompleted[p.id]);
 
   return (
     <div className="min-h-screen bg-white pt-24 pb-16">
@@ -80,7 +101,7 @@ export const InnovationReadinessAssessment: React.FC = () => {
                   className="rounded-full px-5 py-2 text-[13px] font-bold transition-all"
                   style={{ backgroundColor: active ? DARK : 'transparent', color: active ? '#FFFFFF' : '#4A5568' }}
                 >
-                  {t === 'individual' ? 'Individual' : 'Org View'}
+                  {t === 'individual' ? 'Individual' : `Org View${orgAllDone ? '' : ` (${Object.keys(orgCompleted).length}/${ORG_MOCK_QUEUE.length})`}`}
                 </button>
               );
             })}
@@ -145,7 +166,35 @@ export const InnovationReadinessAssessment: React.FC = () => {
           </>
         ) : (
           <div className="rounded-2xl p-6 sm:p-8 mb-6" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-            <OrgResultsDashboard results={ORG_MOCK_RESULTS} />
+            {orgActive ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setOrgActive(null)}
+                  className="text-[12.5px] font-semibold mb-4"
+                  style={{ color: ACCENT }}
+                >
+                  &larr; Back to respondent list
+                </button>
+                <SurveyForm key={orgActive.id} initialAnswers={orgActive.answers} demoLabel={orgActive.personaLabel} onSubmit={handleOrgSubmit} />
+              </>
+            ) : orgAllDone ? (
+              <>
+                <OrgResultsDashboard results={Object.values(orgCompleted)} />
+                <div className="mt-6 pt-5 text-center" style={{ borderTop: '1px solid #E2E8F0' }}>
+                  <button
+                    type="button"
+                    onClick={resetOrgWalkthrough}
+                    className="text-[13px] font-semibold px-4 py-2 rounded-full transition-colors"
+                    style={{ color: DARK, border: `1px solid ${PALE_BORDER}` }}
+                  >
+                    Reset walkthrough
+                  </button>
+                </div>
+              </>
+            ) : (
+              <OrgWalkthroughQueue queue={ORG_MOCK_QUEUE} completedIds={new Set(Object.keys(orgCompleted))} onSelect={setOrgActive} />
+            )}
           </div>
         )}
 
