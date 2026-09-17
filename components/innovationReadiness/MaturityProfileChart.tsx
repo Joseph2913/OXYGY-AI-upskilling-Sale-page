@@ -57,7 +57,7 @@ export const MaturityProfileChart: React.FC<MaturityProfileChartProps> = ({ poin
 
         {points.map((p) => {
           const pos = toPosition(p.strategicContext, p.workEnvironment);
-          const size = p.size === 'lg' ? 16 : 8;
+          const size = p.size === 'lg' ? 26 : 8;
           return (
             <span
               key={p.id}

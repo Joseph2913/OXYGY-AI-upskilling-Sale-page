@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Users } from 'lucide-react';
-import { AssessmentResult, AssessmentRespondent, QUADRANT_INFO, ProfileId, CategoryScore } from '../../data/innovationReadinessPersonas';
+import { AssessmentResult, AssessmentRespondent, CategoryScore } from '../../data/innovationReadinessPersonas';
 import { MaturityProfileChart } from './MaturityProfileChart';
 import { CategoryBreakdownChart } from './CategoryBreakdownChart';
 import { SummaryStatsRow } from './SummaryStatsRow';
@@ -129,14 +129,6 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
   const gap = categoryAverages.length > 0 ? categoryAverages.reduce((a, b) => (b.score < a.score ? b : a)) : null;
   const responseRate = results.length === 0 ? 0 : Math.round((filtered.length / results.length) * 100);
 
-  const quadrantCounts = useMemo(() => {
-    const counts: Record<ProfileId, number> = { 'sitting-duck': 0, 'disconnected-antenna': 0, 'island-of-creativity': 0, 'systematic-innovator': 0 };
-    filtered.forEach((r) => {
-      counts[r.quadrant] += 1;
-    });
-    return counts;
-  }, [filtered]);
-
   return (
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
@@ -189,38 +181,15 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
               <CategoryBreakdownChart categories={categoryAverages} />
             </div>
 
-            {/* Right: maturity scatter + quadrant distribution */}
-            <div>
-              <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
-                <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Maturity profile</p>
-                <MaturityProfileChart
-                  points={[{ id: 'group-average', strategicContext: meanStrategic, workEnvironment: meanWork, color: DARK, size: 'lg' as const, title: 'Group average' }]}
-                />
-                <p className="text-[11px] font-semibold text-[#A0AEC0] text-center mt-4">
-                  Average across the {filtered.length} selected respondent{filtered.length === 1 ? '' : 's'} &mdash; moves as filters change
-                </p>
-              </div>
-
-              <div className="rounded-xl p-4 mt-4" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-                <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-3">Quadrant distribution</p>
-                <div className="space-y-2">
-                  {(Object.keys(QUADRANT_INFO) as ProfileId[]).map((id) => {
-                    const info = QUADRANT_INFO[id];
-                    const count = quadrantCounts[id];
-                    const pct = filtered.length === 0 ? 0 : (count / filtered.length) * 100;
-                    return (
-                      <div key={id} className="flex items-center gap-3">
-                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: info.color }} />
-                        <span className="text-[12.5px] font-semibold text-[#2D3748] w-[150px] shrink-0">{info.name}</span>
-                        <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: '#E2E8F0' }}>
-                          <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: info.color }} />
-                        </div>
-                        <span className="text-[12px] font-bold text-[#4A5568] w-[42px] text-right shrink-0">{count}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+            {/* Right: maturity scatter */}
+            <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Maturity profile</p>
+              <MaturityProfileChart
+                points={[{ id: 'group-average', strategicContext: meanStrategic, workEnvironment: meanWork, color: DARK, size: 'lg' as const, title: 'Group average' }]}
+              />
+              <p className="text-[11px] font-semibold text-[#A0AEC0] text-center mt-4">
+                Average across the {filtered.length} selected respondent{filtered.length === 1 ? '' : 's'} &mdash; moves as filters change
+              </p>
             </div>
           </div>
         </>
