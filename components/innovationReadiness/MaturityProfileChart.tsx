@@ -42,14 +42,13 @@ export const MaturityProfileChart: React.FC<MaturityProfileChartProps> = ({ poin
         <span className="text-[10px] font-semibold text-[#A0AEC0]">Unclear</span>
       </div>
 
-      <div className="relative flex-1" style={{ maxWidth: 320 }}>
+      <div className="relative flex-1" style={{ maxWidth: 420 }}>
         <div className="grid grid-cols-2 grid-rows-2 gap-2" style={{ aspectRatio: '1 / 1' }}>
           {CELLS.map((id) => {
             const info = QUADRANT_INFO[id];
             return (
-              <div key={id} className="relative rounded-lg p-3 flex flex-col items-start text-left" style={{ backgroundColor: hexA(info.color, 0.06), border: '1px solid #E2E8F0' }}>
-                <span className="text-[11px] font-bold leading-tight text-[#2D3748]">{info.name}</span>
-                <span className="text-[9px] font-semibold uppercase tracking-[0.03em] leading-[1.3] text-[#A0AEC0] mt-0.5">{info.tag}</span>
+              <div key={id} className="relative rounded-lg p-3 flex items-start text-left" style={{ backgroundColor: hexA(info.color, 0.06), border: '1px solid #E2E8F0' }}>
+                <span className="text-[13px] font-bold leading-tight text-[#2D3748]">{info.name}</span>
               </div>
             );
           })}
@@ -57,7 +56,7 @@ export const MaturityProfileChart: React.FC<MaturityProfileChartProps> = ({ poin
 
         {points.map((p) => {
           const pos = toPosition(p.strategicContext, p.workEnvironment);
-          const size = p.size === 'lg' ? 22 : 7;
+          const size = p.size === 'lg' ? 24 : 8;
           return (
             <span
               key={p.id}
