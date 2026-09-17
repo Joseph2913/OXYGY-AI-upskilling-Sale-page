@@ -5,7 +5,6 @@ import { QUADRANT_INFO } from '../../data/innovationReadinessPersonas';
 import { MaturityProfileChart } from './MaturityProfileChart';
 import { CategoryBreakdownChart } from './CategoryBreakdownChart';
 import { SummaryStatsRow } from './SummaryStatsRow';
-import { RecommendationsPanel } from './RecommendationsPanel';
 
 const DARK = '#1E3A5F';
 const PALE_BORDER = '#C7D3E8';
@@ -50,10 +49,6 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onBa
         <RespondentChip icon={<Building2 size={13} />} text={result.respondent.department} />
         <RespondentChip icon={<Clock size={13} />} text={result.respondent.tenure} />
         <RespondentChip icon={<MapPin size={13} />} text={result.respondent.location} />
-      </div>
-
-      <div className="mb-6">
-        <RecommendationsPanel quadrant={result.quadrant} />
       </div>
 
       <SummaryStatsRow

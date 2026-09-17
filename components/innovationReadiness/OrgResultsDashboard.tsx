@@ -161,22 +161,25 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
         </div>
       </div>
 
-      {/* Filters live on both tabs — segmenting the group carries through to whichever view is open. */}
-      <div className="rounded-xl p-4 sm:p-5 mb-6" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0]">Segment by</p>
-          {activeFilterCount > 0 && (
-            <button type="button" onClick={clearFilters} className="text-[12px] font-semibold" style={{ color: ACCENT }}>
-              Clear filters
-            </button>
-          )}
+      {/* Filters only apply to the Results tab — Recommendations reflects whatever was last
+          selected there, but isn't itself a place to adjust segments. */}
+      {tab === 'results' && (
+        <div className="rounded-xl p-4 sm:p-5 mb-6" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0]">Segment by</p>
+            {activeFilterCount > 0 && (
+              <button type="button" onClick={clearFilters} className="text-[12px] font-semibold" style={{ color: ACCENT }}>
+                Clear filters
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {FILTER_DIMS.map(({ key, label }) => (
+              <FilterChipGroup key={key} label={label} options={optionsFor(key)} selected={filters[key]} onSelect={(v) => selectFilter(key, v)} />
+            ))}
+          </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {FILTER_DIMS.map(({ key, label }) => (
-            <FilterChipGroup key={key} label={label} options={optionsFor(key)} selected={filters[key]} onSelect={(v) => selectFilter(key, v)} />
-          ))}
-        </div>
-      </div>
+      )}
 
       {filtered.length === 0 ? (
         <div className="rounded-2xl flex flex-col items-center justify-center text-center px-6 py-14" style={{ backgroundColor: '#F7FAFC', border: `1.5px dashed ${PALE_BORDER}` }}>
