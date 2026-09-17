@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Sparkles, CheckCircle2 } from 'lucide-react';
 import { ArtifactClosing } from './ArtifactClosing';
 import { SurveyForm } from './innovationReadiness/SurveyForm';
@@ -26,6 +26,12 @@ const hexA = (hex: string, a: number) => {
 export const InnovationReadinessAssessment: React.FC = () => {
   const [view, setView] = useState<ViewState>({ mode: 'survey' });
   const [resultsTab, setResultsTab] = useState<ResultsTab>('org');
+
+  // Submitting (or going back) swaps in an entirely new page below — land at the top of it
+  // rather than wherever the survey happened to be scrolled to.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [view.mode]);
 
   const goHome = (e: React.MouseEvent) => {
     e.preventDefault();
