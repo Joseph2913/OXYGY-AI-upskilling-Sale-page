@@ -167,6 +167,10 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
         </div>
       ) : (
         <>
+          <div className="mb-6">
+            <RecommendationsPanel quadrant={groupQuadrant} />
+          </div>
+
           <SummaryStatsRow
             stats={[
               { label: 'Overall score', value: `${overall.toFixed(1)} / 5` },
@@ -177,14 +181,10 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
           />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-            {/* Left: category averages + tailored recommendations */}
-            <div className="flex flex-col gap-6">
-              <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
-                <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Score by category (group average)</p>
-                <CategoryBreakdownChart categories={categoryAverages} />
-              </div>
-
-              <RecommendationsPanel quadrant={groupQuadrant} />
+            {/* Left: category averages */}
+            <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Score by category (group average)</p>
+              <CategoryBreakdownChart categories={categoryAverages} />
             </div>
 
             {/* Right: maturity scatter */}

@@ -52,6 +52,10 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onBa
         <RespondentChip icon={<MapPin size={13} />} text={result.respondent.location} />
       </div>
 
+      <div className="mb-6">
+        <RecommendationsPanel quadrant={result.quadrant} />
+      </div>
+
       <SummaryStatsRow
         stats={[
           { label: 'Overall score', value: `${overall.toFixed(1)} / 5` },
@@ -62,13 +66,9 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onBa
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        <div className="flex flex-col gap-6">
-          <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
-            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Score by category</p>
-            <CategoryBreakdownChart categories={result.categoryScores} />
-          </div>
-
-          <RecommendationsPanel quadrant={result.quadrant} />
+        <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
+          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Score by category</p>
+          <CategoryBreakdownChart categories={result.categoryScores} />
         </div>
 
         <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
