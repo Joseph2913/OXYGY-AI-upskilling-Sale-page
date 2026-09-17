@@ -194,21 +194,11 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
               <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
                 <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Maturity profile</p>
                 <MaturityProfileChart
-                  points={[
-                    ...filtered.map((r) => ({ id: r.id, strategicContext: r.axisScores.strategicContext, workEnvironment: r.axisScores.workEnvironment, color: QUADRANT_INFO[r.quadrant].color, title: r.personaLabel })),
-                    { id: 'group-average', strategicContext: meanStrategic, workEnvironment: meanWork, color: DARK, size: 'lg' as const, title: 'Group average' },
-                  ]}
+                  points={[{ id: 'group-average', strategicContext: meanStrategic, workEnvironment: meanWork, color: DARK, size: 'lg' as const, title: 'Group average' }]}
                 />
-                <div className="flex items-center gap-4 mt-4 flex-wrap justify-center">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: DARK }} />
-                    <span className="text-[11px] font-semibold text-[#4A5568]">Group average</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#A0AEC0' }} />
-                    <span className="text-[11px] font-semibold text-[#4A5568]">Individual respondent</span>
-                  </div>
-                </div>
+                <p className="text-[11px] font-semibold text-[#A0AEC0] text-center mt-4">
+                  Average across the {filtered.length} selected respondent{filtered.length === 1 ? '' : 's'} &mdash; moves as filters change
+                </p>
               </div>
 
               <div className="rounded-xl p-4 mt-4" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
