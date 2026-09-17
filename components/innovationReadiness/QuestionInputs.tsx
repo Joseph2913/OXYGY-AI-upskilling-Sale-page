@@ -12,20 +12,13 @@ const hexA = (hex: string, a: number) => {
   return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
 };
 
-/** Small badge shown on questions that are captured but never fed into a category/axis score. */
-const ContextOnlyTag: React.FC = () => (
-  <span className="block text-[9.5px] font-bold uppercase tracking-[0.05em] text-[#A0AEC0] mb-1">Context only &mdash; not scored</span>
-);
-
 interface QuestionCardProps {
   label: string;
-  scored: boolean;
   children: React.ReactNode;
 }
 
-const QuestionCard: React.FC<QuestionCardProps> = ({ label, scored, children }) => (
+const QuestionCard: React.FC<QuestionCardProps> = ({ label, children }) => (
   <div className="rounded-xl p-4 sm:p-5" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-    {!scored && <ContextOnlyTag />}
     <p className="text-[14.5px] font-semibold text-[#1A202C] leading-[1.5] mb-4">{label}</p>
     {children}
   </div>
@@ -35,7 +28,6 @@ export interface LikertTableRow {
   id: string;
   label: string;
   value: AnswerValue;
-  scored: boolean;
   allowNotApplicable?: boolean;
 }
 
@@ -52,19 +44,19 @@ export const LikertTable: React.FC<LikertTableProps> = ({ rows, onChange }) => {
   return (
     <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #E2E8F0', backgroundColor: '#FFFFFF' }}>
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse" style={{ minWidth: showNA ? 620 : 540 }}>
+        <table className="w-full border-collapse" style={{ minWidth: showNA ? 760 : 660 }}>
           <thead>
             <tr style={{ backgroundColor: '#F7FAFC' }}>
               <th className="text-left px-4 py-3" />
               {LIKERT_LABELS.map((l, i) => (
-                <th key={l} className="px-1.5 py-3 text-center align-bottom" style={{ borderLeft: '1px solid #E2E8F0', width: 74 }}>
-                  <span className="block text-[11px] font-bold text-[#4A5568]">{i + 1}</span>
-                  <span className="block text-[9px] font-semibold text-[#A0AEC0] leading-[1.25] mt-0.5">{l}</span>
+                <th key={l} className="px-2 py-3 text-center align-bottom" style={{ borderLeft: '1px solid #E2E8F0', width: 92 }}>
+                  <span className="block text-[13px] font-bold text-[#4A5568]">{i + 1}</span>
+                  <span className="block text-[11px] font-semibold text-[#A0AEC0] leading-[1.3] mt-1">{l}</span>
                 </th>
               ))}
               {showNA && (
-                <th className="px-1.5 py-3 text-center align-bottom" style={{ borderLeft: '1px solid #E2E8F0', width: 56 }}>
-                  <span className="block text-[9px] font-bold uppercase text-[#A0AEC0]">N/A</span>
+                <th className="px-2 py-3 text-center align-bottom" style={{ borderLeft: '1px solid #E2E8F0', width: 64 }}>
+                  <span className="block text-[11px] font-bold uppercase text-[#A0AEC0]">N/A</span>
                 </th>
               )}
             </tr>
@@ -73,7 +65,6 @@ export const LikertTable: React.FC<LikertTableProps> = ({ rows, onChange }) => {
             {rows.map((row) => (
               <tr key={row.id} style={{ borderTop: '1px solid #E2E8F0' }}>
                 <td className="px-4 py-3 align-middle max-w-[280px] sm:max-w-[360px]">
-                  {!row.scored && <ContextOnlyTag />}
                   <span className="text-[13px] font-semibold text-[#2D3748] leading-[1.4]">{row.label}</span>
                 </td>
                 {[1, 2, 3, 4, 5].map((score) => {
@@ -134,11 +125,11 @@ interface LikertMultiQuestionProps {
 /** One Likert row per item (e.g. one per AI tool), rolled up into a single tool→rating map answer. */
 export const LikertMultiQuestion: React.FC<LikertMultiQuestionProps> = ({ label, items, value, onChange }) => {
   const record = value && typeof value === 'object' ? (value as Record<string, number | null>) : {};
-  const rows: LikertTableRow[] = items.map((item) => ({ id: item, label: item, value: record[item] ?? undefined, scored: true, allowNotApplicable: true }));
+  const rows: LikertTableRow[] = items.map((item) => ({ id: item, label: item, value: record[item] ?? undefined, allowNotApplicable: true }));
   const setItem = (item: string, v: AnswerValue) => onChange({ ...record, [item]: typeof v === 'number' ? v : null });
 
   return (
-    <QuestionCard label={label} scored>
+    <QuestionCard label={label}>
       <LikertTable rows={rows} onChange={setItem} />
     </QuestionCard>
   );
@@ -148,12 +139,11 @@ interface SingleSelectQuestionProps {
   label: string;
   options: string[];
   value: AnswerValue;
-  scored: boolean;
   onChange: (value: AnswerValue) => void;
 }
 
-export const SingleSelectQuestion: React.FC<SingleSelectQuestionProps> = ({ label, options, value, scored, onChange }) => (
-  <QuestionCard label={label} scored={scored}>
+export const SingleSelectQuestion: React.FC<SingleSelectQuestionProps> = ({ label, options, value, onChange }) => (
+  <QuestionCard label={label}>
     <div className="flex flex-wrap gap-2">
       {options.map((option) => {
         const active = value === option;
@@ -180,12 +170,11 @@ export const SingleSelectQuestion: React.FC<SingleSelectQuestionProps> = ({ labe
 interface OpenTextQuestionProps {
   label: string;
   value: AnswerValue;
-  scored: boolean;
   onChange: (value: AnswerValue) => void;
 }
 
-export const OpenTextQuestion: React.FC<OpenTextQuestionProps> = ({ label, value, scored, onChange }) => (
-  <QuestionCard label={label} scored={scored}>
+export const OpenTextQuestion: React.FC<OpenTextQuestionProps> = ({ label, value, onChange }) => (
+  <QuestionCard label={label}>
     <p className="text-[11.5px] text-[#A0AEC0] mb-3 -mt-2">Optional</p>
     <textarea
       value={typeof value === 'string' ? value : ''}

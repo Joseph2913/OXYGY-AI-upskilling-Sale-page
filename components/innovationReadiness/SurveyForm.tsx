@@ -99,7 +99,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({ initialAnswers, demoLabe
               id: q.id,
               label: q.label,
               value: answers[q.id],
-              scored: q.scored,
               allowNotApplicable: q.allowNotApplicable,
             }));
             return <LikertTable key={group.questions[0].id} rows={rows} onChange={setAnswer} />;
@@ -124,14 +123,11 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({ initialAnswers, demoLabe
                 label={q.label}
                 options={q.options ?? []}
                 value={answers[q.id]}
-                scored={q.scored}
                 onChange={(v) => setAnswer(q.id, v)}
               />
             );
           }
-          return (
-            <OpenTextQuestion key={q.id} label={q.label} value={answers[q.id]} scored={q.scored} onChange={(v) => setAnswer(q.id, v)} />
-          );
+          return <OpenTextQuestion key={q.id} label={q.label} value={answers[q.id]} onChange={(v) => setAnswer(q.id, v)} />;
         })}
       </div>
 
