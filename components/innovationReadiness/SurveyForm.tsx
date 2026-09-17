@@ -4,15 +4,13 @@ import {
   SURVEY_CATEGORY_ORDER,
   SURVEY_CATEGORY_LABELS,
   questionsForCategory,
+  SurveyAnswers,
 } from '../../data/innovationReadinessQuestions';
 import { ProgressBar } from './ProgressBar';
-import { LikertQuestion, SingleSelectQuestion, OpenTextQuestion, AnswerValue } from './QuestionInputs';
+import { LikertQuestion, LikertMultiQuestion, SingleSelectQuestion, OpenTextQuestion, AnswerValue } from './QuestionInputs';
 
-const ACCENT = '#2B4C7E';
 const DARK = '#1E3A5F';
 const PALE_BORDER = '#C7D3E8';
-
-export type SurveyAnswers = Record<string, AnswerValue>;
 
 interface SurveyFormProps {
   onSubmit: (answers: SurveyAnswers) => void;
@@ -28,7 +26,11 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit }) => {
   const [answers, setAnswers] = useState<SurveyAnswers>({});
 
   const categoryId = SURVEY_CATEGORY_ORDER[stepIndex];
-  const questions = questionsForCategory(categoryId);
+  const questions = questionsForCategory(categoryId).filter((q) => {
+    if (!q.conditionalOn) return true;
+    const triggerValue = answers[q.conditionalOn];
+    return typeof triggerValue === 'number' && triggerValue >= (q.conditionalMinValue ?? 4);
+  });
   const isLastStep = stepIndex === SURVEY_CATEGORY_ORDER.length - 1;
 
   const setAnswer = (id: string, value: AnswerValue) => setAnswers((prev) => ({ ...prev, [id]: value }));
@@ -54,29 +56,44 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit }) => {
 
       <div className="space-y-4">
         {questions.map((q) => {
-          if (q.type === 'likert5') {
+          if (q.type === 'likert') {
             return (
               <LikertQuestion
                 key={q.id}
                 label={q.label}
                 value={answers[q.id]}
+                scored={q.scored}
                 allowNotApplicable={q.allowNotApplicable}
                 onChange={(v) => setAnswer(q.id, v)}
               />
             );
           }
-          if (q.type === 'single-select') {
+          if (q.type === 'likert_multi') {
+            return (
+              <LikertMultiQuestion
+                key={q.id}
+                label={q.label}
+                items={q.multiItems ?? []}
+                value={answers[q.id]}
+                onChange={(v) => setAnswer(q.id, v)}
+              />
+            );
+          }
+          if (q.type === 'single_select') {
             return (
               <SingleSelectQuestion
                 key={q.id}
                 label={q.label}
                 options={q.options ?? []}
                 value={answers[q.id]}
+                scored={q.scored}
                 onChange={(v) => setAnswer(q.id, v)}
               />
             );
           }
-          return <OpenTextQuestion key={q.id} label={q.label} value={answers[q.id]} onChange={(v) => setAnswer(q.id, v)} />;
+          return (
+            <OpenTextQuestion key={q.id} label={q.label} value={answers[q.id]} scored={q.scored} onChange={(v) => setAnswer(q.id, v)} />
+          );
         })}
       </div>
 

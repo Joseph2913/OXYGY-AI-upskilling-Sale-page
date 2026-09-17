@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Sparkles, CheckCircle2 } from 'lucide-react';
 import { ArtifactClosing } from './ArtifactClosing';
-import { SurveyForm, SurveyAnswers } from './innovationReadiness/SurveyForm';
+import { SurveyForm } from './innovationReadiness/SurveyForm';
 import { ResultsDashboard } from './innovationReadiness/ResultsDashboard';
+import { SurveyAnswers } from '../data/innovationReadinessQuestions';
 import { DEMO_PERSONAS, AssessmentResult } from '../data/innovationReadinessPersonas';
 
 const DARK = '#1E3A5F';
