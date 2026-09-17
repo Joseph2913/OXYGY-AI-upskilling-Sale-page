@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, User, Building2, Clock, MapPin } from 'lucide-react';
+import { User, Building2, Clock, MapPin } from 'lucide-react';
 import type { AssessmentResult } from '../../data/innovationReadinessPersonas';
 import { QUADRANT_INFO } from '../../data/innovationReadinessPersonas';
 import { MaturityProfileChart } from './MaturityProfileChart';
@@ -10,11 +10,6 @@ const ACCENT = '#2B4C7E';
 const DARK = '#1E3A5F';
 const PALE_BORDER = '#C7D3E8';
 const BORDER = '#CBD5E0';
-
-const hexA = (hex: string, a: number) => {
-  const n = parseInt(hex.slice(1), 16);
-  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
-};
 
 const RespondentChip: React.FC<{ icon: React.ReactNode; text: string }> = ({ icon, text }) => (
   <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold text-[#4A5568]" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
@@ -72,19 +67,11 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onBa
           <CategoryBreakdownChart categories={result.categoryScores} />
         </div>
 
-        <div>
+        <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
+          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Maturity profile</p>
           <MaturityProfileChart
             points={[{ id: result.id, strategicContext: result.axisScores.strategicContext, workEnvironment: result.axisScores.workEnvironment, color: quadrant.color, size: 'lg', title: quadrant.name }]}
           />
-          <div className="rounded-xl p-4 mt-4 flex items-start gap-3" style={{ backgroundColor: hexA(quadrant.color, 0.06), border: `1px solid ${hexA(quadrant.color, 0.22)}` }}>
-            <span className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center" style={{ backgroundColor: hexA(quadrant.color, 0.15) }}>
-              <Sparkles size={16} style={{ color: quadrant.color }} />
-            </span>
-            <div>
-              <p className="text-[13.5px] font-bold text-[#1A202C]">{quadrant.name}</p>
-              <p className="text-[12px] text-[#718096]">{quadrant.tag}</p>
-            </div>
-          </div>
         </div>
       </div>
 

@@ -1,6 +1,12 @@
 import React from 'react';
+import { QUADRANT_INFO, ProfileId } from '../../data/innovationReadinessPersonas';
 
-const BORDER = '#CBD5E0';
+const DARK = '#1E3A5F';
+
+const hexA = (hex: string, a: number) => {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+};
 
 export interface MaturityPoint {
   id: string;
@@ -20,40 +26,59 @@ const toPosition = (strategicContext: number, workEnvironment: number) => ({
   top: (1 - (strategicContext - 1) / 4) * 100,
 });
 
-/** A scatter of strategic-context/work-environment placements over a 2x2 grid — quadrant
- * boundaries visible as gridlines, dots marking where each point actually lands. Matches the
- * "Maturity profile" panel from the Assessment Interface & Automation deck slide; the quadrant
- * name itself is called out separately by whichever dashboard renders this, since the deck panel
- * is a layout mock, not a legend. */
+const CELLS: ProfileId[] = ['disconnected-antenna', 'systematic-innovator', 'sitting-duck', 'island-of-creativity'];
+
+/** The 2x2 AI Innovator Profile Matrix, full width, with quadrant names/tags shown inside each
+ * cell and every point plotted at its actual strategic-context/work-environment score. */
 export const MaturityProfileChart: React.FC<MaturityProfileChartProps> = ({ points }) => (
-  <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
-    <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-5">Maturity profile</p>
-    <div className="relative mx-auto" style={{ aspectRatio: '1 / 1', maxWidth: 280, border: `1px solid ${BORDER}` }}>
-      {/* Quadrant midlines */}
-      <div className="absolute left-1/2 top-0 bottom-0 w-px" style={{ backgroundColor: BORDER }} />
-      <div className="absolute top-1/2 left-0 right-0 h-px" style={{ backgroundColor: BORDER }} />
-      {points.map((p) => {
-        const pos = toPosition(p.strategicContext, p.workEnvironment);
-        const size = p.size === 'lg' ? 16 : 8;
-        return (
-          <span
-            key={p.id}
-            className="absolute rounded-full"
-            title={p.title}
-            style={{
-              left: `${pos.left}%`,
-              top: `${pos.top}%`,
-              width: size,
-              height: size,
-              transform: 'translate(-50%,-50%)',
-              backgroundColor: p.color,
-              border: '2px solid #FFFFFF',
-              boxShadow: `0 0 0 1px ${BORDER}`,
-            }}
-          />
-        );
-      })}
+  <div className="w-full select-none">
+    <div className="flex gap-2">
+      {/* Y axis */}
+      <div className="flex flex-col items-center justify-between py-1">
+        <span className="text-[10px] font-semibold text-[#A0AEC0]">Defined</span>
+        <span className="text-[10px] font-bold tracking-[0.08em] text-[#4A5568] whitespace-nowrap" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
+          STRATEGIC CONTEXT
+        </span>
+        <span className="text-[10px] font-semibold text-[#A0AEC0]">Unclear</span>
+      </div>
+
+      <div className="relative flex-1">
+        <div className="grid grid-cols-2 grid-rows-2 gap-2" style={{ aspectRatio: '1 / 1' }}>
+          {CELLS.map((id) => {
+            const info = QUADRANT_INFO[id];
+            return (
+              <div key={id} className="relative rounded-xl p-3 sm:p-4 flex flex-col items-start text-left" style={{ backgroundColor: hexA(info.color, 0.06), border: '1px solid #E2E8F0' }}>
+                <span className="text-[12.5px] font-bold leading-tight text-[#2D3748]">{info.name}</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.04em] leading-[1.35] text-[#A0AEC0] mt-1">{info.tag}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {points.map((p) => {
+          const pos = toPosition(p.strategicContext, p.workEnvironment);
+          const size = p.size === 'lg' ? 16 : 8;
+          return (
+            <span
+              key={p.id}
+              className="absolute z-10"
+              title={p.title}
+              style={{ left: `${pos.left}%`, top: `${pos.top}%`, transform: 'translate(-50%,-50%)' }}
+            >
+              <span
+                className="block rounded-full"
+                style={{ width: size, height: size, backgroundColor: p.color, border: '2px solid #FFFFFF', boxShadow: `0 0 0 1px ${hexA(p.color, 0.4)}` }}
+              />
+            </span>
+          );
+        })}
+      </div>
     </div>
-    <p className="text-[11px] font-semibold text-[#A0AEC0] text-center mt-4">Strategic context &times; work environment</p>
+
+    <div className="flex justify-between items-center mt-2 pl-8">
+      <span className="text-[10px] font-semibold text-[#A0AEC0]">Conventional</span>
+      <span className="text-[10px] font-bold tracking-[0.08em] text-[#4A5568]">WORK ENVIRONMENT</span>
+      <span className="text-[10px] font-semibold text-[#A0AEC0]">Innovative</span>
+    </div>
   </div>
 );
