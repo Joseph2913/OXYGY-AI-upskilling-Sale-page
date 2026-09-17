@@ -44,33 +44,32 @@ export const LikertTable: React.FC<LikertTableProps> = ({ rows, onChange }) => {
   return (
     <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #E2E8F0', backgroundColor: '#FFFFFF' }}>
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse" style={{ minWidth: showNA ? 760 : 660 }}>
+        <table className="w-full border-collapse" style={{ minWidth: showNA ? 780 : 680 }}>
           <thead>
             <tr style={{ backgroundColor: '#F7FAFC' }}>
-              <th className="text-left px-4 py-3" />
-              {LIKERT_LABELS.map((l, i) => (
-                <th key={l} className="px-2 py-3 text-center align-bottom" style={{ borderLeft: '1px solid #E2E8F0', width: 92 }}>
-                  <span className="block text-[13px] font-bold text-[#4A5568]">{i + 1}</span>
-                  <span className="block text-[11px] font-semibold text-[#A0AEC0] leading-[1.3] mt-1">{l}</span>
+              <th className="text-left px-5 py-4" />
+              {LIKERT_LABELS.map((l) => (
+                <th key={l} className="px-2 py-4 text-center align-bottom" style={{ width: 96 }}>
+                  <span className="block text-[11.5px] font-semibold text-[#4A5568] leading-[1.3]">{l}</span>
                 </th>
               ))}
               {showNA && (
-                <th className="px-2 py-3 text-center align-bottom" style={{ borderLeft: '1px solid #E2E8F0', width: 64 }}>
+                <th className="px-2 py-4 text-center align-bottom" style={{ width: 64 }}>
                   <span className="block text-[11px] font-bold uppercase text-[#A0AEC0]">N/A</span>
                 </th>
               )}
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
-              <tr key={row.id} style={{ borderTop: '1px solid #E2E8F0' }}>
-                <td className="px-4 py-3 align-middle max-w-[280px] sm:max-w-[360px]">
+            {rows.map((row, i) => (
+              <tr key={row.id} style={{ backgroundColor: i % 2 === 1 ? '#FAFBFC' : 'transparent' }}>
+                <td className="px-5 py-5 align-middle max-w-[280px] sm:max-w-[360px]">
                   <span className="text-[13px] font-semibold text-[#2D3748] leading-[1.4]">{row.label}</span>
                 </td>
                 {[1, 2, 3, 4, 5].map((score) => {
                   const active = row.value === score;
                   return (
-                    <td key={score} className="text-center align-middle" style={{ borderLeft: '1px solid #E2E8F0' }}>
+                    <td key={score} className="text-center align-middle">
                       <button
                         type="button"
                         onClick={() => onChange(row.id, score)}
@@ -88,7 +87,7 @@ export const LikertTable: React.FC<LikertTableProps> = ({ rows, onChange }) => {
                   );
                 })}
                 {showNA && (
-                  <td className="text-center align-middle" style={{ borderLeft: '1px solid #E2E8F0' }}>
+                  <td className="text-center align-middle">
                     {row.allowNotApplicable && (
                       <button
                         type="button"
