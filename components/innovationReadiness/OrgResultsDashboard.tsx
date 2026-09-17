@@ -37,12 +37,12 @@ interface FilterChipGroupProps {
   onSelect: (value: string) => void;
 }
 
-/** Capped at the top 3 values (by frequency) per dimension — wraps horizontally now that it's
- * always at most 3 short pills, instead of stacking into 3 full rows. */
+/** Fixed at 3 rows regardless of how many options a dimension has, so every filter column takes
+ * up the same amount of space — options beyond the top 3 (by frequency) aren't shown as chips. */
 const FilterChipGroup: React.FC<FilterChipGroupProps> = ({ label, options, selected, onSelect }) => (
   <div>
     <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#A0AEC0] mb-2">{label}</p>
-    <div className="flex flex-wrap gap-1.5">
+    <div className="flex flex-col items-start gap-1.5">
       {options.map((option) => {
         const active = selected === option;
         return (
@@ -50,7 +50,7 @@ const FilterChipGroup: React.FC<FilterChipGroupProps> = ({ label, options, selec
             key={option}
             type="button"
             onClick={() => onSelect(option)}
-            className="rounded-full px-3 py-1 text-[12px] font-semibold transition-all"
+            className="self-start rounded-full px-3 py-1 text-[12px] font-semibold transition-all truncate max-w-full"
             style={{
               backgroundColor: active ? hexA(ACCENT, 0.14) : '#F7FAFC',
               border: active ? `1.5px solid ${ACCENT}` : `1px solid ${PALE_BORDER}`,
@@ -164,8 +164,8 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
       {/* Filters only apply to the Results tab — Recommendations reflects whatever was last
           selected there, but isn't itself a place to adjust segments. */}
       {tab === 'results' && (
-        <div className="rounded-xl p-3 sm:p-4 mb-6" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
-          <div className="flex items-center justify-between mb-3">
+        <div className="rounded-xl p-4 sm:p-5 mb-6" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
+          <div className="flex items-center justify-between mb-4">
             <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0]">Segment by</p>
             {activeFilterCount > 0 && (
               <button type="button" onClick={clearFilters} className="text-[12px] font-semibold" style={{ color: ACCENT }}>
