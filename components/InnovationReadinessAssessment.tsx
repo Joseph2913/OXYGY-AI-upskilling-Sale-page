@@ -25,7 +25,7 @@ const hexA = (hex: string, a: number) => {
 
 export const InnovationReadinessAssessment: React.FC = () => {
   const [view, setView] = useState<ViewState>({ mode: 'survey' });
-  const [resultsTab, setResultsTab] = useState<ResultsTab>('individual');
+  const [resultsTab, setResultsTab] = useState<ResultsTab>('org');
 
   const goHome = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -35,13 +35,13 @@ export const InnovationReadinessAssessment: React.FC = () => {
 
   const resetToSurvey = () => {
     setView({ mode: 'survey' });
-    setResultsTab('individual');
+    setResultsTab('org');
   };
 
   const handleSubmit = (answers: SurveyAnswers, demo?: DemoPersonaInput) => {
     if (demo) {
       setView({ mode: 'results', result: computeAssessmentResult({ ...demo, answers }) });
-      setResultsTab('individual');
+      setResultsTab('org');
     } else {
       setView({ mode: 'submitted' });
     }
@@ -99,7 +99,7 @@ export const InnovationReadinessAssessment: React.FC = () => {
         {view.mode === 'results' && (
           <div className="flex justify-center mb-8">
             <div className="inline-flex rounded-full p-1" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
-              {(['individual', 'org'] as ResultsTab[]).map((t) => {
+              {(['org', 'individual'] as ResultsTab[]).map((t) => {
                 const active = resultsTab === t;
                 return (
                   <button

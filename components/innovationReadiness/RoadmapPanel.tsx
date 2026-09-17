@@ -1,7 +1,10 @@
 import React from 'react';
-import { AlertTriangle, Compass, Target, Users, Shield, Trophy, TrendingUp } from 'lucide-react';
+import { AlertTriangle, Compass, Target, Users, Shield, Trophy, TrendingUp, Sparkles } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { PROFILES, Evidence, ProfileId } from '../readinessData';
+import { QUADRANT_RECOMMENDATIONS, getOffering } from '../../data/innovationReadinessOfferings';
+
+const ACCENT = '#2B4C7E';
 
 const hexA = (hex: string, a: number) => {
   const n = parseInt(hex.slice(1), 16);
@@ -40,9 +43,27 @@ export const RoadmapPanel: React.FC<RoadmapPanelProps> = ({ quadrant }) => {
   const accent = EVIDENCE_ACCENT[quadrant];
   const Icon = EVIDENCE_ICON[profile.results.evidence.icon];
 
+  // Primary offering (from data/innovationReadinessOfferings.ts) that this roadmap opens with —
+  // ties the "what to do" of Recommendations to the "why now, why not yet" of the roadmap below.
+  const primaryOffering = getOffering(QUADRANT_RECOMMENDATIONS[quadrant].primaryOfferingId);
+
   return (
     <div className="rounded-xl p-5" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
       <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-3">Your roadmap</p>
+
+      {primaryOffering && (
+        <div className="flex items-start gap-3 rounded-xl p-4 mb-4" style={{ backgroundColor: hexA(ACCENT, 0.06), border: `1px solid ${hexA(ACCENT, 0.22)}` }}>
+          <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: hexA(ACCENT, 0.15) }}>
+            <Sparkles size={18} style={{ color: ACCENT }} />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-[0.06em] mb-1" style={{ color: ACCENT }}>Start here &mdash; primary offering</p>
+            <p className="text-[13.5px] font-bold text-[#1A202C] leading-tight">{primaryOffering.name}</p>
+            <p className="text-[12px] text-[#4A5568] leading-[1.5] mt-1">{primaryOffering.description}</p>
+          </div>
+        </div>
+      )}
+
       <p className="text-[13px] text-[#4A5568] leading-[1.6] mb-4">{profile.results.decisions.rationale}</p>
 
       <div className="rounded-xl p-4 sm:p-5" style={{ backgroundColor: '#FFF5F5', border: '1px solid #FED7D7' }}>

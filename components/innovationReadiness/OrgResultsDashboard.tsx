@@ -1,14 +1,13 @@
 import React, { useMemo, useState } from 'react';
-import { Users, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { AssessmentResult, AssessmentRespondent, CategoryScore, quadrantForScores } from '../../data/innovationReadinessPersonas';
 import { MaturityProfileChart } from './MaturityProfileChart';
 import { CategoryBreakdownChart } from './CategoryBreakdownChart';
 import { SummaryStatsRow } from './SummaryStatsRow';
 import { RecommendationsPanel } from './RecommendationsPanel';
 import { RoadmapPanel } from './RoadmapPanel';
-import { ProgressBar } from './ProgressBar';
 
-type OrgStep = 'data' | 'recommendations';
+type OrgTab = 'results' | 'recommendations';
 
 const ACCENT = '#2B4C7E';
 const DARK = '#1E3A5F';
@@ -33,23 +32,24 @@ const mean = (values: number[]): number => (values.length === 0 ? 0 : values.red
 interface FilterChipGroupProps {
   label: string;
   options: string[];
-  selected: Set<string>;
-  onToggle: (value: string) => void;
+  /** Single-select for now — one value per dimension, or null for "no filter on this dimension". */
+  selected: string | null;
+  onSelect: (value: string) => void;
 }
 
 /** Fixed at 3 rows regardless of how many options a dimension has, so every filter column takes
  * up the same amount of space — options beyond the top 3 (by frequency) aren't shown as chips. */
-const FilterChipGroup: React.FC<FilterChipGroupProps> = ({ label, options, selected, onToggle }) => (
+const FilterChipGroup: React.FC<FilterChipGroupProps> = ({ label, options, selected, onSelect }) => (
   <div>
     <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#A0AEC0] mb-2">{label}</p>
     <div className="flex flex-col items-start gap-1.5">
       {options.map((option) => {
-        const active = selected.has(option);
+        const active = selected === option;
         return (
           <button
             key={option}
             type="button"
-            onClick={() => onToggle(option)}
+            onClick={() => onSelect(option)}
             className="self-start rounded-full px-3 py-1 text-[12px] font-semibold transition-all truncate max-w-full"
             style={{
               backgroundColor: active ? hexA(ACCENT, 0.14) : '#F7FAFC',
@@ -71,17 +71,18 @@ interface OrgResultsDashboardProps {
 
 /**
  * Aggregates many individual `AssessmentResult`s into an org-level picture: average axis
- * placement, quadrant distribution, per-category averages, and demographic filter chips built
- * from whatever values are actually present in the dataset (department, role level, tenure,
- * location) — since those are the same fields the individual survey already collects.
+ * placement, per-category averages, and demographic filter chips built from whatever values are
+ * actually present in the dataset (department, role level, tenure, location) — since those are
+ * the same fields the individual survey already collects. Two pill-switched views: Results (the
+ * data itself) and Recommendations (tailored offerings + roadmap for the filtered group).
  */
 export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ results }) => {
-  const [step, setStep] = useState<OrgStep>('data');
-  const [filters, setFilters] = useState<Record<FilterDim, Set<string>>>({
-    roleLevel: new Set(),
-    department: new Set(),
-    tenure: new Set(),
-    location: new Set(),
+  const [tab, setTab] = useState<OrgTab>('results');
+  const [filters, setFilters] = useState<Record<FilterDim, string | null>>({
+    roleLevel: null,
+    department: null,
+    tenure: null,
+    location: null,
   });
 
   /** Top 3 values by respondent count, not every distinct value — keeps each filter column the
@@ -98,23 +99,16 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
       .map(([value]) => value);
   };
 
-  const toggleFilter = (dim: FilterDim, value: string) => {
-    setFilters((prev) => {
-      const next = new Set(prev[dim]);
-      if (next.has(value)) next.delete(value);
-      else next.add(value);
-      return { ...prev, [dim]: next };
-    });
+  /** Selecting the already-active pill clears that dimension's filter. */
+  const selectFilter = (dim: FilterDim, value: string) => {
+    setFilters((prev) => ({ ...prev, [dim]: prev[dim] === value ? null : value }));
   };
 
-  const clearFilters = () => setFilters({ roleLevel: new Set(), department: new Set(), tenure: new Set(), location: new Set() });
-  const activeFilterCount = FILTER_DIMS.reduce((n, { key }) => n + filters[key].size, 0);
+  const clearFilters = () => setFilters({ roleLevel: null, department: null, tenure: null, location: null });
+  const activeFilterCount = FILTER_DIMS.reduce((n, { key }) => n + (filters[key] ? 1 : 0), 0);
 
   const filtered = useMemo(
-    () =>
-      results.filter((r) =>
-        FILTER_DIMS.every(({ key }) => filters[key].size === 0 || filters[key].has(r.respondent[key]))
-      ),
+    () => results.filter((r) => FILTER_DIMS.every(({ key }) => !filters[key] || filters[key] === r.respondent[key])),
     [results, filters]
   );
 
@@ -148,91 +142,82 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
         </span>
       </div>
 
-      <ProgressBar stepIndex={step === 'data' ? 0 : 1} totalSteps={2} stepLabel={step === 'data' ? 'Data' : 'Recommendations & Roadmap'} />
+      <div className="flex justify-center mb-6">
+        <div className="inline-flex rounded-full p-1" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
+          {(['results', 'recommendations'] as OrgTab[]).map((t) => {
+            const active = tab === t;
+            return (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setTab(t)}
+                className="rounded-full px-5 py-2 text-[13px] font-bold transition-all"
+                style={{ backgroundColor: active ? DARK : 'transparent', color: active ? '#FFFFFF' : '#4A5568' }}
+              >
+                {t === 'results' ? 'Results' : 'Recommendations'}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-      {step === 'data' ? (
+      {/* Filters live on both tabs — segmenting the group carries through to whichever view is open. */}
+      <div className="rounded-xl p-4 sm:p-5 mb-6" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0]">Segment by</p>
+          {activeFilterCount > 0 && (
+            <button type="button" onClick={clearFilters} className="text-[12px] font-semibold" style={{ color: ACCENT }}>
+              Clear filters
+            </button>
+          )}
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {FILTER_DIMS.map(({ key, label }) => (
+            <FilterChipGroup key={key} label={label} options={optionsFor(key)} selected={filters[key]} onSelect={(v) => selectFilter(key, v)} />
+          ))}
+        </div>
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="rounded-2xl flex flex-col items-center justify-center text-center px-6 py-14" style={{ backgroundColor: '#F7FAFC', border: `1.5px dashed ${PALE_BORDER}` }}>
+          <p className="text-[15px] font-bold text-[#1A202C]">No respondents match these filters</p>
+          <p className="text-[13.5px] text-[#718096] mt-1">Try clearing one or more segments.</p>
+        </div>
+      ) : tab === 'results' ? (
         <>
-          {/* Filters */}
-          <div className="rounded-xl p-4 sm:p-5 mb-6" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0]">Segment by</p>
-              {activeFilterCount > 0 && (
-                <button type="button" onClick={clearFilters} className="text-[12px] font-semibold" style={{ color: ACCENT }}>
-                  Clear filters
-                </button>
-              )}
+          <SummaryStatsRow
+            stats={[
+              { label: 'Overall score', value: `${overall.toFixed(1)} / 5` },
+              { label: 'Strongest area', value: strongest?.label ?? '—' },
+              { label: 'Biggest gap', value: gap?.label ?? '—' },
+              { label: 'Response rate', value: `${responseRate}%` },
+            ]}
+          />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            {/* Left: category averages */}
+            <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Score by category (group average)</p>
+              <CategoryBreakdownChart categories={categoryAverages} />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {FILTER_DIMS.map(({ key, label }) => (
-                <FilterChipGroup key={key} label={label} options={optionsFor(key)} selected={filters[key]} onToggle={(v) => toggleFilter(key, v)} />
-              ))}
+
+            {/* Right: maturity scatter */}
+            <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Maturity profile</p>
+              <MaturityProfileChart
+                points={[{ id: 'group-average', strategicContext: meanStrategic, workEnvironment: meanWork, color: DARK, size: 'lg' as const, title: 'Group average' }]}
+              />
+              <p className="text-[11px] font-semibold text-[#A0AEC0] text-center mt-4">
+                Average across the {filtered.length} selected respondent{filtered.length === 1 ? '' : 's'} &mdash; moves as filters change
+              </p>
             </div>
           </div>
-
-          {filtered.length === 0 ? (
-            <div className="rounded-2xl flex flex-col items-center justify-center text-center px-6 py-14" style={{ backgroundColor: '#F7FAFC', border: `1.5px dashed ${PALE_BORDER}` }}>
-              <p className="text-[15px] font-bold text-[#1A202C]">No respondents match these filters</p>
-              <p className="text-[13.5px] text-[#718096] mt-1">Try clearing one or more segments.</p>
-            </div>
-          ) : (
-            <>
-              <SummaryStatsRow
-                stats={[
-                  { label: 'Overall score', value: `${overall.toFixed(1)} / 5` },
-                  { label: 'Strongest area', value: strongest?.label ?? '—' },
-                  { label: 'Biggest gap', value: gap?.label ?? '—' },
-                  { label: 'Response rate', value: `${responseRate}%` },
-                ]}
-              />
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start mb-6">
-                {/* Left: category averages */}
-                <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Score by category (group average)</p>
-                  <CategoryBreakdownChart categories={categoryAverages} />
-                </div>
-
-                {/* Right: maturity scatter */}
-                <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Maturity profile</p>
-                  <MaturityProfileChart
-                    points={[{ id: 'group-average', strategicContext: meanStrategic, workEnvironment: meanWork, color: DARK, size: 'lg' as const, title: 'Group average' }]}
-                  />
-                  <p className="text-[11px] font-semibold text-[#A0AEC0] text-center mt-4">
-                    Average across the {filtered.length} selected respondent{filtered.length === 1 ? '' : 's'} &mdash; moves as filters change
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setStep('recommendations')}
-                  className="inline-flex items-center gap-1.5 text-[13.5px] font-bold text-white px-5 py-2.5 rounded-full transition-transform hover:-translate-y-0.5"
-                  style={{ backgroundColor: DARK }}
-                >
-                  Next: Recommendations <ChevronRight size={16} />
-                </button>
-              </div>
-            </>
-          )}
         </>
       ) : (
-        <>
-          <button
-            type="button"
-            onClick={() => setStep('data')}
-            className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-4 py-2 rounded-full transition-colors mb-6"
-            style={{ color: DARK, border: `1px solid ${PALE_BORDER}` }}
-          >
-            <ChevronLeft size={16} /> Back to data
-          </button>
-
-          <div className="space-y-6">
-            <RecommendationsPanel quadrant={groupQuadrant} />
-            <RoadmapPanel quadrant={groupQuadrant} />
-          </div>
-        </>
+        <div className="space-y-6">
+          <RecommendationsPanel quadrant={groupQuadrant} />
+          <RoadmapPanel quadrant={groupQuadrant} />
+        </div>
       )}
     </div>
   );
