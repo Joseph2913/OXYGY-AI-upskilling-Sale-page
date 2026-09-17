@@ -163,7 +163,7 @@ export const DEMO_PERSONA_INPUTS: DemoPersonaInput[] = [
     answers: {
       demo_role_level: 'Team lead / supervisor',
       demo_department: 'Technology / IT',
-      demo_tenure: '1–3 years',
+      demo_tenure: '5–7 years',
       demo_location: 'London, UK',
 
       lit_uses_genai: 5,
