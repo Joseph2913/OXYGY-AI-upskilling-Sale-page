@@ -5,8 +5,8 @@ import { QUADRANT_INFO } from '../../data/innovationReadinessPersonas';
 import { MaturityProfileChart } from './MaturityProfileChart';
 import { CategoryBreakdownChart } from './CategoryBreakdownChart';
 import { SummaryStatsRow } from './SummaryStatsRow';
+import { RecommendationsPanel } from './RecommendationsPanel';
 
-const ACCENT = '#2B4C7E';
 const DARK = '#1E3A5F';
 const PALE_BORDER = '#C7D3E8';
 const BORDER = '#CBD5E0';
@@ -61,10 +61,14 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onBa
         ]}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start mb-8">
-        <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
-          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Score by category</p>
-          <CategoryBreakdownChart categories={result.categoryScores} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <div className="flex flex-col gap-6">
+          <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
+            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Score by category</p>
+            <CategoryBreakdownChart categories={result.categoryScores} />
+          </div>
+
+          <RecommendationsPanel quadrant={result.quadrant} />
         </div>
 
         <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
@@ -73,24 +77,6 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onBa
             points={[{ id: result.id, strategicContext: result.axisScores.strategicContext, workEnvironment: result.axisScores.workEnvironment, color: quadrant.color, size: 'lg', title: quadrant.name }]}
           />
         </div>
-      </div>
-
-      {/* Recommendations */}
-      <div className="rounded-2xl p-5 sm:p-6" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0]">Recommendations</p>
-          <span className="text-[10.5px] font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#EAF0F8', color: DARK, border: `1px solid ${PALE_BORDER}` }}>
-            Draft &mdash; will be agent-generated per response
-          </span>
-        </div>
-        <ul className="space-y-2.5">
-          {result.recommendations.map((r, i) => (
-            <li key={i} className="flex items-start gap-2.5 text-[13.5px] text-[#2D3748] leading-[1.55]">
-              <span className="shrink-0 mt-[7px] w-1.5 h-1.5 rounded-full" style={{ backgroundColor: ACCENT }} />
-              <span>{r}</span>
-            </li>
-          ))}
-        </ul>
       </div>
     </div>
   );

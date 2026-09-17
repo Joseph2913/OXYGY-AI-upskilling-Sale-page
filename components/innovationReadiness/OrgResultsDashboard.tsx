@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { Users } from 'lucide-react';
-import { AssessmentResult, AssessmentRespondent, CategoryScore } from '../../data/innovationReadinessPersonas';
+import { AssessmentResult, AssessmentRespondent, CategoryScore, quadrantForScores } from '../../data/innovationReadinessPersonas';
 import { MaturityProfileChart } from './MaturityProfileChart';
 import { CategoryBreakdownChart } from './CategoryBreakdownChart';
 import { SummaryStatsRow } from './SummaryStatsRow';
+import { RecommendationsPanel } from './RecommendationsPanel';
 
 const ACCENT = '#2B4C7E';
 const DARK = '#1E3A5F';
@@ -128,6 +129,7 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
   const strongest = categoryAverages.length > 0 ? categoryAverages.reduce((a, b) => (b.score > a.score ? b : a)) : null;
   const gap = categoryAverages.length > 0 ? categoryAverages.reduce((a, b) => (b.score < a.score ? b : a)) : null;
   const responseRate = results.length === 0 ? 0 : Math.round((filtered.length / results.length) * 100);
+  const groupQuadrant = quadrantForScores(meanStrategic, meanWork);
 
   return (
     <div>
@@ -175,10 +177,14 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
           />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-            {/* Left: category averages */}
-            <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
-              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Score by category (group average)</p>
-              <CategoryBreakdownChart categories={categoryAverages} />
+            {/* Left: category averages + tailored recommendations */}
+            <div className="flex flex-col gap-6">
+              <div className="rounded-xl p-5" style={{ border: `1.5px dashed ${BORDER}`, backgroundColor: '#FAFBFC' }}>
+                <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-4">Score by category (group average)</p>
+                <CategoryBreakdownChart categories={categoryAverages} />
+              </div>
+
+              <RecommendationsPanel quadrant={groupQuadrant} />
             </div>
 
             {/* Right: maturity scatter */}
