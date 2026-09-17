@@ -31,8 +31,8 @@ const CELLS: ProfileId[] = ['disconnected-antenna', 'systematic-innovator', 'sit
 /** The 2x2 AI Innovator Profile Matrix, full width, with quadrant names/tags shown inside each
  * cell and every point plotted at its actual strategic-context/work-environment score. */
 export const MaturityProfileChart: React.FC<MaturityProfileChartProps> = ({ points }) => (
-  <div className="w-full select-none">
-    <div className="flex gap-2">
+  <div className="w-full select-none flex justify-center">
+    <div className="flex gap-2" style={{ maxWidth: 380 }}>
       {/* Y axis */}
       <div className="flex flex-col items-center justify-between py-1">
         <span className="text-[10px] font-semibold text-[#A0AEC0]">Defined</span>
@@ -42,7 +42,7 @@ export const MaturityProfileChart: React.FC<MaturityProfileChartProps> = ({ poin
         <span className="text-[10px] font-semibold text-[#A0AEC0]">Unclear</span>
       </div>
 
-      <div className="relative flex-1" style={{ maxWidth: 420 }}>
+      <div className="relative flex-1">
         <div className="grid grid-cols-2 grid-rows-2 gap-2" style={{ aspectRatio: '1 / 1' }}>
           {CELLS.map((id) => {
             const info = QUADRANT_INFO[id];
@@ -74,10 +74,12 @@ export const MaturityProfileChart: React.FC<MaturityProfileChartProps> = ({ poin
       </div>
     </div>
 
-    <div className="flex justify-between items-center mt-2 pl-8">
-      <span className="text-[10px] font-semibold text-[#A0AEC0]">Conventional</span>
-      <span className="text-[10px] font-bold tracking-[0.08em] text-[#4A5568]">WORK ENVIRONMENT</span>
-      <span className="text-[10px] font-semibold text-[#A0AEC0]">Innovative</span>
+    <div className="flex justify-center">
+      <div className="flex justify-between items-center mt-2 pl-8" style={{ maxWidth: 380, width: '100%' }}>
+        <span className="text-[10px] font-semibold text-[#A0AEC0]">Conventional</span>
+        <span className="text-[10px] font-bold tracking-[0.08em] text-[#4A5568]">WORK ENVIRONMENT</span>
+        <span className="text-[10px] font-semibold text-[#A0AEC0]">Innovative</span>
+      </div>
     </div>
   </div>
 );
