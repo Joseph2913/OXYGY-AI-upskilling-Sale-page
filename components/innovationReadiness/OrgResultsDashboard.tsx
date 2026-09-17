@@ -139,7 +139,7 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
           <h2 className="text-[22px] md:text-[26px] font-bold text-[#1A202C]">Where the organisation stands</h2>
         </div>
         <span className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12.5px] font-bold" style={{ backgroundColor: '#EAF0F8', color: DARK, border: `1px solid ${PALE_BORDER}` }}>
-          <Users size={14} /> {filtered.length} of {results.length} respondents
+          <Users size={14} /> 50 respondents
         </span>
       </div>
 
