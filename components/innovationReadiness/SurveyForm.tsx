@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, CheckCircle2, Sparkles } from 'lucide-react';
 import {
   SURVEY_CATEGORY_ORDER,
@@ -55,6 +55,7 @@ interface SurveyFormProps {
 export const SurveyForm: React.FC<SurveyFormProps> = ({ initialAnswers, demoLabel, onSubmit }) => {
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState<SurveyAnswers>(() => initialAnswers ?? {});
+  const topRef = useRef<HTMLDivElement>(null);
 
   const categoryId = SURVEY_CATEGORY_ORDER[stepIndex];
   const questions = questionsForCategory(categoryId).filter((q) => {
@@ -67,19 +68,21 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({ initialAnswers, demoLabe
 
   const setAnswer = (id: string, value: AnswerValue) => setAnswers((prev) => ({ ...prev, [id]: value }));
 
+  const scrollToTopOfQuestions = () => topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
   const goNext = () => {
     if (isLastStep) {
       onSubmit(answers);
     } else {
       setStepIndex((i) => i + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollToTopOfQuestions();
     }
   };
 
   const goBack = () => {
     if (stepIndex === 0) return;
     setStepIndex((i) => i - 1);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollToTopOfQuestions();
   };
 
   return (
@@ -90,6 +93,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({ initialAnswers, demoLabe
           Pre-filled from: {demoLabel} &mdash; edit any answer before submitting
         </div>
       )}
+      <div ref={topRef} style={{ scrollMarginTop: 96 }} />
       <ProgressBar stepIndex={stepIndex} totalSteps={SURVEY_CATEGORY_ORDER.length} stepLabel={SURVEY_CATEGORY_LABELS[categoryId]} />
 
       <div className="space-y-6">
