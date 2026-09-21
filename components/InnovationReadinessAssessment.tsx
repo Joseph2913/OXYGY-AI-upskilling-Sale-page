@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Sparkles, CheckCircle2 } from 'lucide-react';
 import { ArtifactClosing } from './ArtifactClosing';
 import { SurveyForm } from './innovationReadiness/SurveyForm';
-import { ResultsDashboard } from './innovationReadiness/ResultsDashboard';
 import { OrgResultsDashboard } from './innovationReadiness/OrgResultsDashboard';
 import { SurveyAnswers } from '../data/innovationReadinessQuestions';
 import { DEMO_PERSONA_INPUTS, DemoPersonaInput, AssessmentResult, computeAssessmentResult } from '../data/innovationReadinessPersonas';
@@ -11,8 +10,6 @@ import { ORG_MOCK_RESULTS } from '../data/innovationReadinessOrgMockData';
 const DARK = '#1E3A5F';
 const ACCENT = '#2B4C7E';
 const PALE_BORDER = '#C7D3E8';
-
-type ResultsTab = 'individual' | 'org';
 
 /** `demo` carries the persona whose answers pre-filled the form, if any — submitting a demo-backed
  * form computes real results from whatever ended up in it; a blank form just shows a placeholder. */
@@ -25,7 +22,6 @@ const hexA = (hex: string, a: number) => {
 
 export const InnovationReadinessAssessment: React.FC = () => {
   const [view, setView] = useState<ViewState>({ mode: 'survey' });
-  const [resultsTab, setResultsTab] = useState<ResultsTab>('org');
 
   // Submitting (or going back) swaps in an entirely new page below — land at the top of it
   // rather than wherever the survey happened to be scrolled to.
@@ -41,13 +37,11 @@ export const InnovationReadinessAssessment: React.FC = () => {
 
   const resetToSurvey = () => {
     setView({ mode: 'survey' });
-    setResultsTab('org');
   };
 
   const handleSubmit = (answers: SurveyAnswers, demo?: DemoPersonaInput) => {
     if (demo) {
       setView({ mode: 'results', result: computeAssessmentResult({ ...demo, answers }) });
-      setResultsTab('org');
     } else {
       setView({ mode: 'submitted' });
     }
@@ -98,30 +92,6 @@ export const InnovationReadinessAssessment: React.FC = () => {
           </div>
         )}
 
-        {/* Once you've clicked through the assessment, results show two lenses on the same
-            submission: your own scores (Individual) and where you sit within the wider
-            organisation (Org View, mock data standing in for prior submissions). */}
-        {view.mode === 'results' && (
-          <div className="flex justify-center mb-8">
-            <div className="inline-flex rounded-full p-1" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
-              {(['org', 'individual'] as ResultsTab[]).map((t) => {
-                const active = resultsTab === t;
-                return (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setResultsTab(t)}
-                    className="rounded-full px-5 py-2 text-[13px] font-bold transition-all"
-                    style={{ backgroundColor: active ? DARK : 'transparent', color: active ? '#FFFFFF' : '#4A5568' }}
-                  >
-                    {t === 'individual' ? 'Individual' : 'Org View'}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
         <div className="rounded-2xl p-6 sm:p-8 mb-6" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
           {view.mode === 'survey' && (
             <SurveyForm
@@ -139,7 +109,7 @@ export const InnovationReadinessAssessment: React.FC = () => {
               </span>
               <p className="text-[16px] font-bold text-[#1A202C]">Responses captured</p>
               <p className="text-[13.5px] text-[#718096] mt-1.5 max-w-[420px]">
-                This blank walkthrough isn't wired to real scoring yet &mdash; that's the next build. Try one of the demo pills above to see pre-filled answers score through to the individual and org-level results a real submission will eventually reach.
+                This blank walkthrough isn't wired to real scoring yet &mdash; that's the next build. Try one of the demo pills above to see pre-filled answers score through to the org-level results a real submission will eventually reach.
               </p>
               <button
                 type="button"
@@ -152,9 +122,7 @@ export const InnovationReadinessAssessment: React.FC = () => {
             </div>
           )}
 
-          {view.mode === 'results' && resultsTab === 'individual' && <ResultsDashboard result={view.result} onBack={resetToSurvey} />}
-
-          {view.mode === 'results' && resultsTab === 'org' && (
+          {view.mode === 'results' && (
             // The just-submitted response joins the mock org dataset, so it's visible in context
             // (e.g. filter by its own department) rather than the org picture being someone else's.
             <OrgResultsDashboard results={[...ORG_MOCK_RESULTS, view.result]} />
@@ -162,7 +130,7 @@ export const InnovationReadinessAssessment: React.FC = () => {
         </div>
 
         <ArtifactClosing
-          summaryText="This individual view is one input into the org-wide picture — see how readiness rolls up across the whole organisation in the AI Readiness Assessment."
+          summaryText="This is one submission feeding the org-wide picture — see how readiness rolls up across the whole organisation in the AI Readiness Assessment."
           ctaLabel="See the org-level AI Readiness Assessment"
           ctaHref="#ai-readiness"
           secondaryCtaLabel="Talk to us about your AI readiness"

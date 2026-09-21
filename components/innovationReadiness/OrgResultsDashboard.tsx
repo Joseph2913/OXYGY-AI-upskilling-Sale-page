@@ -128,7 +128,13 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
   const strongest = categoryAverages.length > 0 ? categoryAverages.reduce((a, b) => (b.score > a.score ? b : a)) : null;
   const gap = categoryAverages.length > 0 ? categoryAverages.reduce((a, b) => (b.score < a.score ? b : a)) : null;
   const responseRate = results.length === 0 ? 0 : Math.round((filtered.length / results.length) * 100);
-  const groupQuadrant = quadrantForScores(meanStrategic, meanWork);
+
+  /* Recommendations are always org-wide — unaffected by the Results tab's segment filters, so
+   * switching tabs never changes which roadmap and offerings are shown. */
+  const orgQuadrant = quadrantForScores(
+    mean(results.map((r) => r.axisScores.strategicContext)),
+    mean(results.map((r) => r.axisScores.workEnvironment))
+  );
 
   return (
     <div>
@@ -181,7 +187,7 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
         </div>
       )}
 
-      {filtered.length === 0 ? (
+      {tab === 'results' && filtered.length === 0 ? (
         <div className="rounded-2xl flex flex-col items-center justify-center text-center px-6 py-14" style={{ backgroundColor: '#F7FAFC', border: `1.5px dashed ${PALE_BORDER}` }}>
           <p className="text-[15px] font-bold text-[#1A202C]">No respondents match these filters</p>
           <p className="text-[13.5px] text-[#718096] mt-1">Try clearing one or more segments.</p>
@@ -218,8 +224,8 @@ export const OrgResultsDashboard: React.FC<OrgResultsDashboardProps> = ({ result
         </>
       ) : (
         <div className="space-y-6">
-          <RecommendationsPanel quadrant={groupQuadrant} />
-          <RoadmapPanel quadrant={groupQuadrant} />
+          <RecommendationsPanel quadrant={orgQuadrant} />
+          <RoadmapPanel quadrant={orgQuadrant} />
         </div>
       )}
     </div>
