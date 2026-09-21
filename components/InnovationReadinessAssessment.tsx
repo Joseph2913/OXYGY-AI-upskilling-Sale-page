@@ -130,9 +130,7 @@ export const InnovationReadinessAssessment: React.FC = () => {
         </div>
 
         <ArtifactClosing
-          summaryText="This is one submission feeding the org-wide picture — see how readiness rolls up across the whole organisation in the AI Readiness Assessment."
-          ctaLabel="See the org-level AI Readiness Assessment"
-          ctaHref="#ai-readiness"
+          summaryText="This is one submission feeding the org-wide picture above."
           secondaryCtaLabel="Talk to us about your AI readiness"
           secondaryCtaHref="mailto:uk@oxygyconsulting.com"
           accentColor={DARK}
