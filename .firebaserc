@@ -7,6 +7,9 @@
       "hosting": {
         "demo": [
           "oxygy-upskilling-demo"
+        ],
+        "enablement": [
+          "oxygy-ai-enablement"
         ]
       }
     }
