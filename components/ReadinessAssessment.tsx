@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Clock, AlertTriangle, RadioTower, Lightbulb, Trophy, Compass, Users, ChevronDown, GraduationCap, RefreshCw, Share2, Shield, Target, TrendingUp, FlaskConical, Network } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Clock, AlertTriangle, RadioTower, Lightbulb, Trophy, Compass, Users, ChevronDown, GraduationCap, RefreshCw, Share2, Shield, Target, TrendingUp, FlaskConical, Network } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { ArtifactClosing } from './ArtifactClosing';
 import {
@@ -407,9 +407,21 @@ export const ReadinessAssessment: React.FC = () => {
         </div>
 
         {/* Problem-first framing — the "why", ahead of any method */}
-        <p className="text-[16px] md:text-[18px] text-[#4A5568] text-center max-w-[620px] mx-auto mb-8 leading-[1.6]">
+        <p className="text-[16px] md:text-[18px] text-[#4A5568] text-center max-w-[620px] mx-auto mb-6 leading-[1.6]">
           Struggling to get AI traction, or unsure if leadership and the frontline even agree on where things stand? This is where you find out, and where the next move gets decided.
         </p>
+
+        {/* Primary CTA, up front so the ask isn't buried at the bottom of the page */}
+        <div className="flex justify-center mb-8">
+          <a
+            href="#innovation-readiness"
+            className="inline-flex items-center gap-2 text-white font-semibold rounded-full transition-all duration-150 hover:-translate-y-0.5"
+            style={{ backgroundColor: DARK, padding: '14px 28px', fontSize: '15px', textDecoration: 'none' }}
+          >
+            Take the AI Readiness Assessment
+            <ArrowRight size={16} />
+          </a>
+        </div>
 
         {/* Fun fact */}
         <div className="mb-8">
@@ -541,8 +553,6 @@ export const ReadinessAssessment: React.FC = () => {
 
         <ArtifactClosing
           summaryText="Knowing where you stand is step zero. Take the full assessment to see where you and your organisation stand, individually and in aggregate."
-          ctaLabel="Take the AI Readiness Assessment"
-          ctaHref="#innovation-readiness"
           secondaryCtaLabel="Talk to us about your AI readiness"
           secondaryCtaHref="mailto:uk@oxygyconsulting.com"
           accentColor={DARK}

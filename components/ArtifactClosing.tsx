@@ -4,10 +4,10 @@ import { ArrowRight } from 'lucide-react';
 interface ArtifactClosingProps {
   /** Optional 1-2 sentence summary of what was covered */
   summaryText?: string;
-  /** CTA button label, e.g. "Continue to Level 2: Applied Capability" */
-  ctaLabel: string;
+  /** CTA button label, e.g. "Continue to Level 2: Applied Capability". Omit if the primary CTA lives elsewhere on the page. */
+  ctaLabel?: string;
   /** Hash link for the CTA, e.g. "#agent-builder" */
-  ctaHref: string;
+  ctaHref?: string;
   /** The level's dark accent color for the CTA button */
   accentColor: string;
   /** If true, CTA scrolls to a section instead of navigating to a hash page */
@@ -58,20 +58,22 @@ export const ArtifactClosing: React.FC<ArtifactClosingProps> = ({
         )}
 
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <a
-            href={ctaHref}
-            onClick={ctaScrollTo ? handleCtaClick : undefined}
-            className="inline-flex items-center gap-2 text-white font-semibold rounded-full transition-all duration-150 hover:-translate-y-0.5"
-            style={{
-              backgroundColor: accentColor,
-              padding: '14px 28px',
-              fontSize: '15px',
-              textDecoration: 'none',
-            }}
-          >
-            {ctaLabel}
-            <ArrowRight size={16} />
-          </a>
+          {ctaLabel && ctaHref && (
+            <a
+              href={ctaHref}
+              onClick={ctaScrollTo ? handleCtaClick : undefined}
+              className="inline-flex items-center gap-2 text-white font-semibold rounded-full transition-all duration-150 hover:-translate-y-0.5"
+              style={{
+                backgroundColor: accentColor,
+                padding: '14px 28px',
+                fontSize: '15px',
+                textDecoration: 'none',
+              }}
+            >
+              {ctaLabel}
+              <ArrowRight size={16} />
+            </a>
+          )}
 
           {secondaryCtaLabel && secondaryCtaHref && (
             <a
