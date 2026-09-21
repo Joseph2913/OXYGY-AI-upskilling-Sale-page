@@ -81,6 +81,27 @@ If a task involves multiple related changes, commit them together as one logical
 
 Never commit `.env.local`, credentials, or large binary files.
 
+## Firebase Hosting
+
+**Firebase project:** `oxygy-ai-upskilling-sales-page`
+
+This project has three Hosting sites, wired up as deploy targets in `firebase.json` / `.firebaserc`:
+
+| Target | Site ID | URL | Status |
+|--------|---------|-----|--------|
+| `enablement` | `oxygy-ai-enablement` | https://oxygy-ai-enablement.web.app | **Current live site — deploy here** |
+| (site-scoped, no target) | `oxygy-ai-upskilling-sales-page` | https://oxygy-ai-upskilling-sales-page.web.app | Legacy/prior site |
+| `demo` | `oxygy-upskilling-demo` | https://oxygy-upskilling-demo.web.app | Demo site |
+
+**After pushing to GitHub, deploys do NOT happen automatically** — there's no CI/CD hookup. To publish a change to the live site:
+
+```
+npm run build
+firebase deploy --only hosting:enablement --project oxygy-ai-upskilling-sales-page
+```
+
+Ask the user for confirmation before deploying, same as before pushing to GitHub — it publishes immediately to a public URL.
+
 ## Artifact Page Design Standards
 
 Every Level artifact page (L1 Playground, L2 Agent Builder, L3 Workflow Designer, etc.) MUST follow this consistent layout pattern. These rules are non-negotiable for visual consistency across all artifact pages.
