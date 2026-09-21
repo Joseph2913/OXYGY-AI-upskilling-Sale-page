@@ -539,6 +539,20 @@ export const ReadinessAssessment: React.FC = () => {
           )}
         </div>
 
+        {/* Link to the individual + org-level assessment — a different lens on the same readiness
+            question, with a real survey, demo mode and segmentable org results. */}
+        <a
+          href="#innovation-readiness"
+          className="flex items-center justify-between gap-4 rounded-2xl px-6 py-5 mb-6 transition-colors hover:bg-[#F7FAFC]"
+          style={{ border: `1.5px solid ${PALE_BORDER}` }}
+        >
+          <div>
+            <p className="text-[14.5px] font-bold text-[#1A202C]">Want the individual and org-level view?</p>
+            <p className="text-[13px] text-[#718096] mt-0.5">Try the AI Change &amp; Innovation Readiness Assessment &mdash; a real survey, a demo mode, and segmentable org results.</p>
+          </div>
+          <span className="shrink-0 text-[13px] font-bold" style={{ color: ACCENT }}>Take the assessment &rarr;</span>
+        </a>
+
         <ArtifactClosing
           summaryText="Knowing where you stand is step zero. The five levels that follow turn that readiness into real, hands-on AI capability across your teams."
           ctaLabel="Continue to Level 1: Prompt Engineering Fundamentals"
