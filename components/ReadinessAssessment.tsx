@@ -547,7 +547,7 @@ export const ReadinessAssessment: React.FC = () => {
           style={{ border: `1.5px solid ${PALE_BORDER}` }}
         >
           <div>
-            <p className="text-[14.5px] font-bold text-[#1A202C]">Want the individual and org-level view?</p>
+            <p className="text-[14.5px] font-bold text-[#1A202C]">Want the org-level view?</p>
             <p className="text-[13px] text-[#718096] mt-0.5">Try the AI Change &amp; Innovation Readiness Assessment &mdash; a real survey, a demo mode, and segmentable org results.</p>
           </div>
           <span className="shrink-0 text-[13px] font-bold" style={{ color: ACCENT }}>Take the assessment &rarr;</span>
