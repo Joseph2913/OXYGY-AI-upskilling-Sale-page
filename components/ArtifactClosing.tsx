@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
+import { goToUpskillingSection } from '../utils/navigation';
 
 interface ArtifactClosingProps {
   /** Optional 1-2 sentence summary of what was covered */
@@ -10,7 +11,7 @@ interface ArtifactClosingProps {
   ctaHref?: string;
   /** The level's dark accent color for the CTA button */
   accentColor: string;
-  /** If true, CTA scrolls to a section instead of navigating to a hash page */
+  /** Section id on the Upskilling page to scroll to, instead of navigating to ctaHref */
   ctaScrollTo?: string;
   /** Optional secondary CTA label, rendered as a bordered secondary button next to the primary CTA */
   secondaryCtaLabel?: string;
@@ -30,11 +31,7 @@ export const ArtifactClosing: React.FC<ArtifactClosingProps> = ({
   const handleCtaClick = (e: React.MouseEvent) => {
     if (ctaScrollTo) {
       e.preventDefault();
-      window.location.hash = '';
-      setTimeout(() => {
-        const el = document.getElementById(ctaScrollTo);
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+      goToUpskillingSection(ctaScrollTo);
     }
   };
 

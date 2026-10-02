@@ -2,16 +2,85 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Home, Menu, X } from 'lucide-react';
 import { cn } from '../utils/cn';
 
-const AI_TOOLS = [
-  { level: 0, emoji: '\uD83E\uDDED', label: 'AI Readiness Assessment', href: '#ai-readiness' },
-  { level: 1, emoji: '\uD83C\uDFAF', label: 'Prompt Engineering Fundamentals', href: '#playground' },
-  { level: 2, emoji: '\uD83E\uDD16', label: 'Build Your First AI Agent', href: '#agent-builder' },
-  { level: 3, emoji: '\uD83D\uDDFA\uFE0F', label: 'Workflow Mapping & Design', href: '#workflow-designer' },
-  { level: 4, emoji: '\uD83D\uDCA1', label: 'Dashboard Design Thinking', href: '#dashboard-design' },
-  { level: 5, emoji: '\uD83C\uDFD7\uFE0F', label: 'Product Architecture Sprint', href: '#product-architecture' },
+interface NavItem {
+  label: string;
+  href: string;
+  emoji?: string;
+  /** Small right-aligned tag, e.g. "L1" */
+  badge?: string;
+}
+
+interface NavSection {
+  heading?: string;
+  items: readonly NavItem[];
+}
+
+type NavEntry =
+  | { kind: 'link'; label: string; href: string }
+  | { kind: 'menu'; label: string; sections: readonly NavSection[] };
+
+const AI_TOOLS: readonly NavItem[] = [
+  { badge: 'L1', emoji: '🎯', label: 'Prompt Engineering Fundamentals', href: '#playground' },
+  { badge: 'L2', emoji: '🤖', label: 'Build Your First AI Agent', href: '#agent-builder' },
+  { badge: 'L3', emoji: '🗺️', label: 'Workflow Mapping & Design', href: '#workflow-designer' },
+  { badge: 'L4', emoji: '💡', label: 'Dashboard Design Thinking', href: '#dashboard-design' },
+  { badge: 'L5', emoji: '🏗️', label: 'Product Architecture Sprint', href: '#product-architecture' },
 ];
 
-const ARTIFACT_HASHES = new Set([...AI_TOOLS.map((t) => t.href), '#learning-pathway', '#user-journey', '#case-studies', '#engagement-model', '#innovation-sandbox']);
+const NAV: readonly NavEntry[] = [
+  {
+    kind: 'menu',
+    label: 'AI Readiness',
+    sections: [
+      {
+        items: [
+          { emoji: '🧭', label: 'AI Readiness Overview', href: '#ai-readiness' },
+          { emoji: '📝', label: 'Take the Self-Assessment', href: '#innovation-readiness' },
+        ],
+      },
+    ],
+  },
+  { kind: 'link', label: 'AI Sandbox', href: '#innovation-sandbox' },
+  {
+    kind: 'menu',
+    label: 'AI Upskilling',
+    sections: [
+      {
+        items: [
+          { emoji: '🎓', label: 'Upskilling Overview', href: '#upskilling' },
+          { emoji: '📋', label: 'Learning Plan', href: '#learning-pathway' },
+          { emoji: '🗺️', label: 'Learner Journey', href: '#user-journey' },
+        ],
+      },
+      { heading: 'AI Tools', items: AI_TOOLS },
+    ],
+  },
+  { kind: 'link', label: 'Our Methodology', href: '#engagement-model' },
+  { kind: 'link', label: 'Case Studies', href: '#case-studies' },
+];
+
+const DROPDOWN_CLOSE_DELAY_MS = 150;
+
+const isMenuActive = (sections: readonly NavSection[], hash: string): boolean =>
+  sections.some((s) => s.items.some((item) => item.href === hash));
+
+/* Active = dark teal pill, inactive = transparent */
+const pillBase =
+  'flex items-center gap-1.5 px-4 h-[36px] rounded-full text-[14px] font-medium transition-all duration-150 whitespace-nowrap';
+const pillActive = 'bg-[#2C9A94] text-white';
+const pillInactive = 'text-[#4A5568] hover:text-[#2D3748]';
+
+const mobileRow = (active: boolean): string =>
+  cn(
+    'flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors',
+    active ? 'bg-[#E6FFFA] text-[#2C9A94]' : 'hover:bg-[#F7FAFC] text-[#2D3748]',
+  );
+
+const SectionHeading: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <span className="block text-[11px] font-semibold uppercase tracking-[1px] text-[#A0AEC0]">
+    {children}
+  </span>
+);
 
 /* Thin vertical divider between nav items */
 const Divider = () => (
@@ -21,17 +90,103 @@ const Divider = () => (
   />
 );
 
+interface DropdownProps {
+  label: string;
+  sections: readonly NavSection[];
+  currentHash: string;
+}
+
+const Dropdown: React.FC<DropdownProps> = ({ label, sections, currentHash }) => {
+  const [open, setOpen] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openMenu = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setOpen(true);
+  };
+  const closeMenu = () => {
+    closeTimer.current = setTimeout(() => setOpen(false), DROPDOWN_CLOSE_DELAY_MS);
+  };
+
+  useEffect(() => () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+  }, []);
+
+  return (
+    <div className="relative" onMouseEnter={openMenu} onMouseLeave={closeMenu}>
+      <button
+        className={cn(pillBase, 'cursor-pointer', isMenuActive(sections, currentHash) ? pillActive : pillInactive)}
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+      >
+        {label}
+        <ChevronDown size={14} className={cn('transition-transform duration-150', open && 'rotate-180')} />
+      </button>
+
+      <div
+        className={cn(
+          'absolute top-full left-1/2 pt-3 transition-all duration-150',
+          open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
+        )}
+        style={{ transform: open ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(-4px)' }}
+      >
+        <div
+          style={{
+            background: '#FFFFFF',
+            border: '1px solid #E2E8F0',
+            borderRadius: '12px',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+            minWidth: '300px',
+            overflow: 'hidden',
+          }}
+        >
+          {sections.map((section, i) => (
+            <div key={section.heading ?? i}>
+              {i > 0 && <div style={{ height: '1px', backgroundColor: '#E2E8F0' }} />}
+              {section.heading && (
+                <div className="px-4 pt-3 pb-1">
+                  <SectionHeading>{section.heading}</SectionHeading>
+                </div>
+              )}
+              {section.items.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center gap-3 transition-colors duration-150 hover:bg-[#F7FAFC] hover:text-[#38B2AC]"
+                  style={{
+                    padding: '10px 16px',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    color: '#2D3748',
+                    textDecoration: 'none',
+                    background: currentHash === item.href ? '#E6FFFA' : undefined,
+                  }}
+                  onClick={() => setOpen(false)}
+                >
+                  {item.emoji && (
+                    <span className="shrink-0 flex items-center justify-center" style={{ width: '24px', height: '24px', fontSize: '15px' }}>
+                      {item.emoji}
+                    </span>
+                  )}
+                  <span className="truncate">{item.label}</span>
+                  {item.badge && (
+                    <span className="ml-auto shrink-0 text-[11px] font-semibold" style={{ color: '#A0AEC0' }}>
+                      {item.badge}
+                    </span>
+                  )}
+                </a>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const [methodologyOpen, setMethodologyOpen] = useState(false);
-  const methodologyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const methodologyRef = useRef<HTMLDivElement>(null);
-
   const [currentHash, setCurrentHash] = useState(() => window.location.hash);
 
   useEffect(() => {
@@ -41,87 +196,26 @@ export const Navbar: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const handleHash = () => setCurrentHash(window.location.hash);
+    const handleHash = () => {
+      setCurrentHash(window.location.hash);
+      setMobileOpen(false);
+    };
     window.addEventListener('hashchange', handleHash);
     return () => window.removeEventListener('hashchange', handleHash);
   }, []);
 
-  useEffect(() => {
-    const close = () => setMobileOpen(false);
-    window.addEventListener('hashchange', close);
-    return () => window.removeEventListener('hashchange', close);
-  }, []);
-
   const isHome = !currentHash || currentHash === '#';
-  const isOnAiTool = AI_TOOLS.some((t) => t.href === currentHash);
-  const isOnLearningPlan = currentHash === '#learning-pathway';
-  const isOnUserJourney = currentHash === '#user-journey';
-  const isOnCaseStudies = currentHash === '#case-studies';
-  const isOnEngagementModel = currentHash === '#engagement-model';
-  const isOnSandbox = currentHash === '#innovation-sandbox';
-
-  // AI Tools dropdown active if on any artifact tool
-  const isDropdownActive = isOnAiTool;
-  // Our Methodology dropdown active if on learner journey, engagement model or innovation sandbox
-  const isMethodologyActive = isOnUserJourney || isOnEngagementModel || isOnSandbox;
 
   const goHome = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (window.location.hash && window.location.hash !== '#') {
+    if (!isHome) {
       window.location.hash = '';
       setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
     } else {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     setMobileOpen(false);
-    setDropdownOpen(false);
   };
-
-  const scrollToSection = (id: string) => {
-    const doScroll = () => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-        return true;
-      }
-      return false;
-    };
-
-    if (window.location.hash && window.location.hash !== '#') {
-      window.location.hash = '';
-      let attempts = 0;
-      const tryScroll = () => {
-        if (doScroll() || attempts >= 10) return;
-        attempts++;
-        setTimeout(tryScroll, 100);
-      };
-      setTimeout(tryScroll, 150);
-    } else {
-      doScroll();
-    }
-    setMobileOpen(false);
-    setDropdownOpen(false);
-  };
-
-  const openDropdown = () => {
-    if (dropdownTimeout.current) clearTimeout(dropdownTimeout.current);
-    setDropdownOpen(true);
-  };
-  const closeDropdown = () => {
-    dropdownTimeout.current = setTimeout(() => setDropdownOpen(false), 150);
-  };
-
-  const openMethodology = () => {
-    if (methodologyTimeout.current) clearTimeout(methodologyTimeout.current);
-    setMethodologyOpen(true);
-  };
-  const closeMethodology = () => {
-    methodologyTimeout.current = setTimeout(() => setMethodologyOpen(false), 150);
-  };
-
-  /* Active = dark teal pill, inactive = transparent */
-  const pillActive = 'bg-[#2C9A94] text-white';
-  const pillInactive = 'text-[#4A5568] hover:text-[#2D3748]';
 
   return (
     <nav
@@ -136,11 +230,7 @@ export const Navbar: React.FC = () => {
         style={{ maxWidth: '1200px', padding: '0 24px' }}
       >
         {/* Left — Logo */}
-        <a
-          href="#"
-          onClick={goHome}
-          className="flex items-center gap-2 shrink-0"
-        >
+        <a href="#" onClick={goHome} className="flex items-center gap-2 shrink-0">
           <img
             src="/logos/oxygy-logo-darkgray-teal.png"
             alt="OXYGY"
@@ -151,13 +241,8 @@ export const Navbar: React.FC = () => {
         {/* Center — Desktop Nav Bar (rounded container) */}
         <div
           className="hidden lg:flex items-center gap-1.5"
-          style={{
-            backgroundColor: '#F0F2F5',
-            borderRadius: '28px',
-            padding: '5px 6px',
-          }}
+          style={{ backgroundColor: '#F0F2F5', borderRadius: '28px', padding: '5px 6px' }}
         >
-          {/* Home icon button */}
           <a
             href="#"
             onClick={goHome}
@@ -171,251 +256,32 @@ export const Navbar: React.FC = () => {
             <Home size={17} />
           </a>
 
-          <Divider />
-
-          {/* Learning Plan Generator — standalone button */}
-          <a
-            href="#learning-pathway"
-            className={cn(
-              'flex items-center px-4 h-[36px] rounded-full text-[14px] font-medium transition-all duration-150 whitespace-nowrap',
-              isOnLearningPlan ? pillActive : pillInactive,
-            )}
-            style={{ textDecoration: 'none' }}
-          >
-            Learning Plan
-          </a>
-
-          <Divider />
-
-          {/* AI Tools Dropdown */}
-          <div
-            ref={dropdownRef}
-            className="relative"
-            onMouseEnter={openDropdown}
-            onMouseLeave={closeDropdown}
-          >
-            <button
-              className={cn(
-                'flex items-center gap-1.5 px-4 h-[36px] rounded-full text-[14px] font-medium transition-all duration-150 cursor-pointer whitespace-nowrap',
-                isDropdownActive ? pillActive : pillInactive,
-              )}
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-            >
-              AI Tools
-              <ChevronDown
-                size={14}
-                className={cn(
-                  'transition-transform duration-150',
-                  dropdownOpen && 'rotate-180',
-                )}
-              />
-            </button>
-
-            {/* Dropdown panel */}
-            <div
-              className={cn(
-                'absolute top-full left-1/2 pt-3 transition-all duration-150',
-                dropdownOpen
-                  ? 'opacity-100 translate-y-0 pointer-events-auto'
-                  : 'opacity-0 -translate-y-1 pointer-events-none',
-              )}
-              style={{
-                transform: dropdownOpen
-                  ? 'translateX(-50%) translateY(0)'
-                  : 'translateX(-50%) translateY(-4px)',
-              }}
-            >
-              <div
-                style={{
-                  background: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '12px',
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-                  minWidth: '300px',
-                  overflow: 'hidden',
-                }}
-              >
-                {AI_TOOLS.map((tool) => (
-                  <a
-                    key={tool.level}
-                    href={tool.href}
-                    className="flex items-center gap-3 transition-colors duration-150 hover:bg-[#F7FAFC] hover:text-[#38B2AC]"
-                    style={{
-                      padding: '10px 16px',
-                      fontSize: '14px',
-                      fontWeight: 500,
-                      color: '#2D3748',
-                      textDecoration: 'none',
-                    }}
-                    onClick={() => setDropdownOpen(false)}
-                  >
-                    <span
-                      className="shrink-0 flex items-center justify-center"
-                      style={{ width: '24px', height: '24px', fontSize: '15px' }}
-                    >
-                      {tool.emoji}
-                    </span>
-                    <span className="truncate">{tool.label}</span>
-                    <span
-                      className="ml-auto shrink-0 text-[11px] font-semibold"
-                      style={{ color: '#A0AEC0' }}
-                    >
-                      L{tool.level}
-                    </span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <Divider />
-
-          {/* Our Methodology Dropdown (Learner Journey + Engagement Model) */}
-          <div
-            ref={methodologyRef}
-            className="relative"
-            onMouseEnter={openMethodology}
-            onMouseLeave={closeMethodology}
-          >
-            <button
-              className={cn(
-                'flex items-center gap-1.5 px-4 h-[36px] rounded-full text-[14px] font-medium transition-all duration-150 cursor-pointer whitespace-nowrap',
-                isMethodologyActive ? pillActive : pillInactive,
-              )}
-              onClick={() => setMethodologyOpen(!methodologyOpen)}
-            >
-              Our Methodology
-              <ChevronDown
-                size={14}
-                className={cn(
-                  'transition-transform duration-150',
-                  methodologyOpen && 'rotate-180',
-                )}
-              />
-            </button>
-
-            {/* Methodology dropdown panel */}
-            <div
-              className={cn(
-                'absolute top-full left-1/2 pt-3 transition-all duration-150',
-                methodologyOpen
-                  ? 'opacity-100 translate-y-0 pointer-events-auto'
-                  : 'opacity-0 -translate-y-1 pointer-events-none',
-              )}
-              style={{
-                transform: methodologyOpen
-                  ? 'translateX(-50%) translateY(0)'
-                  : 'translateX(-50%) translateY(-4px)',
-              }}
-            >
-              <div
-                style={{
-                  background: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '12px',
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-                  minWidth: '220px',
-                  overflow: 'hidden',
-                }}
-              >
+          {NAV.map((entry) => (
+            <React.Fragment key={entry.label}>
+              <Divider />
+              {entry.kind === 'link' ? (
                 <a
-                  href="#user-journey"
-                  className="flex items-center gap-3 transition-colors duration-150 hover:bg-[#F7FAFC] hover:text-[#38B2AC]"
-                  style={{
-                    padding: '10px 16px',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    color: '#2D3748',
-                    textDecoration: 'none',
-                    background: isOnUserJourney ? '#E6FFFA' : undefined,
-                  }}
-                  onClick={() => setMethodologyOpen(false)}
+                  href={entry.href}
+                  className={cn(pillBase, currentHash === entry.href ? pillActive : pillInactive)}
+                  style={{ textDecoration: 'none' }}
                 >
-                  <span
-                    className="shrink-0 flex items-center justify-center"
-                    style={{ width: '24px', height: '24px', fontSize: '15px' }}
-                  >
-                    🗺️
-                  </span>
-                  <span>Learner Journey</span>
+                  {entry.label}
                 </a>
-                <div style={{ height: '1px', backgroundColor: '#E2E8F0' }} />
-                <a
-                  href="#engagement-model"
-                  className="flex items-center gap-3 transition-colors duration-150 hover:bg-[#F7FAFC] hover:text-[#38B2AC]"
-                  style={{
-                    padding: '10px 16px',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    color: '#2D3748',
-                    textDecoration: 'none',
-                    background: isOnEngagementModel ? '#E6FFFA' : undefined,
-                  }}
-                  onClick={() => setMethodologyOpen(false)}
-                >
-                  <span
-                    className="shrink-0 flex items-center justify-center"
-                    style={{ width: '24px', height: '24px', fontSize: '15px' }}
-                  >
-                    🤝
-                  </span>
-                  <span>Engagement Model</span>
-                </a>
-                <div style={{ height: '1px', backgroundColor: '#E2E8F0' }} />
-                <a
-                  href="#innovation-sandbox"
-                  className="flex items-center gap-3 transition-colors duration-150 hover:bg-[#F7FAFC] hover:text-[#38B2AC]"
-                  style={{
-                    padding: '10px 16px',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    color: '#2D3748',
-                    textDecoration: 'none',
-                    background: isOnSandbox ? '#E6FFFA' : undefined,
-                  }}
-                  onClick={() => setMethodologyOpen(false)}
-                >
-                  <span
-                    className="shrink-0 flex items-center justify-center"
-                    style={{ width: '24px', height: '24px', fontSize: '15px' }}
-                  >
-                    🧪
-                  </span>
-                  <span>Innovation Sandbox</span>
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <Divider />
-
-          {/* Case Studies */}
-          <a
-            href="#case-studies"
-            className={cn(
-              'flex items-center px-4 h-[36px] rounded-full text-[14px] font-medium transition-all duration-150 whitespace-nowrap',
-              isOnCaseStudies ? pillActive : pillInactive,
-            )}
-            style={{ textDecoration: 'none' }}
-          >
-            Case Studies
-          </a>
-
+              ) : (
+                <Dropdown label={entry.label} sections={entry.sections} currentHash={currentHash} />
+              )}
+            </React.Fragment>
+          ))}
         </div>
 
         {/* Right — Mobile Toggle */}
         <div className="flex items-center gap-2">
-          {/* Mobile hamburger */}
           <button
             className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           >
-            {mobileOpen ? (
-              <X size={22} color="#2D3748" />
-            ) : (
-              <Menu size={22} color="#2D3748" />
-            )}
+            {mobileOpen ? <X size={22} color="#2D3748" /> : <Menu size={22} color="#2D3748" />}
           </button>
         </div>
       </div>
@@ -425,152 +291,52 @@ export const Navbar: React.FC = () => {
         <div
           className="lg:hidden absolute top-full left-0 right-0 bg-white border-t border-gray-100 shadow-lg"
           style={{ maxHeight: 'calc(100vh - 68px)', overflowY: 'auto' }}
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest('a')) setMobileOpen(false);
+          }}
         >
-          <div className="px-6 py-4 flex flex-col gap-1">
-            {/* Home */}
-            <a
-              href="#"
-              onClick={goHome}
-              className={cn(
-                'flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors',
-                isHome ? 'bg-[#E6FFFA] text-[#2C9A94]' : 'hover:bg-[#F7FAFC] text-[#2D3748]',
-              )}
-              style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
-            >
+          <div className="px-6 py-4 flex flex-col gap-1" style={{ fontSize: '14px', fontWeight: 500 }}>
+            <a href="#" onClick={goHome} className={mobileRow(isHome)} style={{ textDecoration: 'none' }}>
               <Home size={16} />
               <span>Home</span>
             </a>
 
-            <div className="h-px bg-gray-100 my-2" />
-
-            {/* Learning Plan Generator — standalone */}
-            <a
-              href="#learning-pathway"
-              className={cn(
-                'flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors',
-                isOnLearningPlan
-                  ? 'bg-[#E6FFFA] text-[#2C9A94]'
-                  : 'hover:bg-[#F7FAFC] text-[#2D3748]',
-              )}
-              style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
-              onClick={() => setMobileOpen(false)}
-            >
-              <span style={{ fontSize: '15px' }}>📋</span>
-              <span>Learning Plan Generator</span>
-            </a>
-
-            <div className="h-px bg-gray-100 my-2" />
-
-            <div className="py-2">
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px',
-                  color: '#A0AEC0',
-                }}
-              >
-                AI Tools
-              </span>
-            </div>
-
-            {AI_TOOLS.map((tool) => (
-              <a
-                key={tool.level}
-                href={tool.href}
-                className={cn(
-                  'flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors',
-                  currentHash === tool.href
-                    ? 'bg-[#E6FFFA] text-[#2C9A94]'
-                    : 'hover:bg-[#F7FAFC] text-[#2D3748]',
+            {NAV.map((entry) => (
+              <React.Fragment key={entry.label}>
+                <div className="h-px bg-gray-100 my-2" />
+                {entry.kind === 'link' ? (
+                  <a href={entry.href} className={mobileRow(currentHash === entry.href)} style={{ textDecoration: 'none' }}>
+                    {entry.label}
+                  </a>
+                ) : (
+                  <>
+                    <div className="py-2">
+                      <SectionHeading>{entry.label}</SectionHeading>
+                    </div>
+                    {entry.sections.map((section, i) => (
+                      <React.Fragment key={section.heading ?? i}>
+                        {section.heading && (
+                          <div className="pt-2 pb-1 px-3">
+                            <SectionHeading>{section.heading}</SectionHeading>
+                          </div>
+                        )}
+                        {section.items.map((item) => (
+                          <a
+                            key={item.href}
+                            href={item.href}
+                            className={mobileRow(currentHash === item.href)}
+                            style={{ textDecoration: 'none' }}
+                          >
+                            {item.emoji && <span style={{ fontSize: '15px' }}>{item.emoji}</span>}
+                            <span>{item.label}</span>
+                          </a>
+                        ))}
+                      </React.Fragment>
+                    ))}
+                  </>
                 )}
-                style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
-                onClick={() => setMobileOpen(false)}
-              >
-                <span style={{ fontSize: '15px' }}>{tool.emoji}</span>
-                <span>{tool.label}</span>
-              </a>
+              </React.Fragment>
             ))}
-
-            <div className="h-px bg-gray-100 my-2" />
-
-            {/* Our Methodology section */}
-            <div className="py-2">
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px',
-                  color: '#A0AEC0',
-                }}
-              >
-                Our Methodology
-              </span>
-            </div>
-
-            <a
-              href="#user-journey"
-              className={cn(
-                'flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors',
-                isOnUserJourney
-                  ? 'bg-[#E6FFFA] text-[#2C9A94]'
-                  : 'hover:bg-[#F7FAFC] text-[#2D3748]',
-              )}
-              style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
-              onClick={() => setMobileOpen(false)}
-            >
-              <span style={{ fontSize: '15px' }}>🗺️</span>
-              <span>Learner Journey</span>
-            </a>
-
-            <a
-              href="#engagement-model"
-              className={cn(
-                'flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors',
-                isOnEngagementModel
-                  ? 'bg-[#E6FFFA] text-[#2C9A94]'
-                  : 'hover:bg-[#F7FAFC] text-[#2D3748]',
-              )}
-              style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
-              onClick={() => setMobileOpen(false)}
-            >
-              <span style={{ fontSize: '15px' }}>🤝</span>
-              <span>Engagement Model</span>
-            </a>
-
-            <a
-              href="#innovation-sandbox"
-              className={cn(
-                'flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors',
-                isOnSandbox
-                  ? 'bg-[#E6FFFA] text-[#2C9A94]'
-                  : 'hover:bg-[#F7FAFC] text-[#2D3748]',
-              )}
-              style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
-              onClick={() => setMobileOpen(false)}
-            >
-              <span style={{ fontSize: '15px' }}>🧪</span>
-              <span>Innovation Sandbox</span>
-            </a>
-
-            <div className="h-px bg-gray-100 my-2" />
-
-            <a
-              href="#case-studies"
-              className={cn(
-                'flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors',
-                isOnCaseStudies
-                  ? 'bg-[#E6FFFA] text-[#2C9A94]'
-                  : 'hover:bg-[#F7FAFC] text-[#2D3748]',
-              )}
-              style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}
-              onClick={() => setMobileOpen(false)}
-            >
-              Case Studies
-            </a>
-
           </div>
         </div>
       )}

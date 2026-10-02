@@ -5,6 +5,7 @@ import {
   Mic, MicOff, AlertCircle,
 } from 'lucide-react';
 import { ArtifactClosing } from './ArtifactClosing';
+import { goToUpskillingSection } from '../utils/navigation';
 import {
   TOOLS, LEVEL_INFO,
   generateTextExport, generateMarkdownExport,
@@ -76,11 +77,7 @@ function renderWithLevelLinks(text: string): React.ReactNode[] {
           href={href}
           onClick={href === '#' ? (e: React.MouseEvent) => {
             e.preventDefault();
-            window.location.hash = '';
-            setTimeout(() => {
-              const el = document.getElementById('journey');
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
+            goToUpskillingSection('journey');
           } : undefined}
           className="font-bold underline decoration-2 underline-offset-2 transition-colors hover:opacity-80"
           style={{ color: ACCENT_DARK, textDecorationColor: `${ACCENT}80` }}
@@ -235,11 +232,7 @@ const ConnectedLevelRow: React.FC<{
             href={info.href}
             onClick={info.href === '#' ? (e: React.MouseEvent) => {
               e.preventDefault();
-              window.location.hash = '';
-              setTimeout(() => {
-                const el = document.getElementById('journey');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }, 100);
+              goToUpskillingSection('journey');
             } : undefined}
             className="inline-block text-[11px] font-semibold transition-colors hover:opacity-80"
             style={{ color: colors.text }}

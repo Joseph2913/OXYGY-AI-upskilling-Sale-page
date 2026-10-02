@@ -906,13 +906,14 @@ export const InnovationSandbox: React.FC = () => {
           </Reveal>
           <Reveal delay={200}>
             <div className="flex flex-wrap items-center justify-center gap-3">
-              <a
-                href="#ai-readiness"
-                className="inline-flex items-center gap-2 text-white font-semibold rounded-full px-7 py-3.5 text-[15px] transition-all duration-150 hover:-translate-y-0.5"
+              <button
+                type="button"
+                onClick={() => document.getElementById('prioritiser')?.scrollIntoView({ behavior: REDUCED_MOTION ? 'auto' : 'smooth' })}
+                className="inline-flex items-center gap-2 text-white font-semibold rounded-full px-7 py-3.5 text-[15px] transition-all duration-150 hover:-translate-y-0.5 cursor-pointer"
                 style={{ backgroundColor: SBX_DARK }}
               >
-                Take the readiness assessment <ArrowRight size={16} />
-              </a>
+                Test our sandbox demo <ArrowRight size={16} />
+              </button>
               <a
                 href="mailto:uk@oxygyconsulting.com"
                 className="inline-flex items-center gap-2 font-semibold rounded-full px-7 py-3.5 text-[15px] transition-all duration-150 hover:-translate-y-0.5"
@@ -928,7 +929,7 @@ export const InnovationSandbox: React.FC = () => {
         <MethodSection />
 
         {/* ============ 03 — THE PRIORITISER ============ */}
-        <section className="mb-20" id="prioritiser">
+        <section className="mb-20 scroll-mt-24" id="prioritiser">
           <SectionHeading
             n="03"
             eyebrow="Try it yourself"

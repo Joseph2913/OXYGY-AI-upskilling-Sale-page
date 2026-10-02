@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
-import { Hero } from './components/Hero';
-import { LevelJourney } from './components/LevelJourney';
-import { LearningModel } from './components/Extras';
-import { PersonaCarousel } from './components/PersonaCarousel';
-import { Footer, FooterBar } from './components/Footer';
+import { HomePage } from './components/HomePage';
+import { UpskillingPage } from './components/UpskillingPage';
+import { FooterBar } from './components/Footer';
 import { PromptPlayground } from './components/PromptPlayground';
 import { AgentBuilder } from './components/AgentBuilder';
 import { WorkflowDesigner } from './components/WorkflowDesigner';
@@ -12,17 +10,17 @@ import { ProductArchitecture } from './components/ProductArchitecture';
 import { DashboardDesigner } from './components/DashboardDesigner';
 import { LearningPathway } from './components/LearningPathway';
 import { EngagementModel } from './components/EngagementModel';
-import { CaseStudiesSection, CaseStudiesPage } from './components/CaseStudies';
+import { CaseStudiesPage } from './components/CaseStudies';
 import { UserJourney } from './components/UserJourney';
-import { PartnershipBanner } from './components/PartnershipBanner';
 import { ReadinessAssessment } from './components/ReadinessAssessment';
 import { InnovationSandbox } from './components/InnovationSandbox';
 import { InnovationReadinessAssessment } from './components/InnovationReadinessAssessment';
 
-type Page = 'home' | 'ai-readiness' | 'innovation-readiness' | 'innovation-sandbox' | 'playground' | 'agent-builder' | 'workflow-designer' | 'product-architecture' | 'dashboard-design' | 'learning-pathway' | 'engagement-model' | 'case-studies' | 'user-journey';
+type Page = 'home' | 'upskilling' | 'ai-readiness' | 'innovation-readiness' | 'innovation-sandbox' | 'playground' | 'agent-builder' | 'workflow-designer' | 'product-architecture' | 'dashboard-design' | 'learning-pathway' | 'engagement-model' | 'case-studies' | 'user-journey';
 
 function getPageFromHash(): Page {
   const hash = window.location.hash;
+  if (hash === '#upskilling') return 'upskilling';
   if (hash === '#ai-readiness') return 'ai-readiness';
   if (hash === '#innovation-readiness') return 'innovation-readiness';
   if (hash === '#innovation-sandbox') return 'innovation-sandbox';
@@ -54,17 +52,8 @@ function App() {
   return (
     <div className="min-h-screen bg-white font-sans text-navy-900 selection:bg-teal selection:text-white">
       <Navbar />
-      {currentPage === 'home' && (
-        <>
-          <Hero />
-          <PartnershipBanner />
-          <LevelJourney />
-          <PersonaCarousel />
-          <LearningModel />
-          <CaseStudiesSection />
-          <Footer />
-        </>
-      )}
+      {currentPage === 'home' && <HomePage />}
+      {currentPage === 'upskilling' && <UpskillingPage />}
       {currentPage === 'ai-readiness' && <ReadinessAssessment />}
       {currentPage === 'innovation-readiness' && <InnovationReadinessAssessment />}
       {currentPage === 'innovation-sandbox' && <InnovationSandbox />}
@@ -78,8 +67,8 @@ function App() {
       {currentPage === 'case-studies' && <CaseStudiesPage />}
       {currentPage === 'user-journey' && <UserJourney />}
 
-      {/* Footer bar on all non-home pages */}
-      {currentPage !== 'home' && <FooterBar />}
+      {/* Footer bar on pages that don't render the full Footer */}
+      {currentPage !== 'home' && currentPage !== 'upskilling' && <FooterBar />}
     </div>
   );
 }

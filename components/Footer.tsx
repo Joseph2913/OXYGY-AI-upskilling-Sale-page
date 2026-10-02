@@ -1,8 +1,17 @@
 import React from 'react';
 import { Mail, Linkedin } from 'lucide-react';
 
-/** Full homepage footer: CTA band + bottom bar */
-export const Footer: React.FC = () => {
+const DEFAULT_HEADING = 'Ready to Take the Next Step?';
+const DEFAULT_BODY =
+  "Whether you are starting your journey or looking to scale your AI capabilities, OXYGY's AI Centre of Excellence is here to guide you.";
+
+interface FooterProps {
+  heading?: string;
+  body?: string;
+}
+
+/** Full footer: CTA band + bottom bar */
+export const Footer: React.FC<FooterProps> = ({ heading = DEFAULT_HEADING, body = DEFAULT_BODY }) => {
   return (
     <footer id="footer">
       {/* CTA Band */}
@@ -19,11 +28,10 @@ export const Footer: React.FC = () => {
 
         <div className="relative z-10 max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-8">
-            Ready to Take the Next Step?
+            {heading}
           </h2>
           <p className="text-teal-bg text-lg mb-10 max-w-2xl mx-auto">
-            Whether you are starting your journey or looking to scale your AI capabilities,
-            OXYGY's AI Centre of Excellence is here to guide you.
+            {body}
           </p>
           <a
             href="mailto:uk@oxygyconsulting.com"

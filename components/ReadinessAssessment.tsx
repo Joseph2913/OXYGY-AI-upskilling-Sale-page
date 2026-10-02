@@ -395,7 +395,7 @@ export const ReadinessAssessment: React.FC = () => {
         {/* Title */}
         <div className="mb-4 text-center">
           <div className="inline-block text-[11px] font-bold uppercase tracking-[0.15em] px-4 py-1.5 rounded-full mb-6" style={{ backgroundColor: '#EAF0F8', color: DARK, border: `1px solid ${PALE_BORDER}` }}>
-            L0 &mdash; AI Readiness
+            AI Readiness
           </div>
           <h1 className="text-[36px] md:text-[48px] font-bold text-[#1A202C] leading-[1.15] mb-6">
             AI transformation looks different<br />
