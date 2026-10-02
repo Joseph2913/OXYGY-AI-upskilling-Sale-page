@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
 import { ArtifactClosing } from './ArtifactClosing';
 import { SurveyForm } from './innovationReadiness/SurveyForm';
 import { OrgResultsDashboard } from './innovationReadiness/OrgResultsDashboard';
@@ -39,7 +39,12 @@ export const InnovationReadinessAssessment: React.FC = () => {
     setView({ mode: 'survey' });
   };
 
-  const handleSubmit = (answers: SurveyAnswers, demo?: DemoPersonaInput) => {
+  /** Jump straight to the results dashboard using the first demo persona's pre-filled answers. */
+  const showExampleResults = () => {
+    setView({ mode: 'results', result: computeAssessmentResult(DEMO_PERSONA_INPUTS[0]) });
+  };
+
+  const handleSubmit =(answers: SurveyAnswers, demo?: DemoPersonaInput) => {
     if (demo) {
       setView({ mode: 'results', result: computeAssessmentResult({ ...demo, answers }) });
     } else {
@@ -74,7 +79,7 @@ export const InnovationReadinessAssessment: React.FC = () => {
             through (and edited) before landing on the results dashboard on submit. */}
         {view.mode === 'survey' && (
           <div className="flex flex-col items-center gap-2.5 mb-10">
-            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0]">Click through a populated example instead</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0]">Click through a populated example, or skip straight to the results</p>
             <div className="flex flex-wrap justify-center gap-2.5">
               {DEMO_PERSONA_INPUTS.map((persona) => (
                 <button
@@ -88,6 +93,15 @@ export const InnovationReadinessAssessment: React.FC = () => {
                   Demo: {persona.personaLabel}
                 </button>
               ))}
+              <button
+                type="button"
+                onClick={showExampleResults}
+                className="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-[13.5px] font-bold text-white transition-transform hover:-translate-y-0.5"
+                style={{ backgroundColor: DARK }}
+              >
+                Skip to example results
+                <ArrowRight size={15} />
+              </button>
             </div>
           </div>
         )}
@@ -130,7 +144,6 @@ export const InnovationReadinessAssessment: React.FC = () => {
         </div>
 
         <ArtifactClosing
-          summaryText="This is one submission feeding the org-wide picture above."
           secondaryCtaLabel="Talk to us about your AI readiness"
           secondaryCtaHref="mailto:uk@oxygyconsulting.com"
           accentColor={DARK}

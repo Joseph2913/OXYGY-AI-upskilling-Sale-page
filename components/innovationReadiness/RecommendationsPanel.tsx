@@ -7,6 +7,9 @@ import { QUADRANT_RECOMMENDATIONS, getOffering, Offering } from '../../data/inno
  * colour on the primary card, instead of falling back to a flat grey. */
 const TEAL = '#2C9A94';
 
+/* Quadrants whose name isn't shown as a label on the recommendations panel. */
+const HIDDEN_QUADRANT_LABELS: readonly ProfileId[] = ['sitting-duck'];
+
 const hexA = (hex: string, a: number) => {
   const n = parseInt(hex.slice(1), 16);
   return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
@@ -71,9 +74,11 @@ export const RecommendationsPanel: React.FC<RecommendationsPanelProps> = ({ quad
     <div className="rounded-xl p-5" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
       <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
         <p className="text-[12px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0]">Recommended offerings</p>
-        <span className="text-[11.5px] font-bold px-3 py-1 rounded-full text-white" style={{ backgroundColor: quadrantColor }}>
-          {rec.quadrantLabel}
-        </span>
+        {!HIDDEN_QUADRANT_LABELS.includes(quadrant) && (
+          <span className="text-[11.5px] font-bold px-3 py-1 rounded-full text-white" style={{ backgroundColor: quadrantColor }}>
+            {rec.quadrantLabel}
+          </span>
+        )}
       </div>
       <p className="text-[14.5px] text-[#4A5568] leading-[1.6] mb-4">{rec.narrative}</p>
       <div className="space-y-3">
