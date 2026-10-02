@@ -3,10 +3,7 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowDown,
-  Cpu,
-  Building2,
   GitBranch,
-  Users,
   UsersRound,
   Stethoscope,
   Search,
@@ -24,7 +21,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { ArtifactClosing } from './ArtifactClosing';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
-import { UseCasePrioritiser } from './sandbox/UseCasePrioritiser';
+import { SandboxDemo } from './sandbox/SandboxDemo';
 import {
   SBX_ACCENT,
   SBX_DARK,
@@ -32,16 +29,12 @@ import {
   SBX_PALE_BORDER,
   hexA,
   REDUCED_MOTION,
-  FUNNEL_STATS,
-  LAYER_CARDS,
-  FORMULA_TILES,
   METHOD_STAGES,
   COHORT_ENGINE,
   MEASURE_DIMENSIONS,
   MEASURE_CAPTION,
   RIPPLE_RINGS,
   COHORT_CONCLUSION,
-  type LayerIconName,
   type StageIconName,
   type CohortIconName,
   type MeasureDimension,
@@ -51,13 +44,6 @@ import {
 /* ---------------------------------------------------------------------------
    Icon maps (string names in data -> Lucide components)
    --------------------------------------------------------------------------- */
-const LAYER_ICON: Record<LayerIconName, LucideIcon> = {
-  cpu: Cpu,
-  building: Building2,
-  gitBranch: GitBranch,
-  users: Users,
-};
-
 const STAGE_ICON: Record<StageIconName, LucideIcon> = {
   stethoscope: Stethoscope,
   search: Search,
@@ -118,7 +104,7 @@ const SectionHeading: React.FC<{ n: string; eyebrow: string; title: React.ReactN
   </Reveal>
 );
 
-/* The recurring use-case pill motif: hero funnel -> method stage 3 -> prioritiser -> phase strip */
+/* The recurring use-case pill motif: hero funnel -> method stage 3 -> phase strip */
 export const UseCaseChip: React.FC<{ label: string; status: 'idea' | 'scored' | 'live' }> = ({ label, status }) => (
   <span
     className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-semibold whitespace-nowrap"
@@ -138,220 +124,11 @@ export const UseCaseChip: React.FC<{ label: string; status: 'idea' | 'scored' | 
   </span>
 );
 
-/* Count-up number driven by requestAnimationFrame; snaps to target under reduced motion */
-function useCountUp(target: number, active: boolean, duration = 900): number {
-  const [value, setValue] = useState(REDUCED_MOTION ? target : 0);
-  const started = useRef(false);
-
-  useEffect(() => {
-    if (!active || started.current || REDUCED_MOTION) return;
-    started.current = true;
-    let raf = 0;
-    const t0 = performance.now();
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - t0) / duration);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setValue(Math.round(eased * target));
-      if (t < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [active, target, duration]);
-
-  return value;
-}
-
 /* ---------------------------------------------------------------------------
-   Section 01 — the problem
+   Section 01 — the method (5-stage stepper)
    --------------------------------------------------------------------------- */
 
-const FunnelBarRow: React.FC<{ label: string; sublabel: string; pct: number; active: boolean; index: number }> = ({
-  label,
-  sublabel,
-  pct,
-  active,
-  index,
-}) => {
-  const shown = useCountUp(pct, active);
-  const opacity = [0.85, 0.55, 0.3][index] ?? 0.3;
-  return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4">
-      <div className="sm:w-[210px] shrink-0">
-        <p className="text-[14px] font-bold text-[#1A202C] leading-tight">{label}</p>
-        <p className="text-[11.5px] text-[#A0AEC0] leading-[1.4]">{sublabel}</p>
-      </div>
-      <div className="flex-1 flex items-center gap-3">
-        <div className="flex-1 h-9 rounded-full relative overflow-hidden" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-          <div
-            className="h-full rounded-full"
-            style={{
-              width: `${(REDUCED_MOTION || active ? pct : 0)}%`,
-              backgroundColor: hexA(SBX_ACCENT, opacity),
-              transition: REDUCED_MOTION ? 'none' : `width 1.1s cubic-bezier(0.22, 1, 0.36, 1) ${index * 150}ms`,
-            }}
-          />
-        </div>
-        <span className="w-[52px] text-right text-[17px] font-bold tabular-nums" style={{ color: index === 2 ? SBX_TEAL : SBX_DARK }}>
-          {shown}%
-        </span>
-      </div>
-    </div>
-  );
-};
-
-const LayerFlipCard: React.FC<{ icon: LayerIconName; title: string; hook: string; trap: string }> = ({
-  icon,
-  title,
-  hook,
-  trap,
-}) => {
-  const [flipped, setFlipped] = useState(false);
-  const Icon = LAYER_ICON[icon];
-  const faceBase: React.CSSProperties = {
-    backfaceVisibility: 'hidden',
-    WebkitBackfaceVisibility: 'hidden',
-  };
-  return (
-    <button
-      type="button"
-      className="relative w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2B4C7E] focus-visible:ring-offset-2 rounded-xl"
-      style={{ perspective: '900px', height: 128 }}
-      onClick={() => setFlipped((f) => !f)}
-      onMouseEnter={() => setFlipped(true)}
-      onMouseLeave={() => setFlipped(false)}
-      aria-label={`${title} — see the trap`}
-    >
-      <div
-        className="relative w-full h-full"
-        style={{
-          transformStyle: 'preserve-3d',
-          transform: REDUCED_MOTION ? 'none' : flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-          transition: REDUCED_MOTION ? 'none' : 'transform 0.5s ease',
-        }}
-      >
-        {/* Front */}
-        <div
-          className="absolute inset-0 rounded-xl p-3.5 flex flex-col"
-          style={{
-            ...faceBase,
-            backgroundColor: '#FFFFFF',
-            border: '1px solid #E2E8F0',
-            opacity: REDUCED_MOTION ? (flipped ? 0 : 1) : undefined,
-            transition: REDUCED_MOTION ? 'opacity 0.2s ease' : undefined,
-          }}
-        >
-          <div className="flex items-start gap-2.5">
-            <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: hexA(SBX_ACCENT, 0.1) }}>
-              <Icon size={17} style={{ color: SBX_ACCENT }} />
-            </span>
-            <div className="min-w-0">
-              <p className="text-[14.5px] font-bold text-[#1A202C] leading-tight">{title}</p>
-              <p className="text-[12px] text-[#718096] mt-0.5 leading-[1.4]">{hook}</p>
-            </div>
-          </div>
-          <span className="mt-auto text-[10.5px] font-semibold uppercase tracking-[0.06em] text-[#A0AEC0]">The trap →</span>
-        </div>
-        {/* Back */}
-        <div
-          className="absolute inset-0 rounded-xl p-3.5 flex flex-col"
-          style={{
-            ...faceBase,
-            transform: REDUCED_MOTION ? 'none' : 'rotateY(180deg)',
-            backgroundColor: hexA(SBX_ACCENT, 0.06),
-            border: `1.5px solid ${SBX_ACCENT}`,
-            opacity: REDUCED_MOTION ? (flipped ? 1 : 0) : undefined,
-            transition: REDUCED_MOTION ? 'opacity 0.2s ease' : undefined,
-            pointerEvents: 'none',
-          }}
-        >
-          <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] mb-1.5" style={{ color: SBX_ACCENT }}>
-            {title} — the trap
-          </p>
-          <p className="text-[12px] text-[#2D3748] leading-[1.45]">{trap}</p>
-        </div>
-      </div>
-    </button>
-  );
-};
-
-const ProblemSection: React.FC = () => {
-  const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.4, triggerOnce: true });
-  return (
-    <section className="mb-20">
-      <SectionHeading
-        n="01"
-        eyebrow="The problem"
-        title={
-          <>
-            Most AI use cases die between
-            <br className="hidden md:block" /> pilot and production
-          </>
-        }
-        lede="Organisations are not short of AI ideas. They are short of a system that turns ideas into deployed, adopted, value-producing tools. We call the gap the status quo trap."
-      />
-
-      <div className="rounded-2xl p-6 sm:p-8" style={{ backgroundColor: '#F7FAFC', border: '1px solid #E2E8F0' }}>
-        {/* Funnel bars */}
-        <div ref={ref} className="space-y-4 mb-10">
-          {FUNNEL_STATS.map((stat, i) => (
-            <FunnelBarRow key={stat.label} label={stat.label} sublabel={stat.sublabel} pct={stat.pct} active={isIntersecting} index={i} />
-          ))}
-          <p className="text-[11.5px] text-[#A0AEC0] pt-1">Illustrative pattern seen across enterprise AI portfolios.</p>
-        </div>
-
-        {/* Four layers */}
-        <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0] mb-3">
-          It's rarely the technology — it's the system around it
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
-          {LAYER_CARDS.map((card, i) => (
-            <Reveal key={card.title} delay={i * 100}>
-              <LayerFlipCard icon={card.icon} title={card.title} hook={card.hook} trap={card.trap} />
-            </Reveal>
-          ))}
-        </div>
-
-        {/* Formula */}
-        <div className="flex flex-wrap items-stretch justify-center gap-2 sm:gap-3">
-          {FORMULA_TILES.map((tile, i) => (
-            <React.Fragment key={tile.symbol}>
-              {i > 0 && (
-                <Reveal delay={i * 130} className="flex items-center">
-                  <span className="text-[26px] font-bold text-[#A0AEC0] px-0.5">{i === 1 ? '+' : i === 2 ? '×' : '='}</span>
-                </Reveal>
-              )}
-              <Reveal delay={i * 130 + (tile.isResult ? 120 : 0)}>
-                <div
-                  className="rounded-xl px-4 py-3 text-center h-full flex flex-col justify-center min-w-[120px]"
-                  style={
-                    tile.isResult
-                      ? { backgroundColor: hexA(SBX_TEAL, 0.1), border: `1.5px solid ${SBX_TEAL}` }
-                      : { backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }
-                  }
-                >
-                  <p className="text-[24px] font-bold leading-none mb-1" style={{ color: tile.isResult ? SBX_TEAL : SBX_DARK }}>
-                    {tile.symbol}
-                  </p>
-                  <p className="text-[11px] text-[#718096] leading-[1.35] max-w-[130px] mx-auto">{tile.label}</p>
-                </div>
-              </Reveal>
-            </React.Fragment>
-          ))}
-        </div>
-        <p className="text-[12.5px] text-[#718096] text-center mt-4 leading-[1.6] max-w-[560px] mx-auto">
-          Good systems and a fit-for-purpose organisation only compound when people are engaged.{' '}
-          <span className="font-semibold text-[#2D3748]">Engagement is the multiplier</span> — and it is exactly what a sandbox is built to create.
-        </p>
-      </div>
-    </section>
-  );
-};
-
-/* ---------------------------------------------------------------------------
-   Section 02 — the method (5-stage stepper)
-   --------------------------------------------------------------------------- */
-
-/* Static mini 2x2 shown in stage 4, teasing the prioritiser below.
+/* Static mini 2x2 shown in stage 4, teasing the demo below.
    Height-driven: fills its parent's height and derives width from the aspect ratio. */
 const MiniMatrix: React.FC = () => {
   const dots = [
@@ -521,7 +298,7 @@ const StageVisualPanel: React.FC<{ stage: MethodStage }> = ({ stage }) => {
           </div>
           <button
             type="button"
-            onClick={() => document.getElementById('prioritiser')?.scrollIntoView({ behavior: REDUCED_MOTION ? 'auto' : 'smooth' })}
+            onClick={() => document.getElementById('sandbox-demo')?.scrollIntoView({ behavior: REDUCED_MOTION ? 'auto' : 'smooth' })}
             className="w-full inline-flex items-center justify-center gap-1.5 rounded-full py-2.5 text-[13px] font-bold text-white transition-all duration-150 hover:-translate-y-0.5"
             style={{ backgroundColor: SBX_DARK }}
           >
@@ -615,7 +392,7 @@ const MethodSection: React.FC = () => {
   return (
     <section className="mb-20">
       <SectionHeading
-        n="02"
+        n="01"
         eyebrow="The method"
         title="Five stages, eight to twelve weeks"
         lede="One governed path from open questions to a production roadmap — this is where readiness, leadership alignment and upskilling pay off. The tour walks through the stages on its own; hover to pause, click to jump."
@@ -679,7 +456,7 @@ const MethodSection: React.FC = () => {
 };
 
 /* ---------------------------------------------------------------------------
-   Section 04 — the cohort experience.
+   Section 03 — the cohort experience.
    LEFT: the engine (community of practice, IKEA effect, champions emerge).
    RIGHT: the measure (scoring = adoption measurement) + the ripple (value
    travels outward from the cohort to the whole organisation).
@@ -766,7 +543,7 @@ const RIPPLE_LEGEND_FILL = [1, 0.3, 0.18, 0.1];
 const CohortSection: React.FC = () => (
   <section className="mb-20">
     <SectionHeading
-      n="04"
+      n="03"
       eyebrow="The cohort effect"
       title={
         <>
@@ -908,7 +685,7 @@ export const InnovationSandbox: React.FC = () => {
             <div className="flex flex-wrap items-center justify-center gap-3">
               <button
                 type="button"
-                onClick={() => document.getElementById('prioritiser')?.scrollIntoView({ behavior: REDUCED_MOTION ? 'auto' : 'smooth' })}
+                onClick={() => document.getElementById('sandbox-demo')?.scrollIntoView({ behavior: REDUCED_MOTION ? 'auto' : 'smooth' })}
                 className="inline-flex items-center gap-2 text-white font-semibold rounded-full px-7 py-3.5 text-[15px] transition-all duration-150 hover:-translate-y-0.5 cursor-pointer"
                 style={{ backgroundColor: SBX_DARK }}
               >
@@ -925,19 +702,28 @@ export const InnovationSandbox: React.FC = () => {
           </Reveal>
         </div>
 
-        <ProblemSection />
         <MethodSection />
 
-        {/* ============ 03 — THE PRIORITISER ============ */}
-        <section className="mb-20 scroll-mt-24" id="prioritiser">
+        {/* ============ 02 — THE SANDBOX DEMO ============ */}
+        <section className="mb-20 scroll-mt-24" id="sandbox-demo">
           <SectionHeading
-            n="03"
-            eyebrow="Try it yourself"
-            title="Prioritise your own use cases"
-            lede="This is the scoring mechanic from stage 4, in miniature. Pick your function and priorities, choose the use cases that sound familiar, and watch them land on the matrix."
+            n="02"
+            eyebrow="Test the sandbox"
+            title={
+              <>
+                Run a{' '}
+                <span className="relative inline-block">
+                  sandbox session
+                  <span className="absolute left-0 -bottom-1 w-full h-[4px] rounded-full opacity-80" style={{ backgroundColor: SBX_TEAL }} />
+                </span>{' '}
+                yourself
+              </>
+            }
+            lede="This is the workshop screen a cohort table works in. Read a sample company's brief, find where the process is losing, choose and score use cases, then build the pitch you would take to leadership."
           />
-          <UseCasePrioritiser />
+          <SandboxDemo />
         </section>
+
 
         <CohortSection />
 
