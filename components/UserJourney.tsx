@@ -159,10 +159,10 @@ export const UserJourney: React.FC = () => {
             What to Expect
           </div>
           <h1 className="text-[36px] md:text-[48px] font-bold text-[#1A202C] leading-[1.15]">
-            Your AI Learning
+            Tailoring a Learning Journey
             <br />
             <span className="relative inline-block">
-              Journey
+              to Your Organisation
               <span
                 className="absolute left-0 -bottom-1 w-full h-[4px] rounded-full"
                 style={{ backgroundColor: ACCENT_DARK, opacity: 0.8 }}

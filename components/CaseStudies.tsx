@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ArrowRight, FileSearch, Globe, Users, Brain, BookOpen } from 'lucide-react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
+import { ArrowRight, Globe, Brain, BookOpen, ShieldCheck, Target } from 'lucide-react';
 import { ArtifactClosing } from './ArtifactClosing';
 
 const LEVEL_COLORS: Record<number, { bg: string; text: string; label: string }> = {
@@ -29,6 +29,56 @@ interface CaseStudy {
 
 const CASE_STUDIES: CaseStudy[] = [
   {
+    id: 6,
+    title: 'AI TRiSM Market Intelligence for a Digital Trust Leader',
+    subtitle: 'Mapping 90+ Competitors and Buyer Roles in an Emerging AI Governance Market',
+    accentColor: '#C4A934',
+    icon: ShieldCheck,
+    challenge:
+      'A leading European provider of qualified digital trust services saw a new market emerging around AI Trust, Risk, and Security Management (AI TRiSM), as the EU AI Act and related regulation began reshaping how organisations govern their AI systems. Before entering this fast-growing space, they needed rigorous, credible research to understand who the emerging competitors were, who inside a customer organisation actually buys and influences AI TRiSM adoption, and which trends were shaping the market.',
+    approach: [
+      'Competitor Research Agent — Discovered and profiled 130+ potential competitors across a dozen structured attributes, with frequent human-in-the-loop review to filter out irrelevant players',
+      'Source Evaluation Agent — Scored every source against academic frameworks to ensure findings were high-quality and relevant',
+      'Data Extraction Agent — Pulled AI TRiSM-relevant obligations out of regulatory documents',
+      'Buyer Persona & Role Mapping Agents — Classified each obligation against a validated taxonomy of departments and buyer sub-types, then translated it into the single most relevant job title',
+      'Auditable by design — Every step in the chain justified its reasoning in a short rationale, so findings never became a black box',
+    ],
+    outcomes: [
+      'Narrowed 130+ potential competitors to 90+ verified, in-scope companies organised into evidence-based personas',
+      'Completed in a fraction of the time of a fully manual process, with a documented, source-scored trail behind every finding',
+      'Surfaced a previously undocumented pattern in where AI TRiSM buying and influencing decisions are made',
+      'Gave the client a validated foundation for go-to-market and product strategy, plus hands-on AI upskilling that continued into further AI adoption programmes',
+    ],
+    levelTags: [
+      { level: 3, type: 'primary', description: 'Chained, human-in-the-loop AI research workflow with auditable reasoning at every step.' },
+      { level: 2, type: 'secondary', description: 'Purpose-built agents, each with a distinct research role, co-developed with the client.' },
+    ],
+  },
+  {
+    id: 7,
+    title: 'Building Hunters: AI-Enabled Sales Academy',
+    subtitle: 'Designing an Engaging Sales Academy for a Global Materials Leader’s European Sales Organisation',
+    accentColor: '#2C9A94',
+    icon: Target,
+    challenge:
+      'A global leader in material solutions was pursuing an ambitious growth strategy, pushing into new sectors and markets. To get there, its European commercial cluster needed sales managers and directors thinking and acting like hunters: proactively identifying new industries, mapping unfamiliar accounts, and building connections in markets they hadn’t traditionally served. The client needed a capability-building programme that felt engaging and practical rather than theoretical, fit around a busy sales calendar, and built habits that would show up in RFQ productivity, hit rate, and share of wallet.',
+    approach: [
+      'Three Progressive Cycles — Co-designed a blended programme with each cycle aligned to a stage of the sales cycle and the company’s growth ambitions',
+      'Hybrid Learning Rhythm — E-learnings, live workshops, field assignments, and group coaching, so participants move between guided learning and real application in their own territory',
+      'Grounded in Real Selling — Built content with the client’s subject matter experts and sales leaders to reflect real buying behaviour and market dynamics',
+      'Purpose-Built Learning Platform — OXYGY built a bespoke learning management system combining e-learnings, custom materials, and AI-powered tools for personalized learning',
+    ],
+    outcomes: [
+      'Validated learning model and a purpose-built platform live for a pilot cohort of ~20 sales professionals',
+      'Learning materials co-created with the client’s sales experts, reflecting how their teams actually sell, not a generic playbook',
+      'A scalable, modular model the client can extend across future cohorts and clusters',
+      'Groundwork laid for full roll-out through Cycles 2 and 3, supporting a lasting shift to a hunter selling mindset',
+    ],
+    levelTags: [
+      { level: 5, type: 'primary', description: 'A purpose-built, AI-powered learning platform that brings e-learnings, custom materials, and AI tools together to deliver a personalized experience to each participant.' },
+    ],
+  },
+  {
     id: 5,
     title: 'Persona Learning Card Automation',
     subtitle: 'Scaling 100+ Role-Based Learning Cards from a Single Gold Standard',
@@ -51,31 +101,6 @@ const CASE_STUDIES: CaseStudy[] = [
     ],
     levelTags: [
       { level: 2, type: 'primary', description: 'Custom agent built for a specific use case: standardized, scalable generation of persona learning content from existing training materials.' },
-    ],
-  },
-  {
-    id: 1,
-    title: 'AI-Driven Market Intelligence Workflow',
-    subtitle: 'Turning 30+ Industry Reports into Structured Strategic Insight',
-    accentColor: '#C4A934',
-    icon: FileSearch,
-    challenge:
-      'A large digital service provider needed to synthesize insights from over 30 global industry and policy reports to inform growth strategy in a new market. Manual review was time-intensive, inconsistent, and difficult to compare across sources. The client wanted structured insights mapped to PESTLE categories (Political, Economic, Social, Technological, Legal, Environmental) to inform long-term positioning.',
-    approach: [
-      'Ingestion Agent — Extracted structured insights from each report',
-      'Classification Agent — Categorized findings into PESTLE dimensions',
-      'Synthesis Agent — Identified cross-report patterns and emerging themes',
-      'Validation Layer — Human-in-the-loop review for strategic relevance',
-    ],
-    outcomes: [
-      '60% reduction in analysis time',
-      'Standardized PESTLE classification across all reports',
-      'Clear identification of high-impact strategic themes',
-      'Reusable AI research pipeline for future reports',
-    ],
-    levelTags: [
-      { level: 3, type: 'primary', description: 'AI embedded into a repeatable intelligence workflow with feedback loops.' },
-      { level: 2, type: 'secondary', description: 'Custom agent architecture built for a specific strategic use case.' },
     ],
   },
   {
@@ -125,29 +150,6 @@ const CASE_STUDIES: CaseStudy[] = [
     levelTags: [
       { level: 4, type: 'primary', description: 'AI outputs transformed into role-specific, interactive intelligence interfaces.' },
       { level: 3, type: 'secondary', description: 'Integrated structured AI outputs into a usable, continuous decision tool.' },
-    ],
-  },
-  {
-    id: 3,
-    title: 'HR AI Persona Matching & Service Alignment Tool',
-    subtitle: 'From Survey Data to Personalized AI Enablement Pathways',
-    accentColor: '#2C9A94',
-    icon: Users,
-    challenge:
-      'OXYGY developed distinct HR AI personas to represent different ambitions, maturity levels, and barriers among HR leaders. The challenge was then to use survey data and AI agents to accurately pair each respondent with the appropriate persona and translate that into tailored service pathways and engagement strategies.',
-    approach: [
-      'Survey Response Analysis Agent — Clustered HR leaders by goals, risk appetite, and innovation readiness; identified latent patterns in qualitative responses',
-      'Service Matching Logic — Mapped personas to specific OXYGY services; generated tailored recommendations aligned to strategic goals',
-      'Personalized Feedback Reports — Each HR leader received a summary of their persona with recommended next steps and service pathways',
-    ],
-    outcomes: [
-      'Transformed static survey into a strategic engagement engine',
-      'Increased relevance of OXYGY service positioning',
-      'Enabled personalized follow-up conversations',
-      'Strengthened thought leadership positioning in HR AI',
-    ],
-    levelTags: [
-      { level: 3, type: 'primary', description: 'Integrated survey analysis, classification logic, and recommendation engine into one workflow.' },
     ],
   },
 ];
@@ -247,12 +249,12 @@ export const CaseStudiesSection: React.FC = () => {
 };
 
 /* ─── Page card — vertical card for standalone page (click to expand detail below) ─── */
-function CaseStudyPageCard({ cs, isSelected, onSelect }: { cs: CaseStudy; isSelected: boolean; onSelect: () => void }) {
+function CaseStudyPageCard({ cs, isSelected, onSelect }: { cs: CaseStudy; isSelected: boolean; onSelect: (cardTop: number) => void }) {
   return (
     <div
+      onClickCapture={(e) => onSelect(e.currentTarget.getBoundingClientRect().top)}
       className="bg-white border rounded-xl overflow-hidden flex flex-col cursor-pointer transition-all duration-200 hover:shadow-md"
       style={{ borderColor: isSelected ? cs.accentColor : '#E2E8F0' }}
-      onClick={onSelect}
     >
       <div className="h-[6px] w-full" style={{ backgroundColor: cs.accentColor }} />
       <div className="p-6 flex flex-col flex-grow">
@@ -427,6 +429,24 @@ function CaseStudyDetail({ cs }: { cs: CaseStudy }) {
 export const CaseStudiesPage: React.FC = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const selectedCs = CASE_STUDIES.find((cs) => cs.id === selectedId) || null;
+  // Only one card is open at a time. When opening a card closes a panel above it,
+  // keep the clicked card where it was on screen instead of letting the page jump.
+  const pendingAnchor = useRef<{ id: number; top: number } | null>(null);
+  const cardRefs = useRef(new Map<number, HTMLDivElement>());
+
+  useLayoutEffect(() => {
+    const anchor = pendingAnchor.current;
+    pendingAnchor.current = null;
+    const el = anchor && cardRefs.current.get(anchor.id);
+    if (!anchor || !el) return;
+    const shift = el.getBoundingClientRect().top - anchor.top;
+    if (shift !== 0) window.scrollBy(0, shift);
+  }, [selectedId]);
+
+  const handleSelect = (id: number, cardTop: number) => {
+    pendingAnchor.current = { id, top: cardTop };
+    setSelectedId((prev) => (prev === id ? null : id));
+  };
 
   return (
     <div className="min-h-screen bg-white pt-24 pb-16">
@@ -486,12 +506,20 @@ export const CaseStudiesPage: React.FC = () => {
               <React.Fragment key={rowIdx}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {rowCards.map((cs) => (
-                    <CaseStudyPageCard
+                    <div
                       key={cs.id}
-                      cs={cs}
-                      isSelected={selectedId === cs.id}
-                      onSelect={() => setSelectedId((prev) => (prev === cs.id ? null : cs.id))}
-                    />
+                      className="flex flex-col [&>*]:flex-grow"
+                      ref={(el) => {
+                        if (el) cardRefs.current.set(cs.id, el);
+                        else cardRefs.current.delete(cs.id);
+                      }}
+                    >
+                      <CaseStudyPageCard
+                        cs={cs}
+                        isSelected={selectedId === cs.id}
+                        onSelect={(top) => handleSelect(cs.id, top)}
+                      />
+                    </div>
                   ))}
                 </div>
                 {rowHasSelected && selectedCs && (

@@ -7,6 +7,11 @@ const CX = 350;
 const CY = 350;
 const INNER_RADIUS = 170;
 const OUTER_RADIUS = 280;
+// Wider rings used when custom content sits in the centre, so orbiting nodes clear it
+const INNER_RADIUS_WITH_CENTER = 200;
+const OUTER_RADIUS_WITH_CENTER = 300;
+// Width of the custom centre content, in viewBox units
+const CENTER_CONTENT_WIDTH = 270;
 const NODE_SIZE = 44;
 
 const toRad = (deg: number) => (deg * Math.PI) / 180;
@@ -22,8 +27,20 @@ function ringPositions(count: number, radius: number, offsetDeg = 0) {
   });
 }
 
-const innerPositions = ringPositions(6, INNER_RADIUS, 0);
-const outerPositions = ringPositions(6, OUTER_RADIUS, 30);
+const RINGS = {
+  default: {
+    inner: INNER_RADIUS,
+    outer: OUTER_RADIUS,
+    innerPositions: ringPositions(6, INNER_RADIUS, 0),
+    outerPositions: ringPositions(6, OUTER_RADIUS, 30),
+  },
+  withCenter: {
+    inner: INNER_RADIUS_WITH_CENTER,
+    outer: OUTER_RADIUS_WITH_CENTER,
+    innerPositions: ringPositions(6, INNER_RADIUS_WITH_CENTER, 0),
+    outerPositions: ringPositions(6, OUTER_RADIUS_WITH_CENTER, 30),
+  },
+} as const;
 
 // ── Orbit Animation CSS ─────────────────────────────────────────────
 const ORBIT_STYLES = `
@@ -168,11 +185,16 @@ const Tooltip: React.FC<TooltipProps> = ({
 // ── Concentric Circles Diagram ───────────────────────────────────────
 interface DiagramProps {
   isMobile: boolean;
+  /** Optional content rendered inside the inner ring, replacing the default "Your Organization" visual. */
+  center?: React.ReactNode;
 }
 
 export const ConcentricCircles: React.FC<DiagramProps> = ({
   isMobile,
+  center,
 }) => {
+  const rings = center ? RINGS.withCenter : RINGS.default;
+  const { innerPositions, outerPositions } = rings;
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredNode, setHoveredNode] = useState<{
     node: DriverNode;
@@ -256,7 +278,8 @@ export const ConcentricCircles: React.FC<DiagramProps> = ({
     <div
       ref={containerRef}
       className={isPaused ? 'hero-diagram-paused' : ''}
-      style={{ position: 'relative', width: '100%', maxWidth: '680px' }}
+      // Vertical padding keeps the ring labels clear of the orbiting outer nodes
+      style={{ position: 'relative', width: '100%', maxWidth: '680px', padding: '30px 0' }}
       onMouseEnter={() => {
         if (!isMobile) setIsPaused(true);
       }}
@@ -287,7 +310,7 @@ export const ConcentricCircles: React.FC<DiagramProps> = ({
         <circle
           cx={CX}
           cy={CY}
-          r={INNER_RADIUS}
+          r={rings.inner}
           fill="rgba(56, 178, 172, 0.04)"
         />
 
@@ -295,7 +318,7 @@ export const ConcentricCircles: React.FC<DiagramProps> = ({
         <circle
           cx={CX}
           cy={CY}
-          r={INNER_RADIUS}
+          r={rings.inner}
           fill="none"
           stroke="#38B2AC"
           strokeWidth="2"
@@ -305,13 +328,15 @@ export const ConcentricCircles: React.FC<DiagramProps> = ({
         <circle
           cx={CX}
           cy={CY}
-          r={OUTER_RADIUS}
+          r={rings.outer}
           fill="none"
           stroke="#E8C547"
           strokeWidth="1.5"
           strokeDasharray="8 6"
         />
 
+        {!center && (
+        <>
         {/* Center glow */}
         <circle cx={CX} cy={CY} r={60} fill="url(#center-glow)" />
 
@@ -373,11 +398,13 @@ export const ConcentricCircles: React.FC<DiagramProps> = ({
         >
           Your Organization
         </text>
+        </>
+        )}
 
         {/* ── Rotating inner ring group — clockwise ── */}
         <g className="hero-inner-orbit">
           {/* Connecting lines from center to inner nodes */}
-          {innerPositions.map((pos, i) => (
+          {!center && innerPositions.map((pos, i) => (
             <line
               key={`conn-inner-${i}`}
               x1={CX}
@@ -550,12 +577,28 @@ export const ConcentricCircles: React.FC<DiagramProps> = ({
         </g>
       </svg>
 
+      {/* Custom center content, sized to sit inside the inner ring */}
+      {center && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: `${(CENTER_CONTENT_WIDTH / 700) * 100}%`,
+          }}
+          onMouseEnter={() => setHoveredNode(null)}
+        >
+          {center}
+        </div>
+      )}
+
       {/* Ring labels (HTML overlays — static, don't rotate) */}
       {/* "What Your People Bring" — above all rings, top center */}
       <div
         style={{
           position: 'absolute',
-          top: '2%',
+          top: 0,
           left: '50%',
           transform: 'translateX(-50%)',
         }}
@@ -583,7 +626,7 @@ export const ConcentricCircles: React.FC<DiagramProps> = ({
       <div
         style={{
           position: 'absolute',
-          bottom: '0%',
+          bottom: 0,
           left: '50%',
           transform: 'translateX(-50%)',
         }}

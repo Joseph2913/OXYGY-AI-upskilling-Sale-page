@@ -1,27 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { ArrowRight, ChevronRight } from 'lucide-react';
-import { ConcentricCircles } from './DriversDiagram';
+import { HeroJourneyDiagram } from './HeroJourneyDiagram';
 import { OFFERINGS } from '../data/home-offerings';
 import type { Offering } from '../data/home-offerings';
 import { Footer } from './Footer';
 import { OfferingJourney } from './OfferingJourney';
 
-const MOBILE_BREAKPOINT = 768;
-
-function useIsMobile(): boolean {
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < MOBILE_BREAKPOINT);
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  return isMobile;
-}
-
 const HomeHero: React.FC = () => {
-  const isMobile = useIsMobile();
   return (
-    <section id="hero" className="bg-[#F7FAFC] pt-28 pb-10 md:pt-24 md:pb-6">
+    <section id="hero" className="bg-[#F7FAFC] pt-24 pb-8 md:pt-24 md:pb-4">
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row md:items-center gap-10 md:gap-8">
         <div className="md:w-[45%] shrink-0">
           <span
@@ -58,8 +45,9 @@ const HomeHero: React.FC = () => {
           </a>
         </div>
 
-        <div className="flex-1 flex justify-center mx-auto w-full max-w-[440px] md:max-w-none">
-          <ConcentricCircles isMobile={isMobile} />
+        {/* Hidden on mobile so the offerings section is visible without scrolling */}
+        <div className="hidden md:flex flex-1 justify-center mx-auto w-full max-w-[440px]">
+          <HeroJourneyDiagram />
         </div>
       </div>
     </section>
@@ -93,7 +81,7 @@ const OfferingCard: React.FC<{ offering: Offering }> = ({ offering }) => {
 };
 
 const OfferingsSection: React.FC = () => (
-  <section id="offerings" className="bg-white pt-12 pb-12">
+  <section id="offerings" className="bg-white pt-8 pb-12">
     <div className="max-w-7xl mx-auto px-6">
       <h2 className="text-[32px] md:text-[40px] font-bold text-[#1A202C] leading-[1.2]">
         One journey, three{' '}
@@ -107,7 +95,7 @@ const OfferingsSection: React.FC = () => (
         first assessment to organisation-wide adoption.
       </p>
 
-      <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
         {OFFERINGS.map((offering) => (
           <OfferingCard key={offering.id} offering={offering} />
         ))}

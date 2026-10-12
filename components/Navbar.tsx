@@ -8,6 +8,8 @@ interface NavItem {
   emoji?: string;
   /** Small right-aligned tag, e.g. "L1" */
   badge?: string;
+  /** Opens outside the app in a new tab (e.g. the standalone sandbox demo) */
+  external?: boolean;
 }
 
 interface NavSection {
@@ -40,7 +42,18 @@ const NAV: readonly NavEntry[] = [
       },
     ],
   },
-  { kind: 'link', label: 'AI Sandbox', href: '#innovation-sandbox' },
+  {
+    kind: 'menu',
+    label: 'AI Sandbox',
+    sections: [
+      {
+        items: [
+          { emoji: '🧪', label: 'AI Sandbox Overview', href: '#innovation-sandbox' },
+          { emoji: '🖥️', label: 'Try the Sandbox Demo', href: '/sandbox-demo/index.html', external: true },
+        ],
+      },
+    ],
+  },
   {
     kind: 'menu',
     label: 'AI Upskilling',
@@ -48,14 +61,13 @@ const NAV: readonly NavEntry[] = [
       {
         items: [
           { emoji: '🎓', label: 'Upskilling Overview', href: '#upskilling' },
-          { emoji: '📋', label: 'Learning Plan', href: '#learning-pathway' },
+          { emoji: '📋', label: 'Build Your Learning Plan', href: '#learning-pathway' },
           { emoji: '🗺️', label: 'Learner Journey', href: '#user-journey' },
         ],
       },
       { heading: 'AI Tools', items: AI_TOOLS },
     ],
   },
-  { kind: 'link', label: 'Our Methodology', href: '#engagement-model' },
   { kind: 'link', label: 'Case Studies', href: '#case-studies' },
 ];
 
@@ -63,6 +75,9 @@ const DROPDOWN_CLOSE_DELAY_MS = 150;
 
 const isMenuActive = (sections: readonly NavSection[], hash: string): boolean =>
   sections.some((s) => s.items.some((item) => item.href === hash));
+
+const externalProps = (item: NavItem) =>
+  item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
 
 /* Active = dark teal pill, inactive = transparent */
 const pillBase =
@@ -152,6 +167,7 @@ const Dropdown: React.FC<DropdownProps> = ({ label, sections, currentHash }) => 
                 <a
                   key={item.href}
                   href={item.href}
+                  {...externalProps(item)}
                   className="flex items-center gap-3 transition-colors duration-150 hover:bg-[#F7FAFC] hover:text-[#38B2AC]"
                   style={{
                     padding: '10px 16px',
@@ -324,6 +340,7 @@ export const Navbar: React.FC = () => {
                           <a
                             key={item.href}
                             href={item.href}
+                            {...externalProps(item)}
                             className={mobileRow(currentHash === item.href)}
                             style={{ textDecoration: 'none' }}
                           >
