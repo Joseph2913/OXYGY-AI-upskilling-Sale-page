@@ -555,7 +555,7 @@ const CohortSection: React.FC = () => (
           by everyone
         </>
       }
-      lede="The Sandbox runs as a cohort. Practitioners build alongside each other, the strongest emerge as your change champions, and the scores they generate are what carry adoption to the rest of the organisation."
+      lede="The Sandbox runs as a cohort where AI Champions build alongside each other, to create relevant AI use cases and carry adoption across the organisation."
     />
 
     {/* One compact panel: engine | how it travels | what we measure */}

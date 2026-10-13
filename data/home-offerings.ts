@@ -26,28 +26,6 @@ export interface Offering {
 
 export const OFFERINGS: readonly Offering[] = [
   {
-    id: 'upskilling',
-    icon: GraduationCap,
-    accent: '#38B2AC',
-    title: 'AI Upskilling',
-    summary: 'Build the role-specific AI skills that turn adoption into everyday practice.',
-    ctaLabel: 'Explore Upskilling',
-    href: '#upskilling',
-    tagline: 'Make adoption stick across the organisation.',
-    description:
-      'Our AI Upskilling Platform gives each person the skills that matter for their role, so AI becomes part of how work gets done.',
-    steps: [
-      {
-        label: 'Map',
-        text: 'We identify capability needs by role, using personas and a tailored skills matrix.',
-      },
-      {
-        label: 'Learn by doing',
-        text: 'We deliver personalised learning plans that combine hands-on platform exercises with workshops and coaching led by OXYGY.',
-      },
-    ],
-  },
-  {
     id: 'ai-readiness',
     icon: Compass,
     accent: '#C3D0F5',
@@ -66,6 +44,28 @@ export const OFFERINGS: readonly Offering[] = [
       {
         label: 'Prioritise',
         text: 'We turn the findings into a clear scope of the functions, processes and use cases most ready for AI.',
+      },
+    ],
+  },
+  {
+    id: 'upskilling',
+    icon: GraduationCap,
+    accent: '#38B2AC',
+    title: 'AI Upskilling',
+    summary: 'Build the role-specific AI skills that turn adoption into everyday practice.',
+    ctaLabel: 'Explore Upskilling',
+    href: '#upskilling',
+    tagline: 'Make adoption stick across the organisation.',
+    description:
+      'Our AI Upskilling Platform gives each person the skills that matter for their role, so AI becomes part of how work gets done.',
+    steps: [
+      {
+        label: 'Map',
+        text: 'We identify capability needs by role, using personas and a tailored skills matrix.',
+      },
+      {
+        label: 'Learn by doing',
+        text: 'We deliver personalised learning plans that combine hands-on platform exercises with workshops and coaching led by OXYGY.',
       },
     ],
   },
@@ -93,11 +93,8 @@ export const OFFERINGS: readonly Offering[] = [
   },
 ];
 
-/** Order the offerings connect in: assess readiness → experiment in the sandbox → scale through upskilling. */
-const JOURNEY_ORDER = ['ai-readiness', 'ai-sandbox', 'upskilling'] as const;
-
-export const JOURNEY: readonly Offering[] = JOURNEY_ORDER.map((id) => {
-  const offering = OFFERINGS.find((o) => o.id === id);
-  if (!offering) throw new Error(`Unknown offering in JOURNEY_ORDER: ${id}`);
-  return offering;
-});
+/**
+ * Offerings in display order. They are modular rather than a fixed sequence,
+ * so the hero and "How it all connects" diagrams use the same order as the cards.
+ */
+export const JOURNEY: readonly Offering[] = OFFERINGS;

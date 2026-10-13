@@ -255,8 +255,8 @@ export const COHORT_ENGINE: CohortPillar[] = [
   },
   {
     icon: 'champion',
-    title: 'Champions emerge',
-    body: 'We do not appoint champions on a slide. The cohort reveals them: the builders whose tools actually get used are the ones who carry deployment into their teams at scale.',
+    title: 'Champions equipped for success',
+    body: 'After finding our champions, we do not leave them alone. The cohort-based Sandbox equips them with tools that they will actually use and be deployed into enterprise teams at scale.',
   },
 ];
 

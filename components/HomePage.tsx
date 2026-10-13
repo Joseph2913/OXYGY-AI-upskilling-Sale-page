@@ -28,8 +28,8 @@ const HomeHero: React.FC = () => {
           </h1>
 
           <p className="mt-6 max-w-[560px] text-[15px] md:text-[17px] text-[#4A5568] leading-[1.7]">
-            We help organisations adopt AI with confidence: understanding where they stand, testing what
-            works in a safe space, and building the skills to make it part of everyday work.
+            We help organisations adopt AI with confidence: understanding where they stand, building the skills
+            to make it part of everyday work, and testing what works in a safe space.
           </p>
 
           <a
@@ -91,8 +91,8 @@ const OfferingsSection: React.FC = () => (
         </span>
       </h2>
       <p className="mt-4 max-w-[560px] text-[16px] text-[#4A5568] leading-[1.7]">
-        Start wherever you are. Each offering stands on its own, and together they take you from
-        first assessment to organisation-wide adoption.
+        Start wherever you are. Each offering stands on its own, and they can be combined in
+        whatever way fits your organisation.
       </p>
 
       <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">

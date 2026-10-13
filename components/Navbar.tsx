@@ -44,18 +44,6 @@ const NAV: readonly NavEntry[] = [
   },
   {
     kind: 'menu',
-    label: 'AI Sandbox',
-    sections: [
-      {
-        items: [
-          { emoji: '🧪', label: 'AI Sandbox Overview', href: '#innovation-sandbox' },
-          { emoji: '🖥️', label: 'Try the Sandbox Demo', href: '/sandbox-demo/index.html', external: true },
-        ],
-      },
-    ],
-  },
-  {
-    kind: 'menu',
     label: 'AI Upskilling',
     sections: [
       {
@@ -66,6 +54,18 @@ const NAV: readonly NavEntry[] = [
         ],
       },
       { heading: 'AI Tools', items: AI_TOOLS },
+    ],
+  },
+  {
+    kind: 'menu',
+    label: 'AI Sandbox',
+    sections: [
+      {
+        items: [
+          { emoji: '🚀', label: 'AI Sandbox Overview', href: '#innovation-sandbox' },
+          { emoji: '🖥️', label: 'Try the Sandbox Demo', href: '/sandbox-demo/index.html', external: true },
+        ],
+      },
     ],
   },
   { kind: 'link', label: 'Case Studies', href: '#case-studies' },
